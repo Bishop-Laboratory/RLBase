@@ -1,10 +1,6 @@
-#!/share/apps/bio3user/miniconda3/bin/python
-# delete this after done
-
 import os
 import sys
 import argparse
-import deeptools
 import deeptools.getScorePerBigWigBin as getScorePerBigWigBin
 import deeptools.heatmapper as heatmapper
 import deeptools.heatmapper_utilities as heatmapper_utilities
