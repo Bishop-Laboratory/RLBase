@@ -11,6 +11,7 @@ interactivemetaplot/**/*.sbatch*
 interactivemetaplot/**/.slurm
 interactivemetaplot/**/*.bed
 interactivemetaplot/**/*.matrix.gz
+interactivemetaplot/test.py
 venv
 # Default ignored files
 /shelf/
