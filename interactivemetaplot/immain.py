@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 
 #my own module
 import imlib
+RD, GN, YW, BU, PR, CY, LRD, LGN, LYW, LBU, LPR, LCY, N = imcols() #for bash color
+# can't run deeptols in windows, have to be remotely, so have to use bash
 
 # parser argument
 print("") # add paragraph so text wont be too clutter
