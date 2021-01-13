@@ -1,18 +1,15 @@
 import os
 import sys
 import argparse
+
+#deeptools
 import deeptools.getScorePerBigWigBin as getScorePerBigWigBin
-import deeptools.heatmapper as heatmapper
-import deeptools.heatmapper_utilities as heatmapper_utilities
+import deeptools.heatmapper as hmp
+import deeptools.heatmapper_utilities as hmpu
 import matplotlib.pyplot as plt
 
-# for colorful printing in bash
-LRD='\033[1;31m'
-LGN='\033[1;32m'
-LCY='\033[1;36m'
-YW='\033[1;33m'
-LPR='\033[1;35m'
-N='\033[0m'
+#my own module
+import imlib
 
 # parser argument
 print("") # add paragraph so text wont be too clutter
@@ -29,7 +26,6 @@ parser.add_argument("-z", "--skipZeros", metavar="TRUE",          type=str, narg
 print("")
 
 args = parser.parse_args()
-
 # make output dirs
 os.makedirs("matrix", exist_ok=True)
 os.makedirs("sortedRegions", exist_ok=True)
@@ -108,14 +104,16 @@ outpngFile = {LCY}{outpngFile}{N}
 
 print(outsprint)
 
+sys.exit(0)
+
 # bless matrix object
-dm = heatmapper.heatmapper()
+dm = hmp.heatmapper()
 
 # define parameters for computeMatrix (have to define EVERYTHNG or it dies...)
 # scale-regions most likely won't do anything, i just put in there to remind myself
+#"scale-regions":1,
 
 parameters = {
-"scale-regions":1,
 "bin size":10,
 "downstream":500,
 "upstream":500,
@@ -147,7 +145,7 @@ heatmapper.heatmapper.computeMatrix(dm,score_file_list=queFile,regions_file=bedF
 heatmapper.heatmapper.save_matrix(dm,file_name=f"""matrix/{outName}.matrix.gz""")
 
 # plotly plot. Still doesn't work and debugging. Died due to tuple out of bound.
-myplot = heatmapper_utilities.plotly_single(dm,average_type="mean",color="red",label="label")#["blue","red"],label=["label1","label2"],plot_type=["line","line"])
+myplot = hmpu.plotly_single(dm,average_type="mean",color="red",label="label")#["blue","red"],label=["label1","label2"],plot_type=["line","line"])
 
 # debug prints
 print("myplot is",myplot)
@@ -157,7 +155,7 @@ print("dm is",dm)
 # non-plotly plot. Copy pasted from docs. Also doesn't work & died due to tuple out of bound.
 #fig = plt.figure()
 #ax = fig.add_subplot(111)
-#ax = heatmapper_utilities.plot_single(ax, dm, 'mean', color='blue', label='red')
+#ax = hmpu.plot_single(ax, dm, 'mean', color='blue', label='red')
 #leg = ax.legend()
 #plt.savefig(f"""png/{outName}.png""")
 #plt.close()
