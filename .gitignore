@@ -11,7 +11,7 @@ interactivemetaplot/**/*.sbout*
 interactivemetaplot/**/*.sbatch
 interactivemetaplot/**/*.sbatch*
 interactivemetaplot/**/.slurm
-interactivemetaplot/**/*.bed
+#interactivemetaplot/**/*.bed
 interactivemetaplot/**/*.matrix.gz
 interactivemetaplot/test.py
 venv
