@@ -3,6 +3,8 @@
 .RData
 .Ruserdata
 **/*.bw
+interactivemetaplot/temp/*
+interactivemetaplot/matrix/*
 interactivemetaplot/**/*.bw
 interactivemetaplot/**/*.sbout
 interactivemetaplot/**/*.sbout*
