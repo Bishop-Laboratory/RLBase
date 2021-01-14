@@ -1,16 +1,26 @@
+import sys
+import argparse
+
 #dash
 import plotly.graph_objs as go
-import plotly.express as px
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
-import sys
 from flask import request
 
 
-#Todo: put parser
-df = pd.read_csv("interactivemetaplot\plotly\goldstd.bed,SRX1070678_NT2_DRIP-seq_1.hg38.bw,SRX6427717_DMSO_qDRIP-seq_1.hg38.bw,SRX6427715_siGL3_qDRIP-seq_andRH.hg38.bw,b5000,a5000,body.csv")
+print("") # add paragraph so text wont be too clutter
+parser = argparse.ArgumentParser()
+parser.add_argument("-i", "--inputcsv",       metavar="File.csv",      type=str, nargs="?", help="csv file from immain.py",required=True)
+parser.add_argument("-Q", "--QUIET",     help="make it not print anything [default: False]",action="store_true")
+print("")
+
+
+args = parser.parse_args()
+
+df = pd.read_csv(args.inputcsv)
+#"interactivemetaplot\plotly\goldstd.bed,SRX1070678_NT2_DRIP-seq_1.hg38.bw,SRX6427717_DMSO_qDRIP-seq_1.hg38.bw,SRX6427715_siGL3_qDRIP-seq_andRH.hg38.bw,b5000,a5000,body.csv")
 
 labelz = ['neg control','query','pos control']
 colorz = ['rgb(155,0,0)','rgb(0,100,0)','rgb(0,0,155)']
