@@ -289,7 +289,6 @@ printv("Wrote plotly input file into",plotlycsvFile)
 # DASH PART #
 #############
 
-"""
 df = pd.read_csv(plotlycsvFile)
 
 labelz = ['neg control','query','pos control']
@@ -342,7 +341,6 @@ app.layout = html.Div([
 ])
 
 app.run_server(debug=True, use_reloader=True)
-"""
 
 sys.exit(0)
 
