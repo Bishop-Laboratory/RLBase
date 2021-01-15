@@ -20,35 +20,38 @@ print("")
 args = parser.parse_args()
 
 df = pd.read_csv(args.inputcsv)
-#"interactivemetaplot\plotly\goldstd.bed,SRX1070678_NT2_DRIP-seq_1.hg38.bw,SRX6427717_DMSO_qDRIP-seq_1.hg38.bw,SRX6427715_siGL3_qDRIP-seq_andRH.hg38.bw,b5000,a5000,body.csv")
 
 labelz = ['neg control','query','pos control']
 colorz = ['rgb(155,0,0)','rgb(0,100,0)','rgb(0,0,155)']
-fiillz = ['rgba(250,50,0,0.2)','rgba(0,250,0,0.2)','rgba(0,50,250,0.2)']
+fillcz = ['rgba(250,50,0,0.2)','rgba(0,250,0,0.2)','rgba(0,50,250,0.2)']
 
 fig = go.Figure()
 
+# Draw geom_ribbon-like stderr shades
 for i in range(0,3):
     curr = df.loc[df['labels'] == labelz[i]]
+
     x = curr['x'].tolist()
     x_rev = x[::-1]
-
     y = curr['y'].tolist()
     y_upper = curr['y_upper'].tolist()
     y_lower = curr['y_lower'].tolist()
     y_lower = y_lower[::-1]
+
     fig.add_trace(go.Scatter(
-        x=x+x_rev,
-        y=y_upper+y_lower,
-        fill='toself',
-        fillcolor=fiillz[i],
-        line_color='rgba(255,255,255,0)',
-        showlegend=False,
-        name=labelz[i]
+        name       = labelz[i],
+        x          =  x + x_rev,
+        y          =  y_upper + y_lower,
+        fill       = 'toself',
+        fillcolor  = fillcz[i],
+        line       = dict(width=0),
+        line_color = 'rgba(255,255,255,0)',
+        showlegend = False
     ))
 
 for i in range(0,3):
     curr = df.loc[df['labels'] == labelz[i]]
+
     x = curr['x']
     y = curr['y']
 
@@ -61,8 +64,14 @@ for i in range(0,3):
 fig.update_layout(
     yaxis_title='Signal',
     xaxis_title='',
-    title='YeS',
-    hovermode="x"
+    title='YeS2',
+    hovermode="x",
+    xaxis = dict(
+        tickmode = 'array',
+        tick0    = 0,
+        tickvals = [0,5000/20000*100,10000/20000*100,15000/20000*100,99],
+        ticktext = ["-5kb","TSS","genebody","TTS","5kb"]
+    )
 )
 
 

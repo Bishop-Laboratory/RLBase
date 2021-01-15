@@ -32,7 +32,7 @@ def im_plot_single(dm,outName):
 	leg = ax.legend()
 	plt.savefig(f"""png/{outName}.png""")
 	plt.close()
-	
+
 def get_plotly_color(type):
 	if (type == 0): #neg control
 		mycol = "blue"
@@ -225,15 +225,15 @@ for i in range(0,len(allFile)):
 
 
 	# get color: blue for neg ctrl, green for query, red for pos ctrl
-	mycol = get_plotly_color(allGroup[i]) 
+	mycol = get_plotly_color(allGroup[i])
 
 	# get matrix
 	mymatrix = dm.matrix.get_matrix(group=0,sample=i)['matrix']
-	
+
 	# turn into simple array trace
 	# Todo: this is weird though, gonna check if there's better method
 	myplot = hmpu.plotly_single(mymatrix,average_type="mean",color=mycol,label=allFile[i])
-	
+
 	# append data from each group to numpy readable format
 	currGroup = allGroup[i]
 	printv("\n","\n","".join(["-"]*10)) # debug print
@@ -250,13 +250,12 @@ for i in range(0,len(allFile)):
 		tempmat[currGroup]["tot"] = 1
 		tempmat[currGroup]["x"] = myplot[0]["x"]
 
-	# then calculate mean, stdev, stderr
-	for currGroup in tempmat:
-		currmean = np.mean(tempmat[currGroup]["val"],axis=0)
-		currsd   = np.std(tempmat[currGroup]["val"],axis=0)
-		currse   = np.divide(currsd,math.sqrt(tempmat[currGroup]["tot"]))
-		currname = tempmat[currGroup]["name"]
-	
+# then calculate mean, stdev, stderr
+for currGroup in tempmat:
+	currmean = np.mean(tempmat[currGroup]["val"],axis=0)
+	currsd   = np.std(tempmat[currGroup]["val"],axis=0)
+	currse   = np.divide(currsd,math.sqrt(tempmat[currGroup]["tot"]))
+	currname = tempmat[currGroup]["name"]
 	printv(f"""Group {LCY}{currGroup}{N} (total files = {LGN}{tempmat[currGroup]['tot']}{N})\n""") # debug print
 
 	# assign new variable to make it easy to read
@@ -265,7 +264,7 @@ for i in range(0,len(allFile)):
 	y_upper = np.sum([currmean,currse],axis=0)
 	y_lower = np.subtract(currmean,currse)
 	labels = [currname]*len(x)
-	
+
 	# debug prints, only print first 5 values
 	printv(f"""\tx       : {LGN}{x[0:5]}{N}""")
 	printv(f"""\ty       : {LGN}{y[0:5]}{N}""")
@@ -274,6 +273,7 @@ for i in range(0,len(allFile)):
 	printv(f"""\tlabels  : {LGN}{labels[0:5]}{N}""")
 
 	# then write it
+	printv(YW,"Printing group",currGroup,N)
 	for i in range(0,len(x)):
 		f.write(f"""{x[i]},{y[i]},{y_upper[i]},{y_lower[i]},{labels[i]}\n""")
 
@@ -282,70 +282,6 @@ f.close()
 
 printv("Wrote plotly input file into",plotlycsvFile)
 
-
-
-
-##################
-# DASH PART      #
-# NOT YET TESTED #
-# TOGETHER SO    #
-# COMMENTED OUT  #
-##################
-
-"""
-df = pd.read_csv(plotlycsvFile)
-
-labelz = ['neg control','query','pos control']
-colorz = ['rgb(155,0,0)','rgb(0,100,0)','rgb(0,0,155)']
-fiillz = ['rgba(250,50,0,0.2)','rgba(0,250,0,0.2)','rgba(0,50,250,0.2)']
-
-fig = go.Figure()
-
-for i in range(0,3):
-    curr = df.loc[df['labels'] == labelz[i]]
-    x = curr['x'].tolist()
-    x_rev = x[::-1]
-
-    y = curr['y'].tolist()
-    y_upper = curr['y_upper'].tolist()
-    y_lower = curr['y_lower'].tolist()
-    y_lower = y_lower[::-1]
-    fig.add_trace(go.Scatter(
-        x=x+x_rev,
-        y=y_upper+y_lower,
-        fill='toself',
-        fillcolor=fiillz[i],
-        line_color='rgba(255,255,255,0)',
-        showlegend=False,
-        name=labelz[i]
-    ))
-
-for i in range(0,3):
-    curr = df.loc[df['labels'] == labelz[i]]
-    x = curr['x']
-    y = curr['y']
-
-    fig.add_trace(go.Scatter(
-        x=x,y=y,
-        line_color=colorz[i],
-        name=labelz[i]
-    ))
-
-fig.update_layout(
-    yaxis_title='Signal',
-    xaxis_title='',
-    title=outNametype,
-    hovermode="x"
-)
-
-
-app = dash.Dash()
-app.layout = html.Div([
-    dcc.Graph(figure=fig)
-])
-
-app.run_server(debug=True, use_reloader=True)
-"""
 
 sys.exit(0)
 
@@ -374,4 +310,12 @@ def hmcluster(self, k, evaluate_silhouette=True, method='kmeans', clustering_sam
 def computeSilhouette(self, k):
 def removeempty(self):
 def flatten(self):
+"""
+
+# EXAMPLE RUN
+"""
+python3 immain.py -i bed/goldstd.bed \
+-q bw/SRX1070678_NT2_DRIP-seq_1.hg38.bw bw/SRX1070680_NT2_DRIP-seq_RNaseA.hg38.bw \
+-p bw/SRX6427717_DMSO_qDRIP-seq_1.hg38.bw bw/SRX6427718_DMSO_qDRIP-seq_2.hg38.bw \
+-n bw/SRX6427715_siGL3_qDRIP-seq_andRH.hg38.bw bw/SRX6427722_DRB_qDRIP-seq_andRH.hg38.bw
 """
