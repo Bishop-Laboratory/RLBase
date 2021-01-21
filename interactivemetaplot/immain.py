@@ -1,4 +1,6 @@
 import os
+import os.path
+from os import path
 import sys
 import argparse
 import subprocess
@@ -33,20 +35,13 @@ def im_plot_single(dm,outName):
 	plt.savefig(f"""png/{outName}.png""")
 	plt.close()
 
-def get_plotly_color(type):
-	if (type == 0): #neg control
-		mycol = "blue"
-	elif (type == 1): #query
-		mycol = "green"
-	elif (type == 2): #pos control
-		mycol = "red"
-	return mycol
-
 # parser argument
+
 print("") # add paragraph so text wont be too clutter
 parser = argparse.ArgumentParser()
-parser.add_argument("-i", "--bed",       metavar="File.bed",      type=str, nargs="?", help="Bed File.",required=True)
-parser.add_argument("-q", "--que",       metavar="que.bw",        type=str, nargs="+", help="Query bigWig File(s) - separate by space.",required=True)
+parser.add_argument("-A", "--all",       metavar="inputlst.csv",  type=str, nargs="?", help="Table (csv) containing list of bigWig files, type (que/pos/neg/all), and species.")
+parser.add_argument("-B", "--bed",       metavar="File.bed",      type=str, nargs="?", help="Bed File.",required=True)
+parser.add_argument("-q", "--que",       metavar="que.bw",        type=str, nargs="+", help="Query bigWig File(s) - separate by space.")
 parser.add_argument("-o", "--out",       metavar="string",        type=str, nargs="?", help="output name")
 parser.add_argument("-p", "--pos",       metavar="pos.bw",        type=str, nargs="+", help="Positive control bigWig File(s) i.e. best Rloop samples - separate by space.")
 parser.add_argument("-n", "--neg",       metavar="neg.bw",        type=str, nargs="+", help="Negative control bigWig File(s) e.g. RNaseH/Input/IgG - separate by space.")
@@ -66,48 +61,82 @@ printv = print if args.QUIET == False else lambda *a, **k: None
 # make output dirs
 os.makedirs("matrix", exist_ok=True)
 os.makedirs("plotly", exist_ok=True)
-os.makedirs("sortedRegions", exist_ok=True)
 os.makedirs("svg", exist_ok=True)
 os.makedirs("png", exist_ok=True)
 
 # define input and input names, as well as output names if not defined with -o
-bedFile, bedFileName = args.bed, os.path.basename(args.bed)
-queFile, queFileName = args.que, os.path.basename(args.que[0])
-outName = f"""{bedFileName},{queFileName}"""
+# Reassign args into readable variables
 
-allFile = queFile
-queType = [1]*len(allFile)
-allGroup = queType
-# check if there's positive control files
-# also add pos and neg control filenames to default outName
-if args.pos != None:
-	posFileName = os.path.basename(args.pos[0])
-	posFile = args.pos
-	posType = [2]*len(posFile)
-	allGroup = allGroup + posType
-	allFile = allFile + posFile
-	outName = f"""{outName},{posFileName}"""
+bedFiles = args.bed
+bedNames = os.path.basename(args.bed)
+
+# if --all then read from csv
+def check_file_exists(files,group):
+	tempfiles = []
+	tempgroup = []
+	print("group is",group)
+	for i in range(0,len(files)):
+		if path.exists(files[i]) == False:
+			continue
+
+		tempfiles.append(files[i])
+
+		for i in range(0,len(group)):
+			tempgroup.append(group[i])
+	files = tempfiles
+	return files
+
+posFiles = []
+negFiles = []
+queFiles = []
+queFilePrint = ""
+posFilePrint = ""
+negFilePrint = ""
+
+if args.all != None:
+
+	files = pd.read_csv(args.all)
+
+	allGroup = files["type"]+files["species"]
+
+	allFiles = check_file_exists(("bw/"+files["file"]).values.tolist(),allGroup)
+	posFiles = check_file_exists(("bw/"+files.loc[files["type"] == "pos"]["file"]).values.tolist(),[])
+	negFiles = check_file_exists(("bw/"+files.loc[files["type"] == "neg"]["file"]).values.tolist(),[])
+	queFiles = check_file_exists(("bw/"+files.loc[files["type"] == "que"]["file"]).values.tolist(),[])
+
+	outName = f"""{bedNames},all,b{args.before},a{args.after}""" if args.out == None else args.out
+
 else:
-	posFileName = ""
-	posFile = ["None"]
+	queFiles = args.que
+	posFiles = args.pos
+	negFiles = args.neg
 
-# check if there's negative controlf iles
-if args.neg != None:
-	negFileName = os.path.basename(args.neg[0])
-	negFile = args.neg
-	negType = [0]*len(negFile)
-	allGroup = allGroup + negType
-	allFile = allFile + negFile
-	outName = f"""{outName},{negFileName}"""
-else:
-	negFileName = ""
-	negFile = ["None"]
+	if queFiles != None:
+		queNames = os.path.basename(queFiles[0])
+		queGroup = ["que"]*len(queFiles)
+		queFilePrint = ",".join(args.que)
+	if posFiles != None:
+		posNames = os.path.basename(posFiles[0])
+		posGroup = ["pos"]*len(posFiles)
+		posFilePrint = ",".join(args.pos)
+	if negFiles != None:
+		negNames = os.path.basename(negFiles[0])
+		negGroup = ["neg"]*len(negFiles)
+		negFilePrint = ",".join(args.neg)
 
-# outName might be too long, check this later
-outName = f"""{outName},b{args.before},a{args.after}"""
-# if -o is defined then output name use -o instead
-if args.out != None:
-	outName=args.out
+	allFiles = queFiles + posFiles + negFiles
+	allGroup = queGroup + posGroup + negGroup
+
+	outName = f"""{bedNames},{queNames}"""
+	outName = f"""{outName},{posNames}""" if args.pos != None else outName
+	outName = f"""{outName},{negNames}""" if args.neg != None else outName
+	outName = f"""{outName},b{args.before},a{args.after}"""
+
+print(LYW,"all Files:\n",LCY,allFiles,N)
+print(LYW,"que Files:\n",LCY,queFiles,N)
+print(LYW,"pos Files:\n",LCY,posFiles,N)
+print(LYW,"neg Files:\n",LCY,negFiles,N)
+print(LYW,"out Files:",LCY,outName,N)
 
 # print parameters
 argsprint = f"""
@@ -115,21 +144,25 @@ argsprint = f"""
          {YW}PARAMETERS{N}
 {YW}{'-'*30}{N}
 
--i [bedFile]   = {LCY}{args.bed}{N}
--q [queFile]   = {LCY}{",".join(args.que)}{N}
--o [outName]   = {LCY}{outName}{N}
--p [posFile]   = {LCY}{",".join(args.pos)}{N}
--n [negFile]   = {LCY}{",".join(args.neg)}{N}
--t [type]      = {LPR}{args.type}{N}
--z [skipZeros] = {LPR}{args.skipZeros}{N}
--b [before]    = {LGN}{args.before}{N}
--a [after]     = {LGN}{args.after}{N}
+-i [bedFiles]   = {LCY}{args.bed}{N}
+-q [queFiles]   = {LCY}{queFilePrint}{N}
+-o [outName]    = {LCY}{outName}{N}
+-p [posFiles]   = {LCY}{posFilePrint}{N}
+-n [negFiles]   = {LCY}{negFilePrint}{N}
+-t [type]       = {LPR}{args.type}{N}
+-z [skipZeros]  = {LPR}{args.skipZeros}{N}
+-b [before]     = {LGN}{args.before}{N}
+-a [after]      = {LGN}{args.after}{N}
 
 {YW}{'-'*30}{N}
 """
 
 printv(argsprint)
 
+
+print(YW,"all Files:",LCY,allFiles,N)
+print(YW,"all Group:",LCY,allGroup,N)
+print("\n\n")
 
 # print output files
 outMatrixFile=f"""matrix/{outName}.matrix.gz"""
@@ -175,7 +208,7 @@ parameters = {
 "bin avg type":"mean",
 "group_boundaries":2,
 "sample_boundaries":2,
-"sample_labels":queFile,
+"sample_labels":queFiles,
 "group_labels":allGroup,
 "sort regions":1,
 "sort using":None
@@ -183,7 +216,7 @@ parameters = {
 
 type = args.type
 
-printv(allFile)
+printv(allFiles)
 printv(allGroup)
 
 
@@ -201,13 +234,13 @@ outNametype              = f"""{outName},{args.type}"""
 if args.type != "body" and args.type != "TSS" and args.type != "TTS":
 	printv("type is not defined in parameter list (body, TSS, TTS)")
 	printv(args.type)
-	sys.exit(0)
+
 
 
 # computeMatrix run
 # Todo: make option to not re-run matrix if exist
 matrixFile = f"""matrix/{outNametype}.matrix.gz"""
-hmp.heatmapper.computeMatrix(dm,score_file_list=allFile,regions_file=bedFile,parameters=parameters)
+hmp.heatmapper.computeMatrix(dm,score_file_list=allFiles,regions_file=bedFiles,parameters=parameters)
 
 hmp.heatmapper.save_matrix(dm,file_name=matrixFile) # save matrix
 #hmp.heatmapper.read_matrix_file(dm,matrixFile) # read matrix
@@ -221,31 +254,46 @@ tempmat = {}
 
 # turn heatmapper matrix object into numpy array
 # get mean, stdev, stderr
-for i in range(0,len(allFile)):
+for i in range(0,len(allFiles)):
 
-
-	# get color: blue for neg ctrl, green for query, red for pos ctrl
-	mycol = get_plotly_color(allGroup[i])
+	if path.exists(allFiles[i]) == False:
+		next(i)
 
 	# get matrix
 	mymatrix = dm.matrix.get_matrix(group=0,sample=i)['matrix']
 
 	# turn into simple array trace
 	# Todo: this is weird though, gonna check if there's better method
-	myplot = hmpu.plotly_single(mymatrix,average_type="mean",color=mycol,label=allFile[i])
+	myplot = hmpu.plotly_single(mymatrix,average_type="mean",color="green",label=allFiles[i])
 
 	# append data from each group to numpy readable format
 	currGroup = allGroup[i]
 	printv("\n","\n","".join(["-"]*10)) # debug print
-	printv(LGN,i,N,"currGroup",LCY,currGroup,N,"currFile",LYW,allFile[i],N)	# debug print
+	printv(LGN,i,N,"currGroup",LCY,currGroup,N,"currFile",LYW,allFiles[i],N)	# debug print
 
-	if (currGroup in tempmat):	# if group exist in dict then append
+	x = myplot[0]["x"]
+	y = myplot[0]["y"]
+	y_upper = y
+	y_lower = y
+	labels = os.path.basename(allFiles[i])
+
+	# debug prints, only print first 5 values
+	printv(f"""\tx       : {LGN}{x[0:5]}{N}""")
+	printv(f"""\ty       : {LGN}{y[0:5]}{N}""")
+	printv(f"""\tlabels  : {LGN}{labels[0:5]}{N}""")
+
+	# then write it
+	printv(YW,"Printing file",labels,N)
+	for j in range(0,len(y)):
+		f.write(f"""{x[j]},{y[j]},{y_upper[j]},{y_lower[j]},{os.path.basename(allFiles[i])}\n""")
+
+	if currGroup in tempmat:	# if group exist in dict then append
 		tempmat[currGroup]["val"].append(myplot[0]["y"])
 		tempmat[currGroup]["tot"] += 1
-	else:	# else make new dict
+	else:
 		tempmat[currGroup] = {}
-		printv("	New group with new trace!")
-		tempmat[currGroup]["name"] = "query" if currGroup == 1 else "pos control" if currGroup == 2 else "neg control" if currGroup == 0 else "unknown group"
+		printv(LGN,"i=",i,N,"	New group with new trace!",allFiles)
+		tempmat[currGroup]["name"] = os.path.basename(allFiles[i])
 		tempmat[currGroup]["val"] = [(myplot[0]["y"])]
 		tempmat[currGroup]["tot"] = 1
 		tempmat[currGroup]["x"] = myplot[0]["x"]
@@ -273,9 +321,9 @@ for currGroup in tempmat:
 	printv(f"""\tlabels  : {LGN}{labels[0:5]}{N}""")
 
 	# then write it
-	printv(YW,"Printing group",currGroup,N)
+	printv(YW,"Printing group",currGroup,LPR,"labels=",labels[i],N,"length=",len(x))
 	for i in range(0,len(x)):
-		f.write(f"""{x[i]},{y[i]},{y_upper[i]},{y_lower[i]},{labels[i]}\n""")
+		f.write(f"""{x[i]},{y[i]},{y_upper[i]},{y_lower[i]},{currGroup}\n""")
 
 # close the plotly csv File
 f.close()
@@ -284,7 +332,6 @@ printv("Wrote plotly input file into",plotlycsvFile)
 
 
 sys.exit(0)
-
 ############################
 # BELOWS ARE NOTES, IGNORE #
 ############################
