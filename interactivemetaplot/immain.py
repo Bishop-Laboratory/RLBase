@@ -79,6 +79,9 @@ def check_file_exists(files,group):
 		if path.exists(files[i]) == False:
 			continue
 
+		if "hg38" not in files[i]:
+			continue
+
 		tempfiles.append(files[i])
 
 		for i in range(0,len(group)):
