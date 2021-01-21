@@ -324,7 +324,7 @@ for currGroup in tempmat:
 	printv(f"""\tlabels  : {LGN}{labels[0:5]}{N}""")
 
 	# then write it
-	printv(YW,"Printing group",currGroup,LPR,"labels=",labels[i],N,"length=",len(x))
+	printv(YW,"Printing group",currGroup,LPR,"labels=",labels,N,"length=",len(x))
 	for i in range(0,len(x)):
 		f.write(f"""{x[i]},{y[i]},{y_upper[i]},{y_lower[i]},{currGroup}\n""")
 
