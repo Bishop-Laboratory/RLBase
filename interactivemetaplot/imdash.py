@@ -21,15 +21,23 @@ args = parser.parse_args()
 
 df = pd.read_csv(args.inputcsv)
 
-labelz = ['neg control','query','pos control']
-colorz = ['rgb(155,0,0)','rgb(0,100,0)','rgb(0,0,155)']
-fillcz = ['rgba(250,50,0,0.2)','rgba(0,250,0,0.2)','rgba(0,50,250,0.2)']
 
+df = df[(df['labels'] == "ERX2277510_E-MTAB-6318DRIP_mOHT.hg38.bw")|(df['labels'] == "SRX1025890_TC32_NT_DRIP.hg38.bw")]
+
+labelz = df['labels'].unique().tolist()
+#colorz = ['rgb(0,100,0)'] * len(labelz)
+#fillsz = ['rgba(0,250,0,0.2)'] * len(labelz)
+colorz = ['rgb(155,0,0)','rgb(0,100,0)','rgb(0,0,155)']
+fillsz = ['rgba(250,50,0,0.2)','rgba(0,250,0,0.2)','rgba(0,50,250,0.2)']
+
+print(df)
+print(len(labelz))
 fig = go.Figure()
 
 # Draw geom_ribbon-like stderr shades
-for i in range(0,3):
-    curr = df.loc[df['labels'] == labelz[i]]
+#for i in range(0,3):
+for i in range(0,len(labelz)):
+    curr = df[df['labels'] == labelz[i]]
 
     x = curr['x'].tolist()
     x_rev = x[::-1]
@@ -43,13 +51,14 @@ for i in range(0,3):
         x          =  x + x_rev,
         y          =  y_upper + y_lower,
         fill       = 'toself',
-        fillcolor  = fillcz[i],
+        fillcolor  = fillsz[i],
         line       = dict(width=0),
         line_color = 'rgba(255,255,255,0)',
         showlegend = False
     ))
 
-for i in range(0,3):
+#for i in range(0,3):
+for i in range(0,len(labelz)):
     curr = df.loc[df['labels'] == labelz[i]]
 
     x = curr['x']
