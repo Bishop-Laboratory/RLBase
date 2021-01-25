@@ -187,7 +187,7 @@ def update_line_chartz(rows,drows):
     fig.update_layout(
         yaxis_title='Signal',
         xaxis_title='',
-        title='YeS2',
+        title='',
         hovermode="x",
         xaxis = dict(
             tickmode = 'array',
