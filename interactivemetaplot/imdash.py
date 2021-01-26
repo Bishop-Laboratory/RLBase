@@ -1,4 +1,6 @@
 import sys
+import re
+import math
 import argparse
 import pandas as pd
 
@@ -19,32 +21,49 @@ prevpage = {0:-1}
 colorz = ['rgb(0,100,0)'] * 100
 fillsz = ['rgba(0,250,0,0.2)'] * 100
 
-#print("") # add paragraph so text wont be too clutter
-#parser = argparse.ArgumentParser()
-#parser.add_argument("-i", "--inputcsv",       metavar="File.csv",      type=str, nargs="?", help="csv file from immain.py",required=True)
-#parser.add_argument("-Q", "--QUIET",     help="make it not print anything [default: False]",action="store_true")
-#print("")
-#
-#args = parser.parse_args()
-#df = pd.read_csv(args.inputcsv)
+all = pd.read_csv("../data/RMapDB_samples_10_22_2020.csv")
+#all = all.loc[:,["sample_name","clean_name"]]
+#for col in all.columns:
+#    print(col)
 
+#sys.exit(0)
 df = pd.read_csv("plotly/goldstd_allbw_body.csv")
 
-labelz = df.labels.unique().tolist()
+df["sample_name"] = df["labels"].str.extract(r"^(.+)\..+\.bw$")
+df.loc[df.sample_name != df.sample_name,"sample_name"] = df.loc[df.sample_name != df.sample_name,"labels"]
 
+a = pd.merge(df, all, on="sample_name", how="left").fillna(0)
+a.loc[a.sample_name == 0,"sample_name"] = a.loc[a.sample_name == 0,"labels"]
+a.loc[a.clean_name == 0,"clean_name"] = a.loc[a.clean_name == 0,"sample_name"]
+a["clean_name"] = a["clean_name"].astype(str)
+a["Species"] = a["Species"].astype(str)
+a["Genotype"] = a["Genotype"].astype(str)
+a["clean_name2"] = a["clean_name"] + " (" + a["Species"] + ", " + a["Genotype"] + ")" #a[["clean_name","Species","Genotype"]].agg("_".join, axis=1)
+a.loc[a.Species == "0","clean_name2"] = a.loc[a.Species == "0","clean_name"]
+
+df = a
+
+labelz = df.sample_name.unique().tolist()
+namez  = df.clean_name2.unique().tolist()
+
+a = {"index":list(range(1,1+len(labelz))),"clean_name":namez,"sample_name":labelz}
+a = pd.DataFrame(a)
+
+df2 = a
+print(df2)
 named_colorscales = px.colors.qualitative.Plotly
 TABLE = []
 colorz = named_colorscales * (int(len(labelz)/len(named_colorscales))+1)
 fillsz = named_colorscales * (int(len(labelz)/len(named_colorscales))+1)
 
-df2 = pd.DataFrame.from_dict({"index":list(range(1,1+len(labelz))),"labels":labelz})
+#df2 = pd.DataFrame.from_dict({"index":list(range(1,1+len(labelz))),"clean_name":clean_name,"sample_name":sample_name}) #"sample_name":labelz,})
 
 #print("DF2 =\n",df2,"\n\n")
 
 #print(len(df2))
 #print("df:\n",df)
 #print("labelz:\n",labelz[0:5])
-#print("df2:\n",df2["labels"][0:5])
+#print("df2:\n",df2["sample_name"][0:5])
 app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 #app = dash.Dash(__name__)
@@ -148,16 +167,16 @@ def update_line_chartz(rows,drows):
 
     if drows is None:
          print("Here!")
-         return [dcc.Graph(id="labels",figure=fig)]
+         return [dcc.Graph(id="sample_name",figure=fig)]
 
 
     # Draw geom_ribbon-like stderr shades
 
-    labelz = rows['labels'].tolist()
+    labelz = rows['sample_name'].tolist()
 
 
     for i in range(0,len(labelz)):
-        curr = df.loc[df['labels'] == labelz[i]]
+        curr = df.loc[df['sample_name'] == labelz[i]]
 
         x = curr['x'].tolist()
         x_rev = x[::-1]
@@ -199,7 +218,7 @@ def update_line_chartz(rows,drows):
         yaxis = dict(automargin = True),
         margin={"t":100,"l":100,"r":100}
     )
-    return [dcc.Graph(id="labels",figure=fig)]
+    return [dcc.Graph(id="sample_name",figure=fig)]
 
 
 app.run_server(debug=True)
