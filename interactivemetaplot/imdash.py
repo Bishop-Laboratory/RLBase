@@ -22,11 +22,11 @@ colorz = ['rgb(0,100,0)'] * 100
 fillsz = ['rgba(0,250,0,0.2)'] * 100
 
 all = pd.read_csv("../data/RMapDB_samples_10_22_2020.csv")
-#all = all.loc[:,["sample_name","clean_name"]]
+
+#print column for debug
 #for col in all.columns:
 #    print(col)
 
-#sys.exit(0)
 df = pd.read_csv("plotly/goldstd_allbw_body.csv")
 
 df["sample_name"] = df["labels"].str.extract(r"^(.+)\..+\.bw$")
@@ -38,7 +38,7 @@ a.loc[a.clean_name == 0,"clean_name"] = a.loc[a.clean_name == 0,"sample_name"]
 a["clean_name"] = a["clean_name"].astype(str)
 a["Species"] = a["Species"].astype(str)
 a["Genotype"] = a["Genotype"].astype(str)
-a["clean_name2"] = a["clean_name"] + " (" + a["Species"] + ", " + a["Genotype"] + ")" #a[["clean_name","Species","Genotype"]].agg("_".join, axis=1)
+a["clean_name2"] = a["clean_name"] + " (" + a["Species"] + ", " + a["Genotype"] + ")"
 a.loc[a.Species == "0","clean_name2"] = a.loc[a.Species == "0","clean_name"]
 
 df = a
@@ -56,17 +56,8 @@ TABLE = []
 colorz = named_colorscales * (int(len(labelz)/len(named_colorscales))+1)
 fillsz = named_colorscales * (int(len(labelz)/len(named_colorscales))+1)
 
-#df2 = pd.DataFrame.from_dict({"index":list(range(1,1+len(labelz))),"clean_name":clean_name,"sample_name":sample_name}) #"sample_name":labelz,})
-
-#print("DF2 =\n",df2,"\n\n")
-
-#print(len(df2))
-#print("df:\n",df)
-#print("labelz:\n",labelz[0:5])
-#print("df2:\n",df2["sample_name"][0:5])
 app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
 
-#app = dash.Dash(__name__)
 mypagesize = len(labelz)
 
 currpage = {}
@@ -75,7 +66,6 @@ totalpage = int(len(labelz)/mypagesize)+1
 for i in range(0,totalpage):
     currpage2 = [0]*mypagesize
     currpage[i] = currpage2
-
 
 
 mydashtable = dash_table.DataTable(
