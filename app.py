@@ -2,7 +2,7 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, ClientsideFunction, State
 import plotly.express as px
 import pandas as pd
 import dash_bootstrap_components as dbc
@@ -14,11 +14,13 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import gcf
 import matplotlib
+import igv
+
 sns.set_theme(color_codes=True)
 matplotlib.use('Agg')  # Prevents threading issues
 
-
-app = dash.Dash(external_stylesheets=[dbc.themes.FLATLY])
+app = dash.Dash(external_stylesheets=[dbc.themes.FLATLY],
+                external_scripts=[{'src': 'https://cdn.jsdelivr.net/npm/igv@2.7.4/dist/igv.min.js'}])
 
 samplesraw = pd.read_csv("data/RMapDB_samples_10_22_2020.csv")
 read_qc = pd.read_csv("data/read_qc.csv")
@@ -60,7 +62,6 @@ def fig_to_uri(in_fig, close_all=True, **save_args):
 
 
 app.layout = dbc.Container([
-    html.H1("RMapDB"),
     html.Hr(),
     dbc.Row([
         dbc.Col([
@@ -107,9 +108,11 @@ app.layout = dbc.Container([
                         dcc.Graph(id="annotation_chart")
                     ])
                 ], md=7)
-            ])
+            ]),
         ], md=7),
-    ])
+    ]),
+    igv.get_igv_input_forms(),
+    html.Hr(),
 ], fluid=True)
 
 
@@ -207,7 +210,18 @@ def plot_corr_heatmap(row):
     return out_url
 
 
+### IGV Callbacks
+
+app.clientside_callback(
+    ClientsideFunction(
+        namespace='clientside',
+        function_name='load_igv'
+    ),
+    Output('dummy-output', 'children'),
+    Input('dummy-input', 'children')
+)
+
 server = app.server
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=True, use_reloader=True)
