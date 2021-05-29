@@ -1,0 +1,1 @@
+export interface barChartDataItem {x: string, y: number}
