@@ -17,7 +17,7 @@ function BarChart({ selectedItem }: { selectedItem: barChartDataItem[] }) {
   const svgRef = useRef<any>();
 
   useEffect(() => {
-    const MARGIN = { LEFT: 25, RIGHT: 30, TOP: 50, BOTTOM: 50 };
+    const MARGIN = { LEFT: 45, RIGHT: 30, TOP: 100, BOTTOM: 100 };
     const HEIGHT = 500 - MARGIN.TOP - MARGIN.BOTTOM;
     const WIDTH = 300 - MARGIN.LEFT - MARGIN.RIGHT;
     const svg: any = select(svgRef.current);
@@ -41,7 +41,7 @@ function BarChart({ selectedItem }: { selectedItem: barChartDataItem[] }) {
       .call(xAxis)
       .selectAll("text")
       .attr("y", "-5")
-      .attr("x", "-1")
+      .attr("x", "-5")
       .attr("text-anchor", "end")
       .attr("transform", "rotate(-90)");
 
@@ -49,7 +49,7 @@ function BarChart({ selectedItem }: { selectedItem: barChartDataItem[] }) {
     const yScale = scaleLinear()
       .domain([
         min(selectedItem.map((number) => number.y)) as number,
-        max(selectedItem.map((number) => number.y)) as number,
+        max(selectedItem.map((number) =>  number.y > 0 ? number.y : 0)) as number,
       ])
       .range([HEIGHT, 0]);
 
@@ -59,8 +59,12 @@ function BarChart({ selectedItem }: { selectedItem: barChartDataItem[] }) {
       .style("transform", `translate(${MARGIN.LEFT}px,${MARGIN.TOP}px)`)
       .call(yAxis)
       .selectAll("text")
-      .attr("text-anchor", "end");
-
+      .attr("text-anchor", "end")
+    svg
+        .append("text")
+        .text("Log2 Ratio (obs/exp)")
+        .attr("transform", `translate(15, ${HEIGHT - MARGIN.TOP/2}) rotate(-90)`)
+        .attr("text-anchor", "middle")
     svg
       .selectAll(".bar")
       .data(selectedItem)
@@ -99,7 +103,7 @@ function BarChart({ selectedItem }: { selectedItem: barChartDataItem[] }) {
     <div className="ms-5">
       <h4 className="text-center">Gene Features</h4>
       <div id="tooltip" className="bg-dark text-light border border-info px-2 d-none position-absolute">
-        {name}: {value}
+        {name} | Log2 Ratio (obs/exp): {value}
       </div>
       <svg ref={svgRef}>
         <g className="x-axis" />
