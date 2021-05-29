@@ -2,6 +2,7 @@
 Repository for RMapDB
 
 To install client side:
+#### `cd client`
 #### `yarn`
 or
 #### `npm i`
