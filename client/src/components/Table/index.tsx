@@ -151,27 +151,41 @@ const Table = ({
           }
         </tbody>
       </table>
-      <div className="btn-group">
-        <button className="btn btn-primary" onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
-          {"<<"}
-        </button>
-        <button className="btn btn-primary" onClick={() => previousPage()} disabled={!canPreviousPage}>
-          {"<"}
-        </button>
-        <button className="btn btn-primary" onClick={() => nextPage()} disabled={!canNextPage}>
-          {">"}
-        </button>
-        <button className="btn btn-primary" onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
-          {">>"}
-        </button>
-        <span>
+      <div className="d-flex w-100 justify-content-center">
+        <ul className="pagination">
+        <li className="page-item">
+        <button className="page-link" onClick={() => gotoPage(0)} disabled={!canPreviousPage} aria-label="Previous">
+        &laquo;
+      </button>
+    </li>
+    <li className="page-item">
+        <button className="page-link" onClick={() => previousPage()} disabled={!canPreviousPage} aria-label="Previous">
+        &lt;
+      </button>
+    </li>
+    </ul>
+        <span className="ms-2 me-2 mt-2">
           Page{" "}
           <strong>
             {pageIndex + 1} of {pageOptions.length}
           </strong>{" "}
         </span>
+        <ul className="pagination">
+        <li className="page-item">
+        <button className="page-link" onClick={() => nextPage()} disabled={!canNextPage} aria-label="Previous">
+        {">"}
+      </button>
+    </li>
+    <li className="page-item">
+        <button className="page-link" onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage} aria-label="Previous">
+        &raquo;
+      </button>
+    </li>
+    </ul> 
+    </div>
+    <div className="d-flex w-100 justify-content-center">
         <span>
-          | Go to page:{" "}
+           Go to page:{" "}
           <input
             type="number"
             defaultValue={pageIndex + 1}
@@ -194,7 +208,7 @@ const Table = ({
             </option>
           ))}
         </select>
-      </div>
+        </div>
     </div>
   );
 };
