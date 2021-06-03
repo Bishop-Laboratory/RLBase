@@ -60,7 +60,7 @@ const Table = ({
   );
   const tableInstance = useTable(
     //@ts-ignore
-    { columns, data, initialState: { pageIndex: 2 } },
+    { columns, data, initialState: { pageIndex: 0 } },
     usePagination
   );
   const {

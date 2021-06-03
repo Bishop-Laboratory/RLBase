@@ -56,6 +56,7 @@ function BarChart({ selectedItem }: { selectedItem: barChartDataItem[] }) {
     const yAxis = axisLeft(yScale);
     svg
       .select(".y-axis")
+      .transition()
       .style("transform", `translate(${MARGIN.LEFT}px,${MARGIN.TOP}px)`)
       .call(yAxis)
       .selectAll("text")
