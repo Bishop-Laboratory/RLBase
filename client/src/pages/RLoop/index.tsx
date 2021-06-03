@@ -3,12 +3,12 @@ import {
   csv,
 } from "d3";
 import { barChartDataItem } from "../../models";
-import Table from "../Table";
-import BarChart from "../BarChart";
+import Table from "../../components/Table";
+import BarChart from "../../components/BarChart";
 
 const initialState = [{x:"",y:0},{x:"", y: 0},{x:"",y:0},{x:"", y: 0},{x:"",y:0},{x:"", y: 0},{x:"",y:0},{x:"", y: 0},]
 
-function Home() {
+function RLoop() {
   const [data, setData] = useState<any[]>([]);
   const [, /*loading*/ setLoading] = useState(false);
   const [selectedItem, setSelectedItem] = useState<barChartDataItem[]>(initialState);
@@ -28,4 +28,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default RLoop;
