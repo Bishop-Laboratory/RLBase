@@ -33,3 +33,4 @@ jobs:
         source env/bin/activate
         coverage run -m pytest
         coverage report -m
+
