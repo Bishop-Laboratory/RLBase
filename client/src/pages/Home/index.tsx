@@ -1,16 +1,11 @@
-import React, { useState } from "react";
-import {useHistory} from "react-router-dom"; 
-  
+import React from "react";
+import SearchBar from "../../components/SearchBar";
+
 const Home = () => {
-  const {push} = useHistory()
-  const [search, setSearch] = useState<string>("")
+
 return (
   <div className="mt-4 w-100 d-flex flex-column align-items-center">
-    <form className="d-flex w-50">
-      <input value={search} onChange={(e) => setSearch(e.target.value)} className="form-control me-2" type="search" 
-      placeholder="Find out your gene of interest" aria-label="Search" />
-      <button className="btn btn-outline-success" onClick={() => push(`/search?key=${search}`)} type="submit">Search</button>
-    </form>
+   <SearchBar />
     <div className="bg-light p-5 rounded-lg m-3">
   <h5 className="">About R-loop</h5>
   <p>An R-loop is a three-stranded nucleic acid structure, formed during transcription,
