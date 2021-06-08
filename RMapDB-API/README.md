@@ -11,7 +11,7 @@ git clone https://github.com/Bishop-Laboratory/RMapDB-v2.git
 Then, change to the repo folder and install dependencies:
 
 ```shell
-cd RMapDB-API/
+cd RMapDB-v2/RMapDB-API/
 python -m pip install --upgrade pip
 bash install.sh
 ```
