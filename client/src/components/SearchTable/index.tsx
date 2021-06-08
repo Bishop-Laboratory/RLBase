@@ -1,59 +1,29 @@
-import React, { SetStateAction } from "react";
+import React from "react";
 import { usePagination, useTable } from "react-table";
-import { barChartDataItem } from "../../models";
 
-const Table = ({
+const SearchTable = ({
   data,
-  setSelectedItem,
 }: {
   data: any[];
-  setSelectedItem: React.Dispatch<SetStateAction<barChartDataItem[]>>;
 }) => {
-  const convertData = (row: any) => {
-    const KEYS = [
-      "3UTR",
-      "TTS",
-      "Exon",
-      "Intron",
-      "Intergenic",
-      "Promoter",
-      "5UTR",
-      "CpG-Island",
-    ];
-    let array = KEYS.map((key) => {
-      return {
-        x: key,
-        y: Number(row[`${key}__Log2 Ratio (obs/exp)`]),
-      };
-    });
-    return array;
-  };
-
+  
   const columns = React.useMemo(
     () => [
       {
-        Header: "Accession (SRA)",
-        accessor: "SRX", // accessor is the "key" in the data
+        Header: "R-Loop",
+        accessor: "rloop", // accessor is the "key" in the data
       },
       {
-        Header: "Protocol",
-        accessor: "mode",
+        Header: "Type",
+        accessor: "type",
       },
       {
-        Header: "Species",
-        accessor: "Species",
+        Header: "Info",
+        accessor: "info",
       },
       {
-        Header: "Tissue",
-        accessor: "Cell",
-      },
-      {
-        Header: "Condition",
-        accessor: "Condition",
-      },
-      {
-        Header: "Group",
-        accessor: "Group",
+        Header: "Evidence",
+        accessor: "evidence",
       },
     ],
     []
@@ -91,7 +61,7 @@ const Table = ({
     prepareRow,
   } = tableInstance;
   return (
-    <div className="ms-5">
+    <div className="ms-5" style={{width: 600}}>
       <table className=" table table-hover" {...getTableProps()}>
         <thead>
           {
@@ -126,9 +96,6 @@ const Table = ({
                 // Apply the row props
                 <tr
                   style={{ cursor: "pointer" }}
-                  onClick={() =>
-                    setSelectedItem((prev) => [...convertData(row.original)])
-                  }
                   {...row.getRowProps()}
                 >
                   {
@@ -213,4 +180,4 @@ const Table = ({
   );
 };
 
-export default Table;
+export default SearchTable;
