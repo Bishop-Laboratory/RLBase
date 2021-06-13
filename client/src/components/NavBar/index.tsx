@@ -28,11 +28,6 @@ const NavBar = () => {
             </Link>
           </li>
           <li className="nav-item">
-            <Link to="/explorer" className="nav-link">
-              R-Loop explorer
-            </Link>
-          </li>
-          <li className="nav-item">
             <Link to="/samples" className="nav-link">
               Samples
             </Link>
