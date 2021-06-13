@@ -17,7 +17,7 @@ def create_app(test_config=None):
     CORS(app)
     db = SQLAlchemy(app)
     Sample_data,sample_dataSchema = create_sample_model(app, db)
-    
+
     if test_config is None:
         # load the instance config, if it exists, when not testing
         app.config.from_pyfile('config.py', silent=True)
@@ -40,6 +40,11 @@ def create_app(test_config=None):
     app.register_blueprint(api.bp)
 
     # For testing
+    @app.route("/hello")
+    
+    def hello():
+        return "Hello world!"
+
     @app.route("/api/test/rloop-details")
 
     def rloop_details():
