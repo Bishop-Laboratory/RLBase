@@ -20,9 +20,10 @@ const SearchPage = ({ match, location }: RouteComponentProps) => {
     };
     get();
   }, [location.search]);
+  const textStyle = "mt-2 text-center"
   return (
     <>
-      {results?.length ? <p>About {results.length} results</p> : <p>Your search did not match any documents.
+      {results?.length ? <p className={textStyle}> {results.length} results</p> : <p className={textStyle}>Your search did not match any documents.
 
 </p>}
       <SearchTable

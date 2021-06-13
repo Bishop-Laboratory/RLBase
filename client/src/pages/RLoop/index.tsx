@@ -29,7 +29,7 @@ function RLoop({location}:RouteComponentProps) {
   
   const [sampleData, setSampleData] =  useState<barChartDataItem[]>(initialState)
   const [, /*loading*/ setLoading] = useState(false);
-
+  const [info, setInfo] = useState<any>({})
   useEffect(() => {
     const get = async () => {
       setLoading(true)
@@ -38,7 +38,7 @@ function RLoop({location}:RouteComponentProps) {
           `http://127.0.0.1:5000/api/test/rloop-details${location.search}`
         );
         if(res?.data?.[0]) {
-          
+          setInfo(res.data[0])
           setSampleData(convertData(res.data[0]))}
       } catch (error) {
         console.error(error);
@@ -49,9 +49,19 @@ function RLoop({location}:RouteComponentProps) {
     get();
   }, [location.search]);
   return (
+    <>
+    <h3 className="mt-2 text-center">{info.srx}</h3>
     <div className="d-flex mt-2">
       <BarChart {...{selectedItem: sampleData}} />
+      <div>
+        <ul>
+          <li>Cell line/tissue: {info.cell}</li>
+          <li>Sample control accession(s): {info.control}</li>
+          <li>Genotype: {info.genotype}</li>
+        </ul>
+      </div>
     </div>
+    </>
   );
 }
 
