@@ -6,7 +6,7 @@ import SearchTable from "../../components/SearchTable";
 const SearchPage = ({ match, location }: RouteComponentProps) => {
 
   const [results, setResults] = React.useState<any[]>([])
-  console.log(results)
+  
   React.useEffect(() => {
     const get = async () => {
       try {

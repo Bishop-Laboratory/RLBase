@@ -6,9 +6,9 @@ const SearchBar = ({searchPage}:{searchPage?: boolean}) => {
   const { push, replace } = useHistory();
 
   const queryOptions: queryOption[] = [
-    { name: "Gene", query: "gene" },
+   // { name: "Gene", query: "gene" },
     { name: "Cell type", query: "cell" },
-    { name: "Region", query: "region" },
+   // { name: "Region", query: "region" },
   ];
 
   const [searchParam, setSearchParam] = useState<string>("");
