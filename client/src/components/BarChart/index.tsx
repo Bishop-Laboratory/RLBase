@@ -15,7 +15,6 @@ function BarChart({ selectedItem }: { selectedItem: barChartDataItem[] }) {
   const [name, setName] = useState("")
   const [value, setValue] = useState("")
   const svgRef = useRef<any>();
-
   useEffect(() => {
     const MARGIN = { LEFT: 45, RIGHT: 30, TOP: 100, BOTTOM: 100 };
     const HEIGHT = 500 - MARGIN.TOP - MARGIN.BOTTOM;

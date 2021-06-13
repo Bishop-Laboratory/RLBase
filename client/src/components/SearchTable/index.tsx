@@ -1,4 +1,5 @@
 import React from "react";
+import { useHistory } from "react-router-dom";
 import { usePagination, useTable } from "react-table";
 
 const SearchTable = ({
@@ -6,24 +7,25 @@ const SearchTable = ({
 }: {
   data: any[];
 }) => {
-  
+  const { push } = useHistory();
+
   const columns = React.useMemo(
     () => [
       {
         Header: "R-Loop",
-        accessor: "rloop", // accessor is the "key" in the data
+        accessor: "srx", // accessor is the "key" in the data
       },
       {
         Header: "Type",
-        accessor: "type",
+        accessor: "cell",
       },
       {
         Header: "Info",
-        accessor: "info",
+        accessor: "mode",
       },
       {
         Header: "Evidence",
-        accessor: "evidence",
+        accessor: "genotype",
       },
     ],
     []
@@ -95,6 +97,7 @@ const SearchTable = ({
               return (
                 // Apply the row props
                 <tr
+                  onClick={()=> push(`/explorer?gsm=${row.original.gsm}`)}
                   style={{ cursor: "pointer" }}
                   {...row.getRowProps()}
                 >

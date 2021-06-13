@@ -1,19 +1,18 @@
 import React, { useState } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { queryOption } from "../../models";
 
 const SearchBar = ({searchPage}:{searchPage?: boolean}) => {
   const { push, replace } = useHistory();
-  const { search } = useLocation()
+
   const queryOptions: queryOption[] = [
-    { name: "Gene", query: "gene" },
+   // { name: "Gene", query: "gene" },
     { name: "Cell type", query: "cell" },
-    { name: "Region", query: "region" },
+   // { name: "Region", query: "region" },
   ];
 
   const [searchParam, setSearchParam] = useState<string>("");
   const [queryOption, setQueryOption] = useState<string>(queryOptions[0].query);
-console.log(searchPage)
   return (
     <form className="d-flex">
       <select

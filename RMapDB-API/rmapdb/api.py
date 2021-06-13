@@ -7,7 +7,6 @@ import json
 
 bp = Blueprint('api', __name__)
 
-
 @bp.route('/api-v1', methods=['GET'])
 def api_home():
     name = request.args.get('name')
@@ -16,3 +15,4 @@ def api_home():
     else:
         resp = {'greeting': 'Welcome to the RMapDB API, friend!'}
     return json.dumps(resp)
+

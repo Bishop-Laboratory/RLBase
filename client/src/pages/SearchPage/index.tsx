@@ -2,42 +2,31 @@ import axios from "axios";
 import React from "react";
 import { RouteComponentProps } from "react-router-dom";
 import SearchTable from "../../components/SearchTable";
-var qs = require("qs");
 
 const SearchPage = ({ match, location }: RouteComponentProps) => {
-  const obj = qs.parse(location.search, { ignoreQueryPrefix: true });
-  console.log(location.search);
-  const data = [
-    {
-      rloop: "SRX1233333", // accessor is the "key" in the data
-      type: "unknown",
-      info: "sample",
-      evidence: "null",
-    },
-  ]
+
+  const [results, setResults] = React.useState<any[]>([])
+  
   React.useEffect(() => {
     const get = async () => {
       try {
-        const res = await axios.get(
-          `http://validate.jsontest.com/?json={${Object.keys(obj)[0]}:${
-            Object.values(obj)[0]
-          }}`
+        const res: any = await axios.get(
+          `http://127.0.0.1:5000/api/test/rloop-details${location.search}`
         );
-        return res;
+        if(res) setResults(res.data)
       } catch (error) {
         console.error(error);
       }
     };
     get();
-  }, [obj]);
+  }, [location.search]);
   return (
     <>
-      <p>{location.search}</p>
-      {data?.length ? <p>About {data.length} results</p> : <p>Your search - {Object.values(obj)[0]} - did not match any documents.
+      {results?.length ? <p>About {results.length} results</p> : <p>Your search did not match any documents.
 
 </p>}
       <SearchTable
-        {...{data}}
+        {...{data: results?.length? results : []}}
       />
     </>
   );
