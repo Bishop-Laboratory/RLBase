@@ -11,19 +11,19 @@ const SearchTable = ({
     () => [
       {
         Header: "R-Loop",
-        accessor: "rloop", // accessor is the "key" in the data
+        accessor: "srx", // accessor is the "key" in the data
       },
       {
         Header: "Type",
-        accessor: "type",
+        accessor: "cell",
       },
       {
         Header: "Info",
-        accessor: "info",
+        accessor: "mode",
       },
       {
         Header: "Evidence",
-        accessor: "evidence",
+        accessor: "genotype",
       },
     ],
     []
