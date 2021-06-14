@@ -12,8 +12,8 @@ def create_app(test_config=None):
     app.config.from_mapping(
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'rmapdb.sqlite'),
-        SQLALCHEMY_DATABASE_URI='sqlite:///' + os.path.join(app.instance_path, 'sample_data.db')
-    )
+        SQLALCHEMY_DATABASE_URI='sqlite:///sample_data.db')
+    
     CORS(app)
     db = SQLAlchemy(app)
     Sample_data,sample_dataSchema = create_sample_model(app, db)
