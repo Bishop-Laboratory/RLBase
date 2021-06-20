@@ -13,11 +13,11 @@ const SearchTable = ({
     () => [
       {
         Header: "R-Loop",
-        accessor: "srx", // accessor is the "key" in the data
+        accessor: "SRX", // accessor is the "key" in the data
       },
       {
         Header: "Type",
-        accessor: "cell",
+        accessor: "Cell",
       },
       {
         Header: "Info",
@@ -25,7 +25,7 @@ const SearchTable = ({
       },
       {
         Header: "Evidence",
-        accessor: "genotype",
+        accessor: "Genotype",
       },
     ],
     []
@@ -97,7 +97,7 @@ const SearchTable = ({
               return (
                 // Apply the row props
                 <tr
-                  onClick={()=> push(`/explorer?gsm=${row.original.gsm}`)}
+                  onClick={()=> push(`/explorer?GSM=${row.original.GSM}`)}
                   style={{ cursor: "pointer" }}
                   {...row.getRowProps()}
                 >
