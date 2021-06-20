@@ -1,39 +1,28 @@
-from flask_marshmallow import Marshmallow
+# coding: utf-8
+from sqlalchemy import create_engine, Table, String, Column
+from sqlathanor.automap  import automap_base
+from sqlathanor import declarative_base, AttributeConfiguration
+engine = create_engine("sqlite:///sample_data.db")
 
-def create_sample_model(app, db):
-    ma = Marshmallow(app)
-    class Sample_data(db.Model):
-        gsm = db.Column(db.String(50), primary_key=True)
-        experiment = db.Column(db.String(50),nullable=True)
-        cell = db.Column(db.String(50),nullable=True)
-        genotype = db.Column(db.String(50),nullable=True)
-        srx = db.Column(db.String(50),nullable=True)
-        control = db.Column(db.String(50),nullable=True)
-        mode = db.Column(db.String(50),nullable=True)
-        log2_ratio_3utr = db.Column("3UTR__Log2 Ratio (obs/exp)", db.Float, quote=True, nullable=True)
-        log2_ratio_5utr = db.Column("5UTR__Log2 Ratio (obs/exp)", db.Float, quote=True, nullable=True)
-        log2_ratio_retroposon = db.Column("Retroposon__Log2 Ratio (obs/exp)", db.Float, quote=True, nullable=True)
-        log2_ratio_rna = db.Column("RNA__Log2 Ratio (obs/exp)", db.Float, quote=True, nullable=True)
-        log2_ratio_mi_rna = db.Column("miRNA__Log2 Ratio (obs/exp)", db.Float, quote=True, nullable=True)
-        log2_ratio_nc_rna = db.Column("ncRNA__Log2 Ratio (obs/exp)", db.Float, quote=True, nullable=True)
-        log2_ratio_tts = db.Column("TTS__Log2 Ratio (obs/exp)", db.Float, quote=True, nullable=True)
-        log2_ratio_line = db.Column("LINE__Log2 Ratio (obs/exp)", db.Float, quote=True, nullable=True)
-        log2_ratio_srp_rna = db.Column("srpRNA__Log2 Ratio (obs/exp)", db.Float, quote=True, nullable=True)
-        log2_ratio_sine = db.Column("SINE__Log2 Ratio (obs/exp)", db.Float, quote=True, nullable=True)
-        log2_ratio_rc = db.Column("RC__Log2 Ratio (obs/exp)", db.Float, quote=True, nullable=True)
-        log2_ratio_t_rna = db.Column("tRNA__Log2 Ratio (obs/exp)", db.Float, quote=True, nullable=True)
-        log2_ratio_pseudo = db.Column("pseudo__Log2 Ratio (obs/exp)", db.Float, quote=True, nullable=True)
-        log2_ratio_dna = db.Column("DNA__Log2 Ratio (obs/exp)", db.Float, quote=True, nullable=True)
-        log2_ratio_exon = db.Column("Exon__Log2 Ratio (obs/exp)", db.Float, quote=True, nullable=True)
-        log2_ratio_intron = db.Column("Intron__Log2 Ratio (obs/exp)", db.Float, quote=True, nullable=True)
-        log2_ratio_intergenic = db.Column("Intergenic__Log2 Ratio (obs/exp)", db.Float, quote=True, nullable=True)
-        log2_ratio_simple_repeat = db.Column("Simple_repeat__Log2 Ratio (obs/exp)", db.Float, quote=True, nullable=True)
-        log2_ratio_low_complexity = db.Column("Low_complexity__Log2 Ratio (obs/exp)", db.Float, quote=True, nullable=True)
-        
-        def __repr__(self):
-            return '<GSM %r>' % self.gsm
+Base = automap_base()
+Base.prepare(engine, reflect = True)
 
-    class sample_dataSchema(ma.SQLAlchemyAutoSchema):
-        class Meta:
-            model = Sample_data
-    return Sample_data,sample_dataSchema
+Record = Base.classes.sample_data
+featureList = ['3UTR__Log2 Ratio (obs/exp)', '3UTR__LogP enrichment (+values depleted)', '3UTR__Number of peaks', '3UTR__Total size (bp)', '5UTR__Log2 Ratio (obs/exp)', '5UTR__LogP enrichment (+values depleted)', '5UTR__Number of peaks', '5UTR__Total size (bp)', 'ARTEFACT__Log2 Ratio (obs/exp)', 'ARTEFACT__LogP enrichment (+values depleted)', 'ARTEFACT__Number of peaks', 'ARTEFACT__Total size (bp)', 'Cell', 'Condition', 'ControlType', 'CpG-Island__Log2 Ratio (obs/exp)', 'CpG-Island__LogP enrichment (+values depleted)', 'CpG-Island__Number of peaks', 'CpG-Island__Total size (bp)', 'DNA__Log2 Ratio (obs/exp)', 'DNA__LogP enrichment (+values depleted)', 'DNA__Number of peaks', 'DNA__Total size (bp)', 'EPIC2__Distinct Peak Count', 'EPIC2__Overlapping Peak Count', 'EPIC2__Percentage Peaks Overlapping', 'EPIC2__total_peaks', 'Exon__Log2 Ratio (obs/exp)', 'Exon__LogP enrichment (+values depleted)', 'Exon__Number of peaks', 'Exon__Total size (bp)', 'GSM', 'Genotype', 'Group', 'Intergenic__Log2 Ratio (obs/exp)', 'Intergenic__LogP enrichment (+values depleted)', 'Intergenic__Number of peaks', 'Intergenic__Total size (bp)', 'Intron__Log2 Ratio (obs/exp)', 'Intron__LogP enrichment (+values depleted)', 'Intron__Number of peaks', 'Intron__Total size (bp)', 
+'LINE__Log2 Ratio (obs/exp)', 'LINE__LogP enrichment (+values depleted)', 'LINE__Number of peaks', 'LINE__Total size (bp)', 'LTR__Log2 Ratio (obs/exp)', 'LTR__LogP enrichment (+values depleted)', 'LTR__Number of peaks', 'LTR__Total size (bp)', 'Low_complexity__Log2 Ratio (obs/exp)', 'Low_complexity__LogP enrichment (+values depleted)', 'Low_complexity__Number of peaks', 'Low_complexity__Total size (bp)', 'MACS2__Distinct Peak Count', 'MACS2__Overlapping Peak Count', 'MACS2__Percentage Peaks Overlapping', 'MACS2__total_peaks', 'Other', 'Other__Log2 Ratio (obs/exp)', 'Other__LogP enrichment (+values depleted)', 'Other__Number of peaks', 'Other__Total size (bp)', 
+'Promoter__Log2 Ratio (obs/exp)', 'Promoter__LogP enrichment (+values depleted)', 'Promoter__Number of peaks', 'Promoter__Total size (bp)', 'RC__Log2 Ratio (obs/exp)', 'RC__LogP enrichment (+values depleted)', 'RC__Number of peaks', 'RC__Total size (bp)', 'RNA__Log2 Ratio (obs/exp)', 'RNA__LogP enrichment (+values depleted)', 'RNA__Number of peaks', 'RNA__Total size (bp)', 'Replicate', 'Retroposon__Log2 Ratio (obs/exp)', 'Retroposon__LogP enrichment (+values depleted)', 'Retroposon__Number of peaks', 'Retroposon__Total size(bp)', 'SINE__Log2 Ratio (obs/exp)', 'SINE__LogP enrichment (+values depleted)', 'SINE__Number of peaks', 'SINE__Total size (bp)', 'SRX', 'Satellite__Log2 Ratio (obs/exp)', 'Satellite__LogP enrichment (+values depleted)', 'Satellite__Number of peaks', 'Satellite__Total size (bp)', 'Shearing_method', 'Simple_repeat__Log2 Ratio (obs/exp)', 'Simple_repeat__LogP enrichment (+values depleted)', 'Simple_repeat__Number of peaks', 'Simple_repeat__Total size (bp)', 'Species', 'TTS__Log2 Ratio (obs/exp)', 'TTS__LogP enrichment (+values depleted)',
+'TTS__Number of peaks', 'TTS__Total size (bp)', 'Unknown__Log2 Ratio (obs/exp)', 'Unknown__LogP enrichment (+values depleted)', 'Unknown__Number of peaks', 'Unknown__Total size (bp)', 'classes', 'clean_name', 'control', 'corr_kurtosis', 'corr_max', 'corr_mean', 'corr_median', 'corr_method', 'corr_min', 'corr_sd', 'corr_skewness', 'duplicate_reads', 'experiment', 'gc_content', 'genome', 'ip_type', 'metadata', 'miRNA__Log2 Ratio (obs/exp)', 'miRNA__LogP enrichment (+values depleted)', 'miRNA__Number of peaks', 'miRNA__Total size (bp)', 'miscRNA__Log2 Ratio (obs/exp)', 'miscRNA__LogP enrichment (+values depleted)', 'miscRNA__Number of peaks', 'miscRNA__Total size (bp)', 'mode', 'mode_group', 'moeity', 'ncRNA__Log2 Ratio (obs/exp)', 'ncRNA__LogP enrichment (+values depleted)', 'ncRNA__Number of peaks', 'ncRNA__Total size (bp)', 'paired_end', 'pct_aligned', 'pct_duplicated', 'percent_passing', 'primary_key_value', 'pseudo__Log2 Ratio (obs/exp)', 'pseudo__LogP enrichment (+values depleted)', 'pseudo__Number of peaks', 'pseudo__Total size (bp)', 'rRNA__Log2 Ratio (obs/exp)', 'rRNA__LogP enrichment (+values depleted)', 'rRNA__Number of peaks', 'rRNA__Total size (bp)', 'read_length', 'read_length_after_filter', 'reads_after', 'reads_aligned', 'reads_before', 'registry', 'rlfs_kurtosis', 'rlfs_max', 'rlfs_mean', 'rlfs_median', 'rlfs_method', 'rlfs_min', 'rlfs_pval', 'rlfs_sd', 'rlfs_skewness', 'sample_name', 'scRNA__Log2 Ratio (obs/exp)', 'scRNA__LogP enrichment (+values depleted)', 'scRNA__Number of peaks', 'scRNA__Total size (bp)', 'snRNA__Log2 Ratio (obs/exp)', 'snRNA__LogP enrichment (+values depleted)', 'snRNA__Number of peaks', 'snRNA__Total size (bp)', 'snoRNA__Log2 Ratio (obs/exp)', 'snoRNA__LogP enrichment (+values depleted)', 'snoRNA__Number of peaks', 'snoRNA__Total size (bp)', 
+'srpRNA__Log2 Ratio (obs/exp)', 'srpRNA__LogP enrichment (+values depleted)', 'srpRNA__Number of peaks', 'srpRNA__Total size (bp)', 'strand_specific', 'study', 'tRNA__Log2 Ratio (obs/exp)', 'tRNA__LogP enrichment (+values depleted)', 'tRNA__Number of peaks', 'tRNA__Total size (bp)']
+cleanList = ["GSM", "Cell"]
+serialization = []
+for feature in cleanList:
+    serialization.append(AttributeConfiguration(name =  feature,
+                                              supports_csv = True,
+                                              csv_sequence = 1,
+                                              supports_json = True,
+                                              supports_yaml = True,
+                                              supports_dict = True,
+                                              on_serialize = None,
+                                              on_deserialize = None))
+
+Record.__serialization__ = serialization
