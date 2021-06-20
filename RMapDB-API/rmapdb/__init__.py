@@ -15,8 +15,8 @@ def create_app(test_config=None):
 
     CORS(app)
      
-    db = SQLAlchemy(app, model_class = FlaskBaseModel)
-    db = initialize_flask_sqlathanor(db)
+    alchemy_db = SQLAlchemy(app, model_class = FlaskBaseModel)
+    alchemy_db = initialize_flask_sqlathanor(alchemy_db)
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
@@ -32,12 +32,12 @@ def create_app(test_config=None):
         pass
 
     # Init database
-    #from . import db
-    #db.init_app(app)
+    from . import db
+    db.init_app(app)
 
     # Import the webui blueprint
     from . import api
-    app.register_blueprint(api.get_blueprint(db))
+    app.register_blueprint(api.get_blueprint(alchemy_db))
 
     # For testing
     @app.route("/hello")
