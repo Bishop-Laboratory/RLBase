@@ -1,5 +1,18 @@
 # Client side README
 
+## Requirements
+You need Node.js to be able to run the project. You can download from the official site:
+
+```shell
+https://nodejs.org/en/
+```
+
+Verify that Node and npm (included in Node) were installed:
+
+```shell
+node -v
+npm -v
+```
 ## Set up and run the front-end app in a dev environment
 
 To set up the client side, clone this repo:
