@@ -8,17 +8,17 @@ const initialState = [{x:"",y:0},{x:"", y: 0},{x:"",y:0},{x:"", y: 0},{x:"",y:0}
 
 const convertData = (row: any) => {
   const KEYS = [
-    "3utr",
-    "tts",
-    "exon",
-    "intron",
-    "intergenic",
-    "5utr",
+    "3UTR",
+    "TTS",
+    "Exon",
+    "Intron",
+    "Intergenic",
+    "5UTR",
   ];
   let array = KEYS.map((key) => {
     return {
       x: key,
-      y: Number(row[`log2_ratio_${key}`]),
+      y: Number(row[`${key}__Log2 Ratio (obs/exp)`]),
     };
   });
   return array;

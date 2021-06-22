@@ -7,7 +7,7 @@ const SearchBar = ({searchPage}:{searchPage?: boolean}) => {
 
   const queryOptions: queryOption[] = [
    // { name: "Gene", query: "gene" },
-    { name: "Cell type", query: "cell" },
+    { name: "Cell type", query: "Cell" },
    // { name: "Region", query: "region" },
   ];
 

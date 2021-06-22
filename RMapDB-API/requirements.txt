@@ -6,15 +6,12 @@ coverage==5.5
 flake8==3.9.2
 Flask==2.0.1
 Flask-Cors==3.0.10
-flask-marshmallow==0.14.0
 Flask-SQLAlchemy==2.5.1
 greenlet==1.1.0
 iniconfig==1.1.1
 itsdangerous==2.0.1
 Jinja2==3.0.1
 MarkupSafe==2.0.1
-marshmallow==3.12.1
-marshmallow-sqlalchemy==0.26.1
 mccabe==0.6.1
 nodeenv==1.6.0
 packaging==20.9
@@ -25,5 +22,6 @@ pyflakes==2.3.1
 pyparsing==2.4.7
 pytest==6.2.4
 SQLAlchemy==1.4.17
+sqlathanor==0.7.0
 toml==0.10.2
 Werkzeug==2.0.1
