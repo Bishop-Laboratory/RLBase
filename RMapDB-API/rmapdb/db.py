@@ -17,6 +17,14 @@ def init_db_command():
     """Clear the existing data and create new tables."""
     init_db()
     click.echo('Initialized the database.')
+    
+    
+@click.command('load-db')
+@with_appcontext
+def load_db_command():
+    """Load table datasets."""
+    load_db()
+    click.echo('Initialized the database.')
 
 
 def get_db():
