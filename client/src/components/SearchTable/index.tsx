@@ -2,34 +2,66 @@ import React from "react";
 import { useHistory } from "react-router-dom";
 import { usePagination, useTable } from "react-table";
 
-const SearchTable = ({
-  data,
-}: {
-  data: any[];
-}) => {
+const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
   const { push } = useHistory();
+  const columns = React.useMemo(() => {
+    if (match.params.type === "r-loop") {
+      return [
+        {
+          Header: "ID",
+          accessor: "id", // accessor is the "key" in the data
+        },
+        {
+          Header: "Chr",
+          accessor: "Chr",
+        },
+        {
+          Header: "start",
+          accessor: "start",
+        },
+        {
+          Header: "end",
+          accessor: "end",
+        },
+        {
+          Header: "type",
+          accessor: "type",
+        },
+      ];
+    } else
+      return [
+        {
+          Header: "R-Loop",
+          accessor: "SRX", // accessor is the "key" in the data
+        },
+        {
+          Header: "Type",
+          accessor: "Cell",
+        },
+        {
+          Header: "Info",
+          accessor: "mode",
+        },
+        {
+          Header: "Evidence",
+          accessor: "Genotype",
+        },
+      ];
+  }, [match.params.type]);
 
-  const columns = React.useMemo(
-    () => [
-      {
-        Header: "R-Loop",
-        accessor: "SRX", // accessor is the "key" in the data
-      },
-      {
-        Header: "Type",
-        accessor: "Cell",
-      },
-      {
-        Header: "Info",
-        accessor: "mode",
-      },
-      {
-        Header: "Evidence",
-        accessor: "Genotype",
-      },
-    ],
-    []
-  );
+  const onRowClick = (row: any) => {
+    switch (match.params.type) {
+      case "r-loop":
+        return push(`/about?rloop=${row.original.rloopId}`);
+      case "sample":
+        return push(`/explorer?GSM=${row.original.GSM}`);
+      case "gene":
+        return push(`/samples?gene=${row.original.geneId}`);
+      default:
+        return push("/");
+    }
+  };
+
   const tableInstance = useTable(
     //@ts-ignore
     { columns, data, initialState: { pageIndex: 0 } },
@@ -63,7 +95,7 @@ const SearchTable = ({
     prepareRow,
   } = tableInstance;
   return (
-    <div className="ms-5" style={{width: 600}}>
+    <div className="ms-5" style={{ width: 600 }}>
       <table className=" table table-hover" {...getTableProps()}>
         <thead>
           {
@@ -97,7 +129,7 @@ const SearchTable = ({
               return (
                 // Apply the row props
                 <tr
-                  onClick={()=> push(`/explorer?GSM=${row.original.GSM}`)}
+                  onClick={() => onRowClick(row)}
                   style={{ cursor: "pointer" }}
                   {...row.getRowProps()}
                 >
@@ -123,17 +155,27 @@ const SearchTable = ({
       </table>
       <div className="d-flex w-100 justify-content-center">
         <ul className="pagination">
-        <li className="page-item">
-        <button className="page-link" onClick={() => gotoPage(0)} disabled={!canPreviousPage} aria-label="Previous">
-        &laquo;
-      </button>
-    </li>
-    <li className="page-item">
-        <button className="page-link" onClick={() => previousPage()} disabled={!canPreviousPage} aria-label="Previous">
-        &lt;
-      </button>
-    </li>
-    </ul>
+          <li className="page-item">
+            <button
+              className="page-link"
+              onClick={() => gotoPage(0)}
+              disabled={!canPreviousPage}
+              aria-label="Previous"
+            >
+              &laquo;
+            </button>
+          </li>
+          <li className="page-item">
+            <button
+              className="page-link"
+              onClick={() => previousPage()}
+              disabled={!canPreviousPage}
+              aria-label="Previous"
+            >
+              &lt;
+            </button>
+          </li>
+        </ul>
         <span className="ms-2 me-2 mt-2">
           Page{" "}
           <strong>
@@ -141,21 +183,31 @@ const SearchTable = ({
           </strong>{" "}
         </span>
         <ul className="pagination">
-        <li className="page-item">
-        <button className="page-link" onClick={() => nextPage()} disabled={!canNextPage} aria-label="Previous">
-        {">"}
-      </button>
-    </li>
-    <li className="page-item">
-        <button className="page-link" onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage} aria-label="Previous">
-        &raquo;
-      </button>
-    </li>
-    </ul> 
-    </div>
-    <div className="d-flex w-100 justify-content-center">
+          <li className="page-item">
+            <button
+              className="page-link"
+              onClick={() => nextPage()}
+              disabled={!canNextPage}
+              aria-label="Previous"
+            >
+              {">"}
+            </button>
+          </li>
+          <li className="page-item">
+            <button
+              className="page-link"
+              onClick={() => gotoPage(pageCount - 1)}
+              disabled={!canNextPage}
+              aria-label="Previous"
+            >
+              &raquo;
+            </button>
+          </li>
+        </ul>
+      </div>
+      <div className="d-flex w-100 justify-content-center">
         <span>
-           Go to page:{" "}
+          Go to page:{" "}
           <input
             type="number"
             defaultValue={pageIndex + 1}
@@ -178,7 +230,7 @@ const SearchTable = ({
             </option>
           ))}
         </select>
-        </div>
+      </div>
     </div>
   );
 };
