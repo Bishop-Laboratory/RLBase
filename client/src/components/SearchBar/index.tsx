@@ -81,8 +81,8 @@ const SearchBar = () => {
         </label>
       </div>
       <h5 className="mt-3">Find {radio}s with...</h5>
-
-      <form className="mt-4 d-flex flex-column">
+      <p>(It is not necessary to fill in all the fields)</p>
+      <form className="d-flex flex-column">
         {Object.keys(currentOptions).map((item, index) => (
           <div key={`input-${index}`} className="input-group mb-3">
             <span className="input-group-text" id={`inputGroup-${index}`}>
