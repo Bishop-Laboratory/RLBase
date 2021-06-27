@@ -1,6 +1,8 @@
 import React from "react";
 import { useHistory } from "react-router-dom";
-import { usePagination, useTable } from "react-table";
+import { useFilters, usePagination, useSortBy, useTable } from "react-table";
+import ArrowDownShort from "../../svg/icons/ArrowDownShort";
+import ArrowUpShort from "../../svg/icons/ArrowUpShort";
 
 const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
   const { push } = useHistory();
@@ -37,6 +39,7 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
         {
           Header: "Type",
           accessor: "Cell",
+          Filter: SelectColumnFilter,
         },
         {
           Header: "Info",
@@ -48,6 +51,60 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
         },
       ];
   }, [match.params.type]);
+// Define a default UI for filtering
+function DefaultColumnFilter({
+  column: { filterValue, preFilteredRows, setFilter },
+}:any) {
+  const count = preFilteredRows.length
+
+  return (
+    <input
+      value={filterValue || ''}
+      onChange={e => {
+        setFilter(e.target.value || undefined) // Set undefined to remove the filter entirely
+      }}
+      placeholder={`Search ${count} records...`}
+    />
+  )
+}
+const defaultColumn = React.useMemo(
+  () => ({
+    // Let's set up our default Filter UI
+    Filter: DefaultColumnFilter,
+  }),
+  []
+)
+function SelectColumnFilter({
+  column: { filterValue, setFilter, preFilteredRows, id },
+}:any) {
+  // Calculate the options for filtering
+  // using the preFilteredRows
+  const options = React.useMemo(() => {
+    const options = new Set()
+    preFilteredRows.forEach((row:any) => {
+      options.add(row.values[id])
+    })
+    //@ts-ignore
+    return [...options.values()]
+  }, [id, preFilteredRows])
+
+  // Render a multi-select box
+  return (
+    <select
+      value={filterValue}
+      onChange={e => {
+        setFilter(e.target.value || undefined)
+      }}
+    >
+      <option value="">All</option>
+      {options.map((option, i) => (
+        <option key={i} value={option}>
+          {option}
+        </option>
+      ))}
+    </select>
+  )
+}
 
   const onRowClick = (row: any) => {
     switch (match.params.type) {
@@ -64,7 +121,9 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
 
   const tableInstance = useTable(
     //@ts-ignore
-    { columns, data, initialState: { pageIndex: 0 } },
+    { columns, data,initialState: { pageIndex: 0 }, defaultColumn},
+    useFilters,
+    useSortBy,
     usePagination
   );
   const {
@@ -107,11 +166,26 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
                   // Loop over the headers in each row
                   headerGroup.headers.map((column) => (
                     // Apply the header cell props
-                    <th {...column.getHeaderProps()}>
+                    <th //@ts-ignore
+                      {...column.getHeaderProps(column.getSortByToggleProps())}
+                    >
                       {
                         // Render the header
                         column.render("Header")
                       }
+                      {/*@ts-ignore*/}
+                      {column.isSorted ? (
+                        //@ts-ignore
+                        column.isSortedDesc ? (
+                          <ArrowDownShort />
+                        ) : (
+                          <ArrowUpShort />
+                        )
+                      ) : (
+                        ""
+                      )}
+                      {/*@ts-ignore*/}
+                      <div>{column.canFilter ? column.render('Filter') : null}</div>
                     </th>
                   ))
                 }

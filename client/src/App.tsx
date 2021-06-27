@@ -9,8 +9,6 @@ import ApiReference from "./pages/ApiReference";
 import Downloads from "./pages/Downloads";
 import Help from "./pages/Help";
 
-
-
 function App() {
 
   return (
