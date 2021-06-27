@@ -9,7 +9,7 @@ Base.prepare(engine, reflect = True)
 
 Record = Base.classes.sample_data
 
-featureList = ["GSM", "Cell", "SRX","mode","Species","Condition","Group","Genotype",]
+featureList = ["GSM", "Cell", "SRX","mode","Species","Condition","Group","Genotype","study"]
 measures = ['Intergenic', 'Simple_repeat', 'Satellite', 'Promoter', 'pseudo', 'Intron', 'TTS', 
 'LINE', 'LTR', 'SINE', 'DNA', 'CpG-Island', 'ncRNA', 'Low_complexity', 'Exon', 
 'snRNA', 'Retroposon', '5UTR', '3UTR', 'srpRNA', 'rRNA', 'tRNA', 'RC', 'scRNA', 
