@@ -69,7 +69,7 @@ function SampleView({ location }: RouteComponentProps) {
       setLoading(true);
       try {
         const res: any = await axios.get(
-          `http://127.0.0.1:5000/api/sample${location.search}`
+          `http://127.0.0.1:5000/api-v1/sample${location.search}`
         );
         if (res?.data?.[0]) {
           setInfo(res.data[0]);
