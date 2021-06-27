@@ -37,7 +37,7 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
           accessor: "SRX", // accessor is the "key" in the data
         },
         {
-          Header: "Type",
+          Header: "Cell Type",
           accessor: "Cell",
           Filter: SelectColumnFilter,
         },
@@ -46,8 +46,20 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
           accessor: "mode",
         },
         {
-          Header: "Evidence",
+          Header: "Genotype",
           accessor: "Genotype",
+          Filter: SelectColumnFilter
+        },
+        {
+          Header: "Study",
+          accessor: "Group",
+          Filter: SelectColumnFilter,
+
+        },
+        {
+          Header: "Specie",
+          accessor: "Species",
+          Filter: SelectColumnFilter,
         },
       ];
   }, [match.params.type]);
@@ -92,6 +104,7 @@ function SelectColumnFilter({
   return (
     <select
       value={filterValue}
+      style={{width:150}}
       onChange={e => {
         setFilter(e.target.value || undefined)
       }}
@@ -154,7 +167,7 @@ function SelectColumnFilter({
     prepareRow,
   } = tableInstance;
   return (
-    <div className="ms-5" style={{ width: 600 }}>
+    <div className="ms-5" style={{ width: 800 }}>
       <table className=" table table-hover" {...getTableProps()}>
         <thead>
           {
