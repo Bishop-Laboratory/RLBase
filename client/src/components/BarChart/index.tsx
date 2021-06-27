@@ -29,7 +29,7 @@ function BarChart({
   useEffect(() => {
     const MARGIN = { LEFT: 45, RIGHT: 30, TOP: 100, BOTTOM: 100 };
     const HEIGHT = 500 - MARGIN.TOP - MARGIN.BOTTOM;
-    const WIDTH = 200 - MARGIN.LEFT - MARGIN.RIGHT;
+    const WIDTH = 300 - MARGIN.LEFT - MARGIN.RIGHT;
     const svg: any = select(svgRef.current);
 
     svg

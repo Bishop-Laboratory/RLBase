@@ -9,51 +9,28 @@ const Table = ({
   data: any[];
   setSelectedItem: React.Dispatch<SetStateAction<barChartDataItem[]>>;
 }) => {
-  const convertData = (row: any) => {
-    const KEYS = [
-      "3UTR",
-      "TTS",
-      "Exon",
-      "Intron",
-      "Intergenic",
-      "Promoter",
-      "5UTR",
-      "CpG-Island",
-    ];
-    let array = KEYS.map((key) => {
-      return {
-        x: key,
-        y: Number(row[`${key}__Log2 Ratio (obs/exp)`]),
-      };
-    });
-    return array;
-  };
-
+  
   const columns = React.useMemo(
     () => [
       {
-        Header: "Accession (SRA)",
-        accessor: "SRX", // accessor is the "key" in the data
+        Header: "ID",
+        accessor: "id", // accessor is the "key" in the data
       },
       {
-        Header: "Protocol",
-        accessor: "mode",
+        Header: "Chr",
+        accessor: "chr",
       },
       {
-        Header: "Species",
-        accessor: "Species",
+        Header: "start",
+        accessor: "start",
       },
       {
-        Header: "Tissue",
-        accessor: "Cell",
+        Header: "end",
+        accessor: "end",
       },
       {
-        Header: "Condition",
-        accessor: "Condition",
-      },
-      {
-        Header: "Group",
-        accessor: "Group",
+        Header: "type",
+        accessor: "type",
       },
     ],
     []
@@ -127,7 +104,7 @@ const Table = ({
                 <tr
                   style={{ cursor: "pointer" }}
                   onClick={() =>
-                    setSelectedItem((prev) => [...convertData(row.original)])
+                    null
                   }
                   {...row.getRowProps()}
                 >

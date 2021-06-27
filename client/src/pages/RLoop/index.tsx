@@ -17,20 +17,33 @@ const initialState = [
 
 const convertData = (row: any) => {
   const KEYS = [
-    "3UTR",
-    "Exon",
-    "Intergenic",
+    "CpG-Island",
+    "Promoter",
     "5UTR",
-    "Retroposon",
-    "SINE",
-    "Low_complexity",
-    "Simple_repeat",
-    "rRNA",
-    "RNA",
+    "Exon",
+    "Intron",
+    "3UTR",
+    "TTS",
+    "Intergenic",
+    "miRNA",
     "ncRNA",
-    "RC",
     "pseudo",
+    "RC",
+    "RNA",
     "scRNA",
+    "snoRNA",
+    "snRNA",
+    "srpRNA",
+    "tRNA",
+    "DNA",
+    "LINE",
+    "Low_complexity",
+    "LTR",
+    "Retroposon",
+    "rRNA",
+    "Satellite",
+    "Simple_repeat",
+    "SINE"
   ];
   let array = KEYS.map((key) => {
     return {
@@ -41,7 +54,7 @@ const convertData = (row: any) => {
   return array;
 };
 
-function RLoop({ location }: RouteComponentProps) {
+function SampleView({ location }: RouteComponentProps) {
   const [sampleData, setSampleData] = useState<barChartDataItem[]>(
     initialState
   );
@@ -56,7 +69,7 @@ function RLoop({ location }: RouteComponentProps) {
       setLoading(true);
       try {
         const res: any = await axios.get(
-          `http://127.0.0.1:5000/api/test/rloop-details${location.search}`
+          `http://127.0.0.1:5000/api/sample${location.search}`
         );
         if (res?.data?.[0]) {
           setInfo(res.data[0]);
@@ -75,6 +88,7 @@ function RLoop({ location }: RouteComponentProps) {
   }, [location.search]);
   return (
     <>
+    <h1 className="mt-8 text-center">RSeq Report</h1>
       <h3 className="mt-8 text-center">{info.SRX}</h3>
       <div>
           <ul>
@@ -83,13 +97,15 @@ function RLoop({ location }: RouteComponentProps) {
             <li>Genotype: {info.genotype}</li>
           </ul>
         </div>
-      <div>
+      <div className="ms-4">
         <h3 className="mt-8 text-center">Genomic Feature Enrichment</h3>
+        <p>R-loop broad peaks were called with <code>macs2</code> and then compared with genomic features using <code>assignGenomeAnnotation</code> from <code>homer</code>.
+</p>
         <div className="d-flex w-100  justify-content-center mt-2">
           <BarChart
             {...{
-              title: "Gene Features",
-              selectedItem: sampleData.slice(0, 4),
+              title: "Genomic Features",
+              selectedItem: sampleData.slice(0, 8),
               minAndMax,
               color: "blue",
               setName,
@@ -98,8 +114,8 @@ function RLoop({ location }: RouteComponentProps) {
           />
           <BarChart
             {...{
-              title: "Repetitive Elements",
-              selectedItem: sampleData.slice(4, 9),
+              title: "ncRNAs",
+              selectedItem: sampleData.slice(8, 18),
               hideYAxis: true,
               minAndMax,
               color: "red",
@@ -109,8 +125,8 @@ function RLoop({ location }: RouteComponentProps) {
           />
           <BarChart
             {...{
-              title: "RNA Species",
-              selectedItem: sampleData.slice(9),
+              title: "Repetitive elements",
+              selectedItem: sampleData.slice(18),
               hideYAxis: true,
               minAndMax,
               color: "green",
@@ -130,4 +146,4 @@ function RLoop({ location }: RouteComponentProps) {
   );
 }
 
-export default RLoop;
+export default SampleView;
