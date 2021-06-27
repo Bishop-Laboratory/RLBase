@@ -1,60 +1,111 @@
-import React, { useState } from "react";
+import { stringify } from "qs";
+import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
-import { queryOption } from "../../models";
 
-const SearchBar = ({searchPage}:{searchPage?: boolean}) => {
+const SearchBar = () => {
   const { push } = useHistory();
+  const sampleOptions = {"Cell": "Cell type", study: "Study", Species: "Specie"}
+  const geneOptions = {"Gene ID": "Gene", go: "GO Biological process"}
+  const rloopOptions = {"R-loop": "R-loop ID", coordinates: "Genomic coordinates", class: "R-loop class"}
+  const [radio, setRadio] = useState<"gene" | "r-loop" | "sample">("sample");
+  const [parameters,setParameters] = useState<any>({})
+  const [currentOptions, setCurrentOptions] = useState<any>({})
+  const navigateToSearchResults = () => {
+    const filters = Object.assign({}, parameters)
+    Object.keys(filters).forEach(parameter => {
+      if(filters[parameter] === "") delete filters[parameter]
+    });
+    push(`/search/${radio}?${stringify(filters)}`)
+  }
+  useEffect(()=> {
+    const renderEmptyInput = (object: any) =>{
+      const cleanState =  Object.assign({}, object)
+      Object.keys(cleanState).forEach(parameter => {
+        cleanState[parameter] = ""
+      });
+      return cleanState
+    }
+    if(radio === "gene") {setParameters(() => Object.assign({},renderEmptyInput(geneOptions))) 
+    setCurrentOptions(geneOptions)}
+    if(radio === "r-loop"){ setParameters(() => Object.assign({},renderEmptyInput(rloopOptions)))
+    setCurrentOptions(rloopOptions)}
+    if(radio === "sample") {setParameters(() => Object.assign({},renderEmptyInput(sampleOptions)))
+    setCurrentOptions(sampleOptions)}
 
-  const queryOptions: queryOption[] = [
-   // { name: "Gene", query: "gene" },
-    { name: "Cell type", query: "Cell" },
-   // { name: "Region", query: "region" },
-  ];
-  const [radio, setRadio] = useState<"gene"|"r-loop"|"sample">("gene")
-  const [searchParam, setSearchParam] = useState<string>("");
-  const [queryOption, setQueryOption] = useState<string>(queryOptions[0].query);
+  },[radio])
   return (
     <>
-    <h5>What do you want to look for?</h5>
-    <div className="btn-group" role="group" aria-label="Basic radio toggle button group">
-  <input type="radio" className="btn-check" name="btnradio" id="btnradio1" autoComplete="off" onClick={() => setRadio("gene")} checked={radio === "gene"} />
-  <label className="btn btn-outline-primary" htmlFor="btnradio1">Gene</label>
-
-  <input type="radio" className="btn-check" name="btnradio" id="btnradio2" autoComplete="off" onClick={() => setRadio("r-loop")} checked={radio === "r-loop"} />
-  <label className="btn btn-outline-primary" htmlFor="btnradio2">R-Loop</label>
-
-  <input type="radio" className="btn-check" name="btnradio" id="btnradio3" autoComplete="off" onClick={() => setRadio("sample")} checked={radio === "sample"} />
-  <label className="btn btn-outline-primary" htmlFor="btnradio3">Sample</label>
-</div>
-    <form className="mt-4 d-flex">
-      <select
-        className="me-2"
-        value={queryOption}
-        onChange={(e) => setQueryOption(e.target.value)}
+      <h5>What do you want to look for?</h5>
+      <div
+        className="btn-group"
+        role="group"
+        aria-label="Basic radio toggle button group"
       >
-        {queryOptions.map((option, index) => (
-          <option key={"query" + index} value={option.query}>
-            {option.name}
-          </option>
+        <input
+          type="radio"
+          className="btn-check"
+          name="btnradio"
+          id="btnradio1"
+          autoComplete="off"
+          onClick={() => setRadio("gene")}
+          checked={radio === "gene"}
+        />
+        <label className="btn btn-outline-primary" htmlFor="btnradio1">
+          Gene
+        </label>
+
+        <input
+          type="radio"
+          className="btn-check"
+          name="btnradio"
+          id="btnradio2"
+          autoComplete="off"
+          onClick={() => setRadio("r-loop")}
+          checked={radio === "r-loop"}
+        />
+        <label className="btn btn-outline-primary" htmlFor="btnradio2">
+          R-Loop
+        </label>
+
+        <input
+          type="radio"
+          className="btn-check"
+          name="btnradio"
+          id="btnradio3"
+          autoComplete="off"
+          onClick={() => setRadio("sample")}
+          checked={radio === "sample"}
+        />
+        <label className="btn btn-outline-primary" htmlFor="btnradio3">
+          Sample
+        </label>
+      </div>
+      <h5 className="mt-3">Find {radio}s with...</h5>
+
+      <form className="mt-4 d-flex flex-column">
+        {Object.keys(currentOptions).map((item, index) => (
+          <div key={`input-${index}`} className="input-group mb-3">
+            <span className="input-group-text" id={`inputGroup-${index}`}>
+              {/*@ts-ignore*/}
+              {currentOptions[item]}
+            </span>
+            <input
+              value={parameters[item]}
+              onChange={(e)=> setParameters((prev: any) => Object.assign({}, prev, {[item]: e.target.value}))}
+              type="text"
+              className="form-control"
+              aria-label={`Search by ${item}`}
+            />
+          </div>
         ))}
-      </select>
-      <input
-        style={{width: 300}}
-        value={searchParam}
-        onChange={(e) => setSearchParam(e.target.value)}
-        className="form-control me-2"
-        type="search"
-        placeholder={`Find out your ${radio} of interest`}
-        aria-label="Search"
-      />
-      <button
-        className="btn btn-outline-success"
-        onClick={() => push(`/search/${radio}?${queryOption}=${searchParam}`)}
-        type="submit"
-      >
-        Search
-      </button>
-    </form>
+        <button
+          className="btn btn-outline-success"
+          onClick={navigateToSearchResults}
+          type="submit"
+        >
+          Search
+        </button>
+      </form>
     </>
   );
 };

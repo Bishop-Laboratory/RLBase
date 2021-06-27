@@ -8,7 +8,6 @@ import About from "./pages/About";
 import ApiReference from "./pages/ApiReference";
 import Downloads from "./pages/Downloads";
 import Help from "./pages/Help";
-import Samples from "./pages/Samples";
 
 
 
@@ -24,7 +23,6 @@ function App() {
       <Route exact path="/api-reference" component={ApiReference} />
       <Route exact path="/downloads" component={Downloads} />
       <Route exact path="/help" component={Help} />
-      <Route exact path="/samples" component={Samples} />
     </Router>
   );
 }

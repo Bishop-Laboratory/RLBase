@@ -22,7 +22,7 @@ def get_blueprint(db):
             resp = {'greeting': 'Welcome to the RMapDB API, friend!'}
         return json.dumps(resp)
 
-    @bp.route("/api/sample")
+    @bp.route("/api-v1/sample")
 
     def db_test():
         query_conditions = search_data(request, Record)
@@ -32,7 +32,7 @@ def get_blueprint(db):
             output.append(record.to_dict())
         return jsonify(output)
 
-    @bp.route("/api/r-loop")
+    @bp.route("/api-v1/r-loop")
 
     def r_loop_table():
         return jsonify([
