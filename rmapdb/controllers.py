@@ -5,7 +5,8 @@ def normalize_query_param(value):
 def normalize_query(params):
     params_non_flat = params.to_dict(flat=False)
     return {k: normalize_query_param(v) for k, v in params_non_flat.items()}
-    
+
+
 def search_data(request, Sample_data):
     params = normalize_query(request.args)
     tempKeys = []

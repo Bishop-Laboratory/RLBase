@@ -3,5 +3,4 @@
 *env/
 *.env/
 *.egg-info
-*instance/
 *__pycache__/
