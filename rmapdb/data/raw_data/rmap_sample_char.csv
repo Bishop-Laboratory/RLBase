@@ -1,0 +1,9 @@
+char_id,rmap_sample_id,type,value
+1,SRX213125,peak_count,284819
+2,SRX213125,rlfs_pval,0.001
+3,SRX213125,quality_score,99.18
+4,SRX152644,frip,23.5
+5,SRX152644,rlfs_pval,0.0001
+6,SRX152644,quality_score,99.5
+7,SRX152644,pct_aligned,98.45
+8,SRX152644,pct_duplicated,45.56
