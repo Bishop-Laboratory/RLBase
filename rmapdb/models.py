@@ -1,6 +1,6 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DECIMAL, Table
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DECIMAL
 from sqlalchemy.orm import relationship
-from .database import Base
+from rmapdb.database import Base
 
 
 class RLoops(Base):
@@ -32,7 +32,7 @@ class RMapSamples(Base):
     is_input = Column(Boolean)
     is_rnh_like = Column(Boolean)
     rloops = relationship("RLoopSignal",
-                          backpopulates="rmap_sample")
+                          back_populates="rmap_sample")
     quality_char = relationship("SampleQualChar")
 
 
@@ -56,4 +56,6 @@ class SampleQualChar(Base):
     rmap_sample_id = Column(String, ForeignKey('rmap_samples.id'))
     char_type = Column(String)
     value = Column(DECIMAL)
+
+
 
