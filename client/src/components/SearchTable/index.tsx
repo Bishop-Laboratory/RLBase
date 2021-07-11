@@ -12,6 +12,7 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
         {
           Header: "ID",
           accessor: "id", // accessor is the "key" in the data
+          Cell: (props: any) => <p className="text-primary text-decoration-underline">{props.row.original.id}</p>, 
         },
         {
           Header: "Chr",
@@ -34,7 +35,9 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
       return [
         {
           Header: "R-Loop",
-          accessor: "SRX", // accessor is the "key" in the data
+          accessor: "SRX", // accessor is the "key" in the data,
+          Cell: (props: any) => <p className="text-primary text-decoration-underline">{props.row.original.SRX}</p>, 
+
         },
         {
           Header: "Cell Type",
@@ -48,13 +51,12 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
         {
           Header: "Genotype",
           accessor: "Genotype",
-          Filter: SelectColumnFilter
+          Filter: SelectColumnFilter,
         },
         {
           Header: "Study",
           accessor: "Group",
           Filter: SelectColumnFilter,
-
         },
         {
           Header: "Specie",
@@ -63,61 +65,61 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
         },
       ];
   }, [match.params.type]);
-// Define a default UI for filtering
-function DefaultColumnFilter({
-  column: { filterValue, preFilteredRows, setFilter },
-}:any) {
-  const count = preFilteredRows.length
+  // Define a default UI for filtering
+  function DefaultColumnFilter({
+    column: { filterValue, preFilteredRows, setFilter },
+  }: any) {
+    const count = preFilteredRows.length;
 
-  return (
-    <input
-      value={filterValue || ''}
-      onChange={e => {
-        setFilter(e.target.value || undefined) // Set undefined to remove the filter entirely
-      }}
-      placeholder={`Search ${count} records...`}
-    />
-  )
-}
-const defaultColumn = React.useMemo(
-  () => ({
-    // Let's set up our default Filter UI
-    Filter: DefaultColumnFilter,
-  }),
-  []
-)
-function SelectColumnFilter({
-  column: { filterValue, setFilter, preFilteredRows, id },
-}:any) {
-  // Calculate the options for filtering
-  // using the preFilteredRows
-  const options = React.useMemo(() => {
-    const options = new Set()
-    preFilteredRows.forEach((row:any) => {
-      options.add(row.values[id])
-    })
-    //@ts-ignore
-    return [...options.values()]
-  }, [id, preFilteredRows])
+    return (
+      <input
+        value={filterValue || ""}
+        onChange={(e) => {
+          setFilter(e.target.value || undefined); // Set undefined to remove the filter entirely
+        }}
+        placeholder={`Search ${count} records...`}
+      />
+    );
+  }
+  const defaultColumn = React.useMemo(
+    () => ({
+      // Let's set up our default Filter UI
+      Filter: DefaultColumnFilter,
+    }),
+    []
+  );
+  function SelectColumnFilter({
+    column: { filterValue, setFilter, preFilteredRows, id },
+  }: any) {
+    // Calculate the options for filtering
+    // using the preFilteredRows
+    const options = React.useMemo(() => {
+      const options = new Set();
+      preFilteredRows.forEach((row: any) => {
+        options.add(row.values[id]);
+      });
+      //@ts-ignore
+      return [...options.values()];
+    }, [id, preFilteredRows]);
 
-  // Render a multi-select box
-  return (
-    <select
-      value={filterValue}
-      style={{width:150}}
-      onChange={e => {
-        setFilter(e.target.value || undefined)
-      }}
-    >
-      <option value="">All</option>
-      {options.map((option, i) => (
-        <option key={i} value={option}>
-          {option}
-        </option>
-      ))}
-    </select>
-  )
-}
+    // Render a multi-select box
+    return (
+      <select
+        value={filterValue}
+        style={{ width: 150 }}
+        onChange={(e) => {
+          setFilter(e.target.value || undefined);
+        }}
+      >
+        <option value="">All</option>
+        {options.map((option, i) => (
+          <option key={i} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    );
+  }
 
   const onRowClick = (row: any) => {
     switch (match.params.type) {
@@ -134,7 +136,7 @@ function SelectColumnFilter({
 
   const tableInstance = useTable(
     //@ts-ignore
-    { columns, data,initialState: { pageIndex: 0 }, defaultColumn},
+    { columns, data, initialState: { pageIndex: 0 }, defaultColumn },
     useFilters,
     useSortBy,
     usePagination
@@ -197,8 +199,10 @@ function SelectColumnFilter({
                       ) : (
                         ""
                       )}
-                      {/*@ts-ignore*/}
-                      <div>{column.canFilter ? column.render('Filter') : null}</div>
+                      <div>
+                        {/*@ts-ignore*/}
+                        {column.canFilter ? column.render("Filter") : null}
+                      </div>
                     </th>
                   ))
                 }
