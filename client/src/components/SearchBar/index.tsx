@@ -1,35 +1,29 @@
-import { stringify } from "qs";
 import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 
 const SearchBar = () => {
   const { push } = useHistory();
-  const sampleOptions = {"Cell": "Cell type", study: "Study", Species: "Specie"}
-  const geneOptions = {"Gene ID": "Gene", go: "GO Biological process"}
-  const rloopOptions = {"R-loop": "R-loop ID", coordinates: "Genomic coordinates", class: "R-loop class"}
+
   const [radio, setRadio] = useState<"gene" | "r-loop" | "sample">("sample");
-  const [parameters,setParameters] = useState<any>({})
+  const [parameter,setParameter] = useState<string>("")
   const [currentOptions, setCurrentOptions] = useState<any>({})
+  const [inputValue, setInputValue] = useState<string>("")
+
   const navigateToSearchResults = () => {
-    const filters = Object.assign({}, parameters)
-    Object.keys(filters).forEach(parameter => {
-      if(filters[parameter] === "") delete filters[parameter]
-    });
-    push(`/search/${radio}?${stringify(filters)}`)
+
+    push(`/search/${radio}?${parameter}=${inputValue}`)
   }
   useEffect(()=> {
-    const renderEmptyInput = (object: any) =>{
-      const cleanState =  Object.assign({}, object)
-      Object.keys(cleanState).forEach(parameter => {
-        cleanState[parameter] = ""
-      });
-      return cleanState
-    }
-    if(radio === "gene") {setParameters(() => Object.assign({},renderEmptyInput(geneOptions))) 
+
+    const sampleOptions = {"Cell": "Cell type", study: "Study", Species: "Specie"}
+    const geneOptions = {"Gene ID": "Gene", go: "GO Biological process"}
+    const rloopOptions = {"R-loop": "R-loop ID", coordinates: "Genomic coordinates", class: "R-loop class"}
+
+    if(radio === "gene") {
     setCurrentOptions(geneOptions)}
-    if(radio === "r-loop"){ setParameters(() => Object.assign({},renderEmptyInput(rloopOptions)))
+    if(radio === "r-loop"){ 
     setCurrentOptions(rloopOptions)}
-    if(radio === "sample") {setParameters(() => Object.assign({},renderEmptyInput(sampleOptions)))
+    if(radio === "sample") {
     setCurrentOptions(sampleOptions)}
 
   },[radio])
@@ -81,25 +75,20 @@ const SearchBar = () => {
         </label>
       </div>
       <h5 className="mt-3">Find {radio}s with...</h5>
-      <p>(It is not necessary to fill in all the fields)</p>
       <form className="d-flex flex-column">
-        {Object.keys(currentOptions).map((item, index) => (
-          <div key={`input-${index}`} className="input-group mb-3">
-            <span className="input-group-text" id={`inputGroup-${index}`}>
-              {/*@ts-ignore*/}
-              {currentOptions[item]}
-            </span>
-            <input
-              value={parameters[item]}
-              onChange={(e)=> setParameters((prev: any) => Object.assign({}, prev, {[item]: e.target.value}))}
+        <div className="d-flex flex-row">
+        <select onChange={e => setParameter(e.target.value)} style={{width: 300}}>
+          {Object.keys(currentOptions).map((item, index) => <option value={item}>{currentOptions[item]}</option>)}
+        </select>
+        <input
+              value={inputValue}
+              onChange={(e)=> setInputValue(e.target.value)}
               type="text"
               className="form-control"
-              aria-label={`Search by ${item}`}
-            />
-          </div>
-        ))}
+            /></div>
         <button
-          className="btn btn-outline-success"
+          style={{width: 300}}
+          className="mt-4 align-self-center btn btn-outline-success"
           onClick={navigateToSearchResults}
           type="submit"
         >
