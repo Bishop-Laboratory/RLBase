@@ -19,6 +19,7 @@ const SearchPage = ({ match, location }: RouteComponentProps) => {
         if(res) setResults(res.data)
       } catch (error) {
         console.error(error);
+        setResults(type==="gene" ? [{ensemblID: 123,chr: 123, start: 123, end: 123, description: "asdad", type: "GO"}] :[])
       } finally {setLoading(false)}
     };
     get();

@@ -31,7 +31,36 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
           accessor: "type",
         },
       ];
-    } else
+    } else if (match.params.type === "gene"){
+      return [
+        {
+          Header: "EnsemblID",
+          accessor: "ensemblId", // accessor is the "key" in the data,
+          Cell: (props: any) => <p className="text-primary text-decoration-underline">{props.row.original.ensemblID}</p>, 
+        },
+        {
+          Header: "Chr",
+          accessor: "chr",
+        },
+        {
+          Header: "start",
+          accessor: "start",
+        },
+        {
+          Header: "end",
+          accessor: "end",
+        },
+        {
+          Header: "Description",
+          accessor: "description",
+        },
+        {
+          Header: "BioType",
+          accessor: "type",
+        },
+      ]
+    }
+     else
       return [
         {
           Header: "R-Loop",
@@ -128,7 +157,7 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
       case "sample":
         return push(`/explorer?GSM=${row.original.GSM}`);
       case "gene":
-        return push(`/samples?gene=${row.original.geneId}`);
+        return push(`/search/r-loop`);
       default:
         return push("/");
     }

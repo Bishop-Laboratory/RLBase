@@ -28,6 +28,16 @@ const NavBar = () => {
             </Link>
           </li>
           <li className="nav-item">
+            <Link to="/search/gene" className="nav-link">
+              Genes
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link to="/search/r-loop" className="nav-link">
+              RLoops
+            </Link>
+          </li>
+          <li className="nav-item">
             <Link to="/search/sample" className="nav-link">
               Samples
             </Link>
