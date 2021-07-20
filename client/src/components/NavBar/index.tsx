@@ -48,6 +48,11 @@ const NavBar = () => {
             </Link>
           </li>
           <li className="nav-item">
+            <Link to="/upload" className="nav-link">
+              Upload 
+            </Link>
+          </li>
+          <li className="nav-item">
             <Link to="/api-reference" className="nav-link">
               API Reference
             </Link>
