@@ -42,6 +42,8 @@ class RMapSamples(Base):
     rloops = relationship("RLoopSignal", back_populates="rmap_sample")
     # Unidirectional one-to-many relationship with SampleQualChar
     quality_char = relationship("SampleQualChar")
+    # Unidirectional many-to-many relationship with GeneExpSamples
+    gene_exp_samples = relationship("GeneExpToRmapSamples")
 
 
 class RLoopSignal(Base):
@@ -124,6 +126,18 @@ class Genes(Base):
     rloops = relationship("GeneRLoopOverlap", back_populates="gene")
     # Unidirectional many-to-many relationship with GeneExpSamples via GeneExpression
     gene_exp_samples = relationship("GeneExpression")
+    # Unidirectional one-to-one relationship with AliasToGene
+    alias = relationship("AliasToGene", back_populates="gene", uselist=False)
+
+
+class AliasToGene(Base):
+    # Matching ENSEMBL ids to gene aliases
+    __tablename__ = "alias_to_gene"
+
+    gene_id = Column(String, ForeignKey('genes.id'), primary_key=True)
+    alias = Column(String)
+    # Relationships
+    gene = relationship("Genes", back_pouplates="alias")
 
 
 class GeneExpression(Base):
@@ -156,3 +170,15 @@ class GeneExpSamples(Base):
     condition = Column(String)
     paired_end = Column(Boolean)
     type = Column(String)
+
+
+class GeneExpToRmapSamples(Base):
+    # Association table for many-to-many relationship between GeneExpSamples and RMapSamples
+    __tablename__ = "gene_exp_to_rmap_samples"
+    # Foreign keys
+    rmap_sample_id = Column(String, ForeignKey('rmap_samples.id'), primary_key=True)
+    gene_exp_sample_id = Column(String, ForeignKey('gene_exp_samples.id'), primary_key=True)
+    # Extra data
+    tissue = Column(String)
+    # Relationships
+    gene_exp_sample = relationship("GeneExpSamples")
