@@ -3,6 +3,7 @@ import { barChartDataItem } from "../../models";
 import BarChart from "../../components/BarChart";
 import { RouteComponentProps } from "react-router-dom";
 import axios from "axios";
+import SampleDownloads from "../../components/SampleDownloads";
 
 const initialState = [
   { x: "", y: 0 },
@@ -141,6 +142,12 @@ function SampleView({ location }: RouteComponentProps) {
             {name} | Log2 Ratio (obs/exp): {value}
           </div>
         </div>
+
+        <SampleDownloads
+          sampleName={info.sample_name}
+          sampleGenome={info.genome}
+        />
+
       </div>
     </>
   );
