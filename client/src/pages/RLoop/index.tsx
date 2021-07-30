@@ -44,7 +44,7 @@ const convertData = (row: any) => {
     "rRNA",
     "Satellite",
     "Simple_repeat",
-    "SINE"
+    "SINE",
   ];
   let array = KEYS.map((key) => {
     return {
@@ -56,9 +56,8 @@ const convertData = (row: any) => {
 };
 
 function SampleView({ location }: RouteComponentProps) {
-  const [sampleData, setSampleData] = useState<barChartDataItem[]>(
-    initialState
-  );
+  const [sampleData, setSampleData] =
+    useState<barChartDataItem[]>(initialState);
   const [minAndMax, setMinAndMax] = useState<number[]>([0, 0]);
   const [, /*loading*/ setLoading] = useState(false);
   const [info, setInfo] = useState<any>({});
@@ -89,19 +88,22 @@ function SampleView({ location }: RouteComponentProps) {
   }, [location.search]);
   return (
     <>
-    <h1 className="mt-8 text-center">RSeq Report</h1>
+      <h1 className="mt-8 text-center">RSeq Report</h1>
       <h3 className="mt-8 text-center">{info.SRX}</h3>
       <div>
-          <ul>
-            <li>Cell line/tissue: {info.cell}</li>
-            <li>Sample control accession(s): {info.control}</li>
-            <li>Genotype: {info.genotype}</li>
-          </ul>
-        </div>
+        <ul>
+          <li>Cell line/tissue: {info.cell}</li>
+          <li>Sample control accession(s): {info.control}</li>
+          <li>Genotype: {info.genotype}</li>
+        </ul>
+      </div>
       <div className="ms-4">
         <h3 className="mt-8 text-center">Genomic Feature Enrichment</h3>
-        <p>R-loop broad peaks were called with <code>macs2</code> and then compared with genomic features using <code>assignGenomeAnnotation</code> from <code>homer</code>.
-</p>
+        <p>
+          R-loop broad peaks were called with <code>macs2</code> and then
+          compared with genomic features using{" "}
+          <code>assignGenomeAnnotation</code> from <code>homer</code>.
+        </p>
         <div className="d-flex w-100  justify-content-center mt-2">
           <BarChart
             {...{
@@ -147,7 +149,6 @@ function SampleView({ location }: RouteComponentProps) {
           sampleName={info.sample_name}
           sampleGenome={info.genome}
         />
-
       </div>
     </>
   );
