@@ -8,6 +8,7 @@ import About from "./pages/About";
 import ApiReference from "./pages/ApiReference";
 import Downloads from "./pages/Downloads";
 import Help from "./pages/Help";
+import Upload from "./pages/Upload";
 
 function App() {
 
@@ -20,6 +21,7 @@ function App() {
       <Route exact path="/about" component={About} />
       <Route exact path="/api-reference" component={ApiReference} />
       <Route exact path="/downloads" component={Downloads} />
+      <Route exact path="/upload" component={Upload} />
       <Route exact path="/help" component={Help} />
     </Router>
   );
