@@ -13,7 +13,7 @@ interface FormData {
   csv: File | null;
 }
 
-function Upload(): JSX.Element {
+function Upload() {
   const [formData, setFormData] = useState<FormData>({
     sampleId: "",
     sampleCondition: "",

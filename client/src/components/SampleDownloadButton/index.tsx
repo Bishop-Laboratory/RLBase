@@ -8,11 +8,11 @@ interface DownloadButtonInfo {
   fileName: string;
 }
 
-const getFileInfo = (
+function getFileInfo(
   sampleName: string,
   sampleGenome: string,
   variant: DownloadButtonVariant
-): DownloadButtonInfo => {
+): DownloadButtonInfo {
   switch (variant) {
     case "bigwig":
       return {
@@ -33,7 +33,7 @@ const getFileInfo = (
         fileName: `${sampleName}_${sampleGenome}.QC_report.html`,
       };
   }
-};
+}
 
 function DownloadButton({
   sampleName,
@@ -45,14 +45,9 @@ function DownloadButton({
   variant: DownloadButtonVariant;
 }) {
   const fileInfo = getFileInfo(sampleName, sampleGenome, variant);
-  let url = `https://rmapdb-data.s3.us-east-2.amazonaws.com/${fileInfo.path}/${fileInfo.fileName}`;
+  const url = `https://rmapdb-data.s3.us-east-2.amazonaws.com/${fileInfo.path}/${fileInfo.fileName}`;
   return (
-    <a
-      className="btn btn-primary mx-1"
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-    >
+    <a className="btn btn-primary mx-1" href={url} target="_blank" rel="noopener noreferrer">
       {fileInfo.label}
     </a>
   );

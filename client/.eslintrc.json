@@ -38,6 +38,11 @@
         "ts": "never",
         "tsx": "never"
       }
+    ],
+    "jsx-a11y/label-has-associated-control": [
+      "warn", {
+        "assert": "either"
+      }
     ]
   },
   "settings": {

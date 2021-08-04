@@ -17,11 +17,7 @@ function SampleDownloads({
           sampleGenome={sampleGenome}
           variant="bigwig"
         />
-        <SampleDownloadButton
-          sampleName={sampleName}
-          sampleGenome={sampleGenome}
-          variant="peaks"
-        />
+        <SampleDownloadButton sampleName={sampleName} sampleGenome={sampleGenome} variant="peaks" />
         <SampleDownloadButton
           sampleName={sampleName}
           sampleGenome={sampleGenome}

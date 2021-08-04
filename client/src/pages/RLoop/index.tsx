@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { barChartDataItem } from "../../models";
-import BarChart from "../../components/BarChart";
 import { RouteComponentProps } from "react-router-dom";
 import axios from "axios";
+import { barChartDataItem } from "../../models";
+import BarChart from "../../components/BarChart";
 import SampleDownloads from "../../components/SampleDownloads";
 
 const initialState = [
@@ -46,7 +46,7 @@ const convertData = (row: any) => {
     "Simple_repeat",
     "SINE",
   ];
-  let array = KEYS.map((key) => {
+  const array = KEYS.map((key) => {
     return {
       x: key,
       y: Number(row[`${key}__Log2 Ratio (obs/exp)`]),
@@ -56,10 +56,9 @@ const convertData = (row: any) => {
 };
 
 function SampleView({ location }: RouteComponentProps) {
-  const [sampleData, setSampleData] =
-    useState<barChartDataItem[]>(initialState);
+  const [sampleData, setSampleData] = useState<barChartDataItem[]>(initialState);
   const [minAndMax, setMinAndMax] = useState<number[]>([0, 0]);
-  const [, /*loading*/ setLoading] = useState(false);
+  const [, /* loading */ setLoading] = useState(false);
   const [info, setInfo] = useState<any>({});
   const [name, setName] = useState("");
   const [value, setValue] = useState("");
@@ -68,9 +67,7 @@ function SampleView({ location }: RouteComponentProps) {
     const get = async () => {
       setLoading(true);
       try {
-        const res: any = await axios.get(
-          `http://127.0.0.1:5000/api-v1/sample${location.search}`
-        );
+        const res: any = await axios.get(`http://127.0.0.1:5000/api-v1/sample${location.search}`);
         if (res?.data?.[0]) {
           setInfo(res.data[0]);
           const depuredData = convertData(res.data[0]);
@@ -100,9 +97,8 @@ function SampleView({ location }: RouteComponentProps) {
       <div className="ms-4">
         <h3 className="mt-8 text-center">Genomic Feature Enrichment</h3>
         <p>
-          R-loop broad peaks were called with <code>macs2</code> and then
-          compared with genomic features using{" "}
-          <code>assignGenomeAnnotation</code> from <code>homer</code>.
+          R-loop broad peaks were called with <code>macs2</code> and then compared with genomic
+          features using <code>assignGenomeAnnotation</code> from <code>homer</code>.
         </p>
         <div className="d-flex w-100  justify-content-center mt-2">
           <BarChart
@@ -145,10 +141,7 @@ function SampleView({ location }: RouteComponentProps) {
           </div>
         </div>
 
-        <SampleDownloads
-          sampleName={info.sample_name}
-          sampleGenome={info.genome}
-        />
+        <SampleDownloads sampleName={info.sample_name} sampleGenome={info.genome} />
       </div>
     </>
   );
