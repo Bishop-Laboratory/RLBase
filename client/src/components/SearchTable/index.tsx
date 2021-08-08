@@ -1,3 +1,9 @@
+/* eslint-disable react/button-has-type */
+/* eslint-disable no-nested-ternary */
+/* eslint-disable react/no-array-index-key */
+/* eslint-disable no-shadow */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import React from "react";
 import { useHistory } from "react-router-dom";
 import { useFilters, usePagination, useSortBy, useTable } from "react-table";
@@ -30,94 +36,89 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
           accessor: "type",
         },
       ];
-    } else
-      return [
-        {
-          Header: "R-Loop",
-          accessor: "SRX", // accessor is the "key" in the data
-        },
-        {
-          Header: "Cell Type",
-          accessor: "Cell",
-          Filter: SelectColumnFilter,
-        },
-        {
-          Header: "Info",
-          accessor: "mode",
-        },
-        {
-          Header: "Genotype",
-          accessor: "Genotype",
-          Filter: SelectColumnFilter
-        },
-        {
-          Header: "Study",
-          accessor: "Group",
-          Filter: SelectColumnFilter,
-
-        },
-        {
-          Header: "Specie",
-          accessor: "Species",
-          Filter: SelectColumnFilter,
-        },
-      ];
+    }
+    return [
+      {
+        Header: "R-Loop",
+        accessor: "SRX", // accessor is the "key" in the data
+      },
+      {
+        Header: "Cell Type",
+        accessor: "Cell",
+        Filter: SelectColumnFilter,
+      },
+      {
+        Header: "Info",
+        accessor: "mode",
+      },
+      {
+        Header: "Genotype",
+        accessor: "Genotype",
+        Filter: SelectColumnFilter,
+      },
+      {
+        Header: "Study",
+        accessor: "Group",
+        Filter: SelectColumnFilter,
+      },
+      {
+        Header: "Specie",
+        accessor: "Species",
+        Filter: SelectColumnFilter,
+      },
+    ];
   }, [match.params.type]);
-// Define a default UI for filtering
-function DefaultColumnFilter({
-  column: { filterValue, preFilteredRows, setFilter },
-}:any) {
-  const count = preFilteredRows.length
+  // Define a default UI for filtering
+  function DefaultColumnFilter({ column: { filterValue, preFilteredRows, setFilter } }: any) {
+    const count = preFilteredRows.length;
 
-  return (
-    <input
-      value={filterValue || ''}
-      onChange={e => {
-        setFilter(e.target.value || undefined) // Set undefined to remove the filter entirely
-      }}
-      placeholder={`Search ${count} records...`}
-    />
-  )
-}
-const defaultColumn = React.useMemo(
-  () => ({
-    // Let's set up our default Filter UI
-    Filter: DefaultColumnFilter,
-  }),
-  []
-)
-function SelectColumnFilter({
-  column: { filterValue, setFilter, preFilteredRows, id },
-}:any) {
-  // Calculate the options for filtering
-  // using the preFilteredRows
-  const options = React.useMemo(() => {
-    const options = new Set()
-    preFilteredRows.forEach((row:any) => {
-      options.add(row.values[id])
-    })
-    //@ts-ignore
-    return [...options.values()]
-  }, [id, preFilteredRows])
+    return (
+      <input
+        value={filterValue || ""}
+        onChange={(e) => {
+          setFilter(e.target.value || undefined); // Set undefined to remove the filter entirely
+        }}
+        placeholder={`Search ${count} records...`}
+      />
+    );
+  }
+  const defaultColumn = React.useMemo(
+    () => ({
+      // Let's set up our default Filter UI
+      Filter: DefaultColumnFilter,
+    }),
+    []
+  );
+  function SelectColumnFilter({ column: { filterValue, setFilter, preFilteredRows, id } }: any) {
+    // Calculate the options for filtering
+    // using the preFilteredRows
+    const options = React.useMemo(() => {
+      const options = new Set();
+      preFilteredRows.forEach((row: any) => {
+        options.add(row.values[id]);
+      });
+      // @ts-ignore
+      return [...options.values()];
+    }, [id, preFilteredRows]);
 
-  // Render a multi-select box
-  return (
-    <select
-      value={filterValue}
-      style={{width:150}}
-      onChange={e => {
-        setFilter(e.target.value || undefined)
-      }}
-    >
-      <option value="">All</option>
-      {options.map((option, i) => (
-        <option key={i} value={option}>
-          {option}
-        </option>
-      ))}
-    </select>
-  )
-}
+    // Render a multi-select box
+    return (
+      <select
+        value={filterValue}
+        style={{ width: 150 }}
+        onChange={(e) => {
+          setFilter(e.target.value || undefined);
+        }}
+      >
+        <option value="">All</option>
+        {options.map((option, i) => (
+          <option key={i} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    );
+  }
 
   const onRowClick = (row: any) => {
     switch (match.params.type) {
@@ -133,8 +134,8 @@ function SelectColumnFilter({
   };
 
   const tableInstance = useTable(
-    //@ts-ignore
-    { columns, data,initialState: { pageIndex: 0 }, defaultColumn},
+    // @ts-ignore
+    { columns, data, initialState: { pageIndex: 0 }, defaultColumn },
     useFilters,
     useSortBy,
     usePagination
@@ -143,25 +144,25 @@ function SelectColumnFilter({
     getTableProps,
     getTableBodyProps,
     headerGroups,
-    //@ts-ignore
+    // @ts-ignore
     page,
-    //@ts-ignore
+    // @ts-ignore
     canPreviousPage,
-    //@ts-ignore
+    // @ts-ignore
     canNextPage,
-    //@ts-ignore
+    // @ts-ignore
     pageOptions,
-    //@ts-ignore
+    // @ts-ignore
     pageCount,
-    //@ts-ignore
+    // @ts-ignore
     gotoPage,
-    //@ts-ignore
+    // @ts-ignore
     nextPage,
-    //@ts-ignore
+    // @ts-ignore
     previousPage,
-    //@ts-ignore
+    // @ts-ignore
     setPageSize,
-    //@ts-ignore
+    // @ts-ignore
 
     state: { pageIndex, pageSize },
     prepareRow,
@@ -179,16 +180,16 @@ function SelectColumnFilter({
                   // Loop over the headers in each row
                   headerGroup.headers.map((column) => (
                     // Apply the header cell props
-                    <th //@ts-ignore
+                    <th // @ts-ignore
                       {...column.getHeaderProps(column.getSortByToggleProps())}
                     >
                       {
                         // Render the header
                         column.render("Header")
                       }
-                      {/*@ts-ignore*/}
+                      {/* @ts-ignore */}
                       {column.isSorted ? (
-                        //@ts-ignore
+                        // @ts-ignore
                         column.isSortedDesc ? (
                           <ArrowDownShort />
                         ) : (
@@ -197,8 +198,8 @@ function SelectColumnFilter({
                       ) : (
                         ""
                       )}
-                      {/*@ts-ignore*/}
-                      <div>{column.canFilter ? column.render('Filter') : null}</div>
+                      {/* @ts-ignore */}
+                      <div>{column.canFilter ? column.render("Filter") : null}</div>
                     </th>
                   ))
                 }

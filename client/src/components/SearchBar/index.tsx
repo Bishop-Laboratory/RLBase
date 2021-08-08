@@ -1,46 +1,58 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable react/no-array-index-key */
+/* eslint-disable jsx-a11y/label-has-associated-control */
 import { stringify } from "qs";
 import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 
 const SearchBar = () => {
   const { push } = useHistory();
-  const sampleOptions = {"Cell": "Cell type", study: "Study", Species: "Specie"}
-  const geneOptions = {"Gene ID": "Gene", go: "GO Biological process"}
-  const rloopOptions = {"R-loop": "R-loop ID", coordinates: "Genomic coordinates", class: "R-loop class"}
+  const sampleOptions = {
+    Cell: "Cell type",
+    study: "Study",
+    Species: "Specie",
+  };
+  const geneOptions = { "Gene ID": "Gene", go: "GO Biological process" };
+  const rloopOptions = {
+    "R-loop": "R-loop ID",
+    coordinates: "Genomic coordinates",
+    class: "R-loop class",
+  };
   const [radio, setRadio] = useState<"gene" | "r-loop" | "sample">("sample");
-  const [parameters,setParameters] = useState<any>({})
-  const [currentOptions, setCurrentOptions] = useState<any>({})
+  const [parameters, setParameters] = useState<any>({});
+  const [currentOptions, setCurrentOptions] = useState<any>({});
   const navigateToSearchResults = () => {
-    const filters = Object.assign({}, parameters)
-    Object.keys(filters).forEach(parameter => {
-      if(filters[parameter] === "") delete filters[parameter]
+    const filters = { ...parameters };
+    Object.keys(filters).forEach((parameter) => {
+      if (filters[parameter] === "") delete filters[parameter];
     });
-    push(`/search/${radio}?${stringify(filters)}`)
-  }
-  useEffect(()=> {
-    const renderEmptyInput = (object: any) =>{
-      const cleanState =  Object.assign({}, object)
-      Object.keys(cleanState).forEach(parameter => {
-        cleanState[parameter] = ""
+    push(`/search/${radio}?${stringify(filters)}`);
+  };
+  useEffect(() => {
+    const renderEmptyInput = (object: any) => {
+      const cleanState = { ...object };
+      Object.keys(cleanState).forEach((parameter) => {
+        cleanState[parameter] = "";
       });
-      return cleanState
+      return cleanState;
+    };
+    if (radio === "gene") {
+      setParameters(() => ({ ...renderEmptyInput(geneOptions) }));
+      setCurrentOptions(geneOptions);
     }
-    if(radio === "gene") {setParameters(() => Object.assign({},renderEmptyInput(geneOptions))) 
-    setCurrentOptions(geneOptions)}
-    if(radio === "r-loop"){ setParameters(() => Object.assign({},renderEmptyInput(rloopOptions)))
-    setCurrentOptions(rloopOptions)}
-    if(radio === "sample") {setParameters(() => Object.assign({},renderEmptyInput(sampleOptions)))
-    setCurrentOptions(sampleOptions)}
-
-  },[radio])
+    if (radio === "r-loop") {
+      setParameters(() => ({ ...renderEmptyInput(rloopOptions) }));
+      setCurrentOptions(rloopOptions);
+    }
+    if (radio === "sample") {
+      setParameters(() => ({ ...renderEmptyInput(sampleOptions) }));
+      setCurrentOptions(sampleOptions);
+    }
+  }, [radio]);
   return (
     <>
       <h5>What do you want to look for?</h5>
-      <div
-        className="btn-group"
-        role="group"
-        aria-label="Basic radio toggle button group"
-      >
+      <div className="btn-group" role="group" aria-label="Basic radio toggle button group">
         <input
           type="radio"
           className="btn-check"
@@ -86,23 +98,24 @@ const SearchBar = () => {
         {Object.keys(currentOptions).map((item, index) => (
           <div key={`input-${index}`} className="input-group mb-3">
             <span className="input-group-text" id={`inputGroup-${index}`}>
-              {/*@ts-ignore*/}
+              {/* @ts-ignore */}
               {currentOptions[item]}
             </span>
             <input
               value={parameters[item]}
-              onChange={(e)=> setParameters((prev: any) => Object.assign({}, prev, {[item]: e.target.value}))}
+              onChange={(e) =>
+                setParameters((prev: any) => ({
+                  ...prev,
+                  [item]: e.target.value,
+                }))
+              }
               type="text"
               className="form-control"
               aria-label={`Search by ${item}`}
             />
           </div>
         ))}
-        <button
-          className="btn btn-outline-success"
-          onClick={navigateToSearchResults}
-          type="submit"
-        >
+        <button className="btn btn-outline-success" onClick={navigateToSearchResults} type="submit">
           Search
         </button>
       </form>

@@ -13,18 +13,18 @@ const NavBar = () => {
         aria-expanded="false"
         aria-label="Toggle navigation"
       >
-        <span className="navbar-toggler-icon"></span>
+        <span className="navbar-toggler-icon" />
       </button>
       <div className="collapse navbar-collapse" id="navbarNav">
         <ul className="navbar-nav">
           <li className="nav-item">
             <Link to="/" className="nav-link">
-              RMapDB 
+              RMapDB
             </Link>
           </li>
           <li className="nav-item">
             <Link to="/about" className="nav-link">
-              About 
+              About
             </Link>
           </li>
           <li className="nav-item">
@@ -34,7 +34,12 @@ const NavBar = () => {
           </li>
           <li className="nav-item">
             <Link to="/downloads" className="nav-link">
-              Download 
+              Download
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link to="/upload" className="nav-link">
+              Upload
             </Link>
           </li>
           <li className="nav-item">
@@ -44,7 +49,7 @@ const NavBar = () => {
           </li>
           <li className="nav-item">
             <Link to="/help" className="nav-link">
-              Help 
+              Help
             </Link>
           </li>
         </ul>
