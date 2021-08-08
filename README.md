@@ -1,4 +1,7 @@
 # RMapDB-v2
+![Build Status](https://github.com/Bishop-Laboratory/RMapDB-v2/workflows/api-build/badge.svg)
+
+
 <p>
 Repository for RMapDB
 </p>
