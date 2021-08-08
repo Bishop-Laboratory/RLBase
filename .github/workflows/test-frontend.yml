@@ -23,5 +23,5 @@ jobs:
     - uses: c-hive/gha-yarn-cache@v1
     - run: |
         cd client/
-        yarn install
-        yarn start
+        npm install
+        npm start
