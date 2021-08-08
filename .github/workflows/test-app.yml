@@ -32,5 +32,5 @@ jobs:
         cd RMapDB-API/
         source env/bin/activate
         coverage run -m pytest
-        coverage report -m --fail-under=95
+        coverage report -m --fail-under=75
 
