@@ -1,5 +1,5 @@
 # RMapDB-v2
-![Build Status](https://github.com/Bishop-Laboratory/RMapDB-v2/workflows/api-build/badge.svg)
+![Build Status](https://github.com/Bishop-Laboratory/RMapDB-v2/workflows/API/badge.svg)
 
 
 <p>
