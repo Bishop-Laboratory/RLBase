@@ -126,18 +126,16 @@ class Genes(Base):
     rloops = relationship("GeneRLoopOverlap", back_populates="gene")
     # Unidirectional many-to-many relationship with GeneExpSamples via GeneExpression
     gene_exp_samples = relationship("GeneExpression")
-    # Unidirectional one-to-one relationship with AliasToGene
-    alias = relationship("AliasToGene", back_populates="gene", uselist=False)
+    # Unidirectional one-to-many relationship with AliasToGene
+    aliases = relationship("AliasToGene")
 
 
 class AliasToGene(Base):
     # Matching ENSEMBL ids to gene aliases
     __tablename__ = "alias_to_gene"
 
-    gene_id = Column(String, ForeignKey('genes.id'), primary_key=True)
-    alias = Column(String)
-    # Relationships
-    gene = relationship("Genes", back_pouplates="alias")
+    alias = Column(String, primary_key=True)
+    gene = Column(String, ForeignKey('genes.id'))
 
 
 class GeneExpression(Base):
