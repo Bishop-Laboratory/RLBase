@@ -1,40 +1,58 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable react/no-array-index-key */
+/* eslint-disable jsx-a11y/label-has-associated-control */
+import { stringify } from "qs";
 import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 
 const SearchBar = () => {
   const { push } = useHistory();
-
+  const sampleOptions = {
+    Cell: "Cell type",
+    study: "Study",
+    Species: "Specie",
+  };
+  const geneOptions = { "Gene ID": "Gene", go: "GO Biological process" };
+  const rloopOptions = {
+    "R-loop": "R-loop ID",
+    coordinates: "Genomic coordinates",
+    class: "R-loop class",
+  };
   const [radio, setRadio] = useState<"gene" | "r-loop" | "sample">("sample");
-  const [parameter,setParameter] = useState<string>("")
-  const [currentOptions, setCurrentOptions] = useState<any>({})
-  const [inputValue, setInputValue] = useState<string>("")
-
+  const [parameters, setParameters] = useState<any>({});
+  const [currentOptions, setCurrentOptions] = useState<any>({});
   const navigateToSearchResults = () => {
-
-    push(`/search/${radio}?${parameter}=${inputValue}`)
-  }
-  useEffect(()=> {
-
-    const sampleOptions = {"Cell": "Cell type", study: "Study", Species: "Specie"}
-    const geneOptions = {"Gene ID": "Gene", go: "GO Biological process"}
-    const rloopOptions = {"R-loop": "R-loop ID", coordinates: "Genomic coordinates", class: "R-loop class"}
-
-    if(radio === "gene") {
-    setCurrentOptions(geneOptions)}
-    if(radio === "r-loop"){ 
-    setCurrentOptions(rloopOptions)}
-    if(radio === "sample") {
-    setCurrentOptions(sampleOptions)}
-
-  },[radio])
+    const filters = { ...parameters };
+    Object.keys(filters).forEach((parameter) => {
+      if (filters[parameter] === "") delete filters[parameter];
+    });
+    push(`/search/${radio}?${stringify(filters)}`);
+  };
+  useEffect(() => {
+    const renderEmptyInput = (object: any) => {
+      const cleanState = { ...object };
+      Object.keys(cleanState).forEach((parameter) => {
+        cleanState[parameter] = "";
+      });
+      return cleanState;
+    };
+    if (radio === "gene") {
+      setParameters(() => ({ ...renderEmptyInput(geneOptions) }));
+      setCurrentOptions(geneOptions);
+    }
+    if (radio === "r-loop") {
+      setParameters(() => ({ ...renderEmptyInput(rloopOptions) }));
+      setCurrentOptions(rloopOptions);
+    }
+    if (radio === "sample") {
+      setParameters(() => ({ ...renderEmptyInput(sampleOptions) }));
+      setCurrentOptions(sampleOptions);
+    }
+  }, [radio]);
   return (
     <>
       <h5>What do you want to look for?</h5>
-      <div
-        className="btn-group"
-        role="group"
-        aria-label="Basic radio toggle button group"
-      >
+      <div className="btn-group" role="group" aria-label="Basic radio toggle button group">
         <input
           type="radio"
           className="btn-check"
@@ -76,22 +94,27 @@ const SearchBar = () => {
       </div>
       <h5 className="mt-3">Find {radio}s with...</h5>
       <form className="d-flex flex-column">
-        <div className="d-flex flex-row">
-        <select onChange={e => setParameter(e.target.value)} style={{width: 300}}>
-          {Object.keys(currentOptions).map((item, index) => <option value={item}>{currentOptions[item]}</option>)}
-        </select>
-        <input
-              value={inputValue}
-              onChange={(e)=> setInputValue(e.target.value)}
+        {Object.keys(currentOptions).map((item, index) => (
+          <div key={`input-${index}`} className="input-group mb-3">
+            <span className="input-group-text" id={`inputGroup-${index}`}>
+              {/* @ts-ignore */}
+              {currentOptions[item]}
+            </span>
+            <input
+              value={parameters[item]}
+              onChange={(e) =>
+                setParameters((prev: any) => ({
+                  ...prev,
+                  [item]: e.target.value,
+                }))
+              }
               type="text"
               className="form-control"
-            /></div>
-        <button
-          style={{width: 300}}
-          className="mt-4 align-self-center btn btn-outline-success"
-          onClick={navigateToSearchResults}
-          type="submit"
-        >
+              aria-label={`Search by ${item}`}
+            />
+          </div>
+        ))}
+        <button className="btn btn-outline-success" onClick={navigateToSearchResults} type="submit">
           Search
         </button>
       </form>

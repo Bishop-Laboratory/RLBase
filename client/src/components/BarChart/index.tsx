@@ -1,11 +1,8 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable react/require-default-props */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import React, { useRef, useEffect, SetStateAction } from "react";
-import {
-  select,
-  axisBottom,
-  scaleLinear,
-  scaleBand,
-  axisLeft,
-} from "d3";
+import { select, axisBottom, scaleLinear, scaleBand, axisLeft } from "d3";
 import { barChartDataItem } from "../../models";
 
 function BarChart({
@@ -15,14 +12,14 @@ function BarChart({
   minAndMax,
   color,
   setName,
-  setValue
+  setValue,
 }: {
   title: string;
   selectedItem: barChartDataItem[];
   minAndMax: number[];
-  color: string
-  setName: React.Dispatch<SetStateAction<string>>
-  setValue: React.Dispatch<SetStateAction<string>>
+  color: string;
+  setName: React.Dispatch<SetStateAction<string>>;
+  setValue: React.Dispatch<SetStateAction<string>>;
   hideYAxis?: boolean;
 }) {
   const svgRef = useRef<any>();
@@ -44,10 +41,7 @@ function BarChart({
     const xAxis: any = axisBottom(xScale).ticks(selectedItem.length);
     svg
       .select(".x-axis")
-      .style(
-        "transform",
-        `translate(${MARGIN.LEFT}px,${HEIGHT + MARGIN.TOP}px)`
-      )
+      .style("transform", `translate(${MARGIN.LEFT}px,${HEIGHT + MARGIN.TOP}px)`)
       .call(xAxis)
       .selectAll("text")
       .attr("y", "-5")
@@ -72,10 +66,7 @@ function BarChart({
       svg
         .append("text")
         .text("Log2 Ratio (obs/exp)")
-        .attr(
-          "transform",
-          `translate(15, ${HEIGHT - MARGIN.TOP / 2}) rotate(-90)`
-        )
+        .attr("transform", `translate(15, ${HEIGHT - MARGIN.TOP / 2}) rotate(-90)`)
         .attr("text-anchor", "middle");
     }
     svg
@@ -86,8 +77,8 @@ function BarChart({
         setValue(e.target.getAttribute("value"));
         select("#tooltip")
           .classed("d-none", false)
-          .style("left", e.pageX + "px")
-          .style("top", e.pageY + "px");
+          .style("left", `${e.pageX}px`)
+          .style("top", `${e.pageY}px`);
       })
       .on("mouseout", (e: any) => {
         select("#tooltip").classed("d-none", true);
@@ -96,16 +87,14 @@ function BarChart({
       .transition()
       .attr("class", "bar")
       .attr("x", (value: barChartDataItem) => {
-        //@ts-ignore
+        // @ts-ignore
         return xScale(value.x) + MARGIN.LEFT;
       })
       .attr("y", (value: barChartDataItem) =>
         value.y < 0 ? MARGIN.TOP + yScale(0) : MARGIN.TOP + yScale(value.y)
       )
       .attr("width", xScale.bandwidth)
-      .attr("height", (value: barChartDataItem) =>
-        Math.abs(yScale(0) - yScale(value.y))
-      )
+      .attr("height", (value: barChartDataItem) => Math.abs(yScale(0) - yScale(value.y)))
       .attr("value", (value: barChartDataItem) => value.y)
       .attr("name", (value: barChartDataItem) => value.x)
       .attr("fill", color);

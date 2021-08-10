@@ -11,7 +11,6 @@ import Help from "./pages/Help";
 import Upload from "./pages/Upload";
 
 function App() {
-
   return (
     <Router>
       <Route path="/" component={NavBar} />
@@ -26,6 +25,5 @@ function App() {
     </Router>
   );
 }
-
 
 export default App;

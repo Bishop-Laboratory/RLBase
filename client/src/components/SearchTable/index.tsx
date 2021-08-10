@@ -1,3 +1,9 @@
+/* eslint-disable react/button-has-type */
+/* eslint-disable no-nested-ternary */
+/* eslint-disable react/no-array-index-key */
+/* eslint-disable no-shadow */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import React from "react";
 import { useHistory } from "react-router-dom";
 import { useFilters, usePagination, useSortBy, useTable } from "react-table";
@@ -117,9 +123,7 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
     }),
     []
   );
-  function SelectColumnFilter({
-    column: { filterValue, setFilter, preFilteredRows, id },
-  }: any) {
+  function SelectColumnFilter({ column: { filterValue, setFilter, preFilteredRows, id } }: any) {
     // Calculate the options for filtering
     // using the preFilteredRows
     const options = React.useMemo(() => {
@@ -127,7 +131,7 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
       preFilteredRows.forEach((row: any) => {
         options.add(row.values[id]);
       });
-      //@ts-ignore
+      // @ts-ignore
       return [...options.values()];
     }, [id, preFilteredRows]);
 
@@ -164,7 +168,7 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
   };
 
   const tableInstance = useTable(
-    //@ts-ignore
+    // @ts-ignore
     { columns, data, initialState: { pageIndex: 0 }, defaultColumn },
     useFilters,
     useSortBy,
@@ -174,25 +178,25 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
     getTableProps,
     getTableBodyProps,
     headerGroups,
-    //@ts-ignore
+    // @ts-ignore
     page,
-    //@ts-ignore
+    // @ts-ignore
     canPreviousPage,
-    //@ts-ignore
+    // @ts-ignore
     canNextPage,
-    //@ts-ignore
+    // @ts-ignore
     pageOptions,
-    //@ts-ignore
+    // @ts-ignore
     pageCount,
-    //@ts-ignore
+    // @ts-ignore
     gotoPage,
-    //@ts-ignore
+    // @ts-ignore
     nextPage,
-    //@ts-ignore
+    // @ts-ignore
     previousPage,
-    //@ts-ignore
+    // @ts-ignore
     setPageSize,
-    //@ts-ignore
+    // @ts-ignore
 
     state: { pageIndex, pageSize },
     prepareRow,
@@ -210,16 +214,16 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
                   // Loop over the headers in each row
                   headerGroup.headers.map((column) => (
                     // Apply the header cell props
-                    <th //@ts-ignore
+                    <th // @ts-ignore
                       {...column.getHeaderProps(column.getSortByToggleProps())}
                     >
                       {
                         // Render the header
                         column.render("Header")
                       }
-                      {/*@ts-ignore*/}
+                      {/* @ts-ignore */}
                       {column.isSorted ? (
-                        //@ts-ignore
+                        // @ts-ignore
                         column.isSortedDesc ? (
                           <ArrowDownShort />
                         ) : (
@@ -228,10 +232,8 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
                       ) : (
                         ""
                       )}
-                      <div>
-                        {/*@ts-ignore*/}
-                        {column.canFilter ? column.render("Filter") : null}
-                      </div>
+                      {/* @ts-ignore */}
+                      <div>{column.canFilter ? column.render("Filter") : null}</div>
                     </th>
                   ))
                 }

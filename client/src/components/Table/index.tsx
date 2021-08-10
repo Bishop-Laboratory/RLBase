@@ -9,7 +9,6 @@ const Table = ({
   data: any[];
   setSelectedItem: React.Dispatch<SetStateAction<barChartDataItem[]>>;
 }) => {
-  
   const columns = React.useMemo(
     () => [
       {
@@ -36,7 +35,7 @@ const Table = ({
     []
   );
   const tableInstance = useTable(
-    //@ts-ignore
+    // @ts-ignore
     { columns, data, initialState: { pageIndex: 0 } },
     usePagination
   );
@@ -44,25 +43,25 @@ const Table = ({
     getTableProps,
     getTableBodyProps,
     headerGroups,
-    //@ts-ignore
+    // @ts-ignore
     page,
-    //@ts-ignore
+    // @ts-ignore
     canPreviousPage,
-    //@ts-ignore
+    // @ts-ignore
     canNextPage,
-    //@ts-ignore
+    // @ts-ignore
     pageOptions,
-    //@ts-ignore
+    // @ts-ignore
     pageCount,
-    //@ts-ignore
+    // @ts-ignore
     gotoPage,
-    //@ts-ignore
+    // @ts-ignore
     nextPage,
-    //@ts-ignore
+    // @ts-ignore
     previousPage,
-    //@ts-ignore
+    // @ts-ignore
     setPageSize,
-    //@ts-ignore
+    // @ts-ignore
 
     state: { pageIndex, pageSize },
     prepareRow,
@@ -101,13 +100,7 @@ const Table = ({
               prepareRow(row);
               return (
                 // Apply the row props
-                <tr
-                  style={{ cursor: "pointer" }}
-                  onClick={() =>
-                    null
-                  }
-                  {...row.getRowProps()}
-                >
+                <tr style={{ cursor: "pointer" }} onClick={() => null} {...row.getRowProps()}>
                   {
                     // Loop over the rows cells
                     row.cells.map((cell: any) => {
@@ -130,17 +123,27 @@ const Table = ({
       </table>
       <div className="d-flex w-100 justify-content-center">
         <ul className="pagination">
-        <li className="page-item">
-        <button className="page-link" onClick={() => gotoPage(0)} disabled={!canPreviousPage} aria-label="Previous">
-        &laquo;
-      </button>
-    </li>
-    <li className="page-item">
-        <button className="page-link" onClick={() => previousPage()} disabled={!canPreviousPage} aria-label="Previous">
-        &lt;
-      </button>
-    </li>
-    </ul>
+          <li className="page-item">
+            <button
+              className="page-link"
+              onClick={() => gotoPage(0)}
+              disabled={!canPreviousPage}
+              aria-label="Previous"
+            >
+              &laquo;
+            </button>
+          </li>
+          <li className="page-item">
+            <button
+              className="page-link"
+              onClick={() => previousPage()}
+              disabled={!canPreviousPage}
+              aria-label="Previous"
+            >
+              &lt;
+            </button>
+          </li>
+        </ul>
         <span className="ms-2 me-2 mt-2">
           Page{" "}
           <strong>
@@ -148,21 +151,31 @@ const Table = ({
           </strong>{" "}
         </span>
         <ul className="pagination">
-        <li className="page-item">
-        <button className="page-link" onClick={() => nextPage()} disabled={!canNextPage} aria-label="Previous">
-        {">"}
-      </button>
-    </li>
-    <li className="page-item">
-        <button className="page-link" onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage} aria-label="Previous">
-        &raquo;
-      </button>
-    </li>
-    </ul> 
-    </div>
-    <div className="d-flex w-100 justify-content-center">
+          <li className="page-item">
+            <button
+              className="page-link"
+              onClick={() => nextPage()}
+              disabled={!canNextPage}
+              aria-label="Previous"
+            >
+              {">"}
+            </button>
+          </li>
+          <li className="page-item">
+            <button
+              className="page-link"
+              onClick={() => gotoPage(pageCount - 1)}
+              disabled={!canNextPage}
+              aria-label="Previous"
+            >
+              &raquo;
+            </button>
+          </li>
+        </ul>
+      </div>
+      <div className="d-flex w-100 justify-content-center">
         <span>
-           Go to page:{" "}
+          Go to page:{" "}
           <input
             type="number"
             defaultValue={pageIndex + 1}
@@ -185,7 +198,7 @@ const Table = ({
             </option>
           ))}
         </select>
-        </div>
+      </div>
     </div>
   );
 };

@@ -1,141 +1,197 @@
-import React from "react";
-import { useForm } from "react-hook-form";
+import React, { useState } from "react";
+import styles from "./index.module.css";
 
-const Upload = () => {
-  const { register, handleSubmit/*, formState: { errors }*/ } = useForm();
-  const onSubmit = (data:any) => console.log(data);
+interface FormData {
+  sampleId: string;
+  sampleCondition: string;
+  sampleType: string;
+  controlSample: string;
+  group: string;
+  submitterName: string;
+  submitterEmail: string;
+  uploadKey: string;
+  csv: File | null;
+}
+
+function Upload() {
+  const [formData, setFormData] = useState<FormData>({
+    sampleId: "",
+    sampleCondition: "",
+    sampleType: "",
+    controlSample: "",
+    group: "",
+    submitterName: "",
+    submitterEmail: "",
+    uploadKey: "",
+    csv: null,
+  });
+
+  const handleInputChange = (e: React.FormEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    setFormData({
+      ...formData,
+      [e.currentTarget.id]: e.currentTarget.value,
+    });
+  };
+
+  const handleFileChange = (e: React.FormEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    if (e.currentTarget.files) {
+      setFormData({
+        ...formData,
+        csv: e.currentTarget.files[0],
+      });
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // TODO: add post request to api-v1/rseq-worker
+  };
 
   return (
-    <div className="bg-light p-5 rounded-lg m-3">
-      <h1 className="display-4">Upload</h1>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="form-group d-flex flex-column">
-          <div className="input-group mb-3">
-            <div className="input-group-prepend">
-              <span className="input-group-text" id="basic-addon3">
-                Title (optional)
-              </span>
-            </div>
+    <main className="container">
+      <h1 className="my-4 text-center h2">Upload a New Sample</h1>
+      <form
+        className={`${styles["upload-form"]} d-flex flex-column align-items-center`}
+        onSubmit={handleSubmit}
+      >
+        <div className="row w-100">
+          <h2 className="h4">Sample Information</h2>
+        </div>
+        <div className="row w-100 mb-3">
+          <div className="col-md">
+            <label htmlFor="sampleId" className="form-label">
+              Sample ID
+            </label>
             <input
               type="text"
               className="form-control"
-              placeholder="..."
-              aria-label="Username"
-              aria-describedby="basic-addon1"
+              id="sampleId"
+              aria-describedby="sampleId"
+              onChange={handleInputChange}
+              required
             />
           </div>
-          <div className="input-group mb-3">
-            <div className="input-group-prepend">
-              <span className="input-group-text" id="basic-addon3">
-                Email address
-              </span>
-            </div>
+          <div className="col-md">
+            <label htmlFor="sampleCondition" className="form-label">
+              Sample Condition
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              id="sampleCondition"
+              aria-describedby="sampleCondition"
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div className="col-md">
+            <label htmlFor="sampleType" className="form-label">
+              Sample Type
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              id="sampleType"
+              aria-describedby="sampleType"
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+        </div>
+        <div className="row w-100 mb-3">
+          <div className="col-md">
+            <label htmlFor="controlSample" className="form-label">
+              Control Sample
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              id="controlSample"
+              aria-describedby="controlSample"
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div className="col-md">
+            <label htmlFor="csv" className="form-label">
+              CSV file
+            </label>
+            <input
+              className="form-control"
+              type="file"
+              id="csv"
+              onChange={handleFileChange}
+              required
+            />
+          </div>
+        </div>
+        <div className="row w-100 mt-3">
+          <h2 className="h4">Submitter Information</h2>
+        </div>
+        <div className="row w-100 mb-3">
+          <div className="col-md">
+            <label htmlFor="submitterName" className="form-label">
+              Name
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              id="submitterName"
+              aria-describedby="submitterName"
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div className=" col-md">
+            <label htmlFor="submitterEmail" className="form-label">
+              Email
+            </label>
             <input
               type="email"
               className="form-control"
-              placeholder="..."
-              aria-label="email address"
-              {...register("email", { required: true })}
+              id="submitterEmail"
+              aria-describedby="submitterEmail"
+              onChange={handleInputChange}
+              required
             />
           </div>
-          <div
-            className="input-group mb-3 border d-flex align-items-center "
-            style={{ width: 568 }}
-          >
-            <input
-              type="file"
-              accept=".xls,.narrowPeak,.broadPeak"
-              className="form-control-file bg-white"
-              style={{ width: 500 }}
-              id="peaks"
-              {...register("peaks", { required: true })}
-            />
-            <div className="input-group-append">
-              <span className="input-group-text" id="basic-addon2">
-                Peaks
-              </span>
-            </div>
-          </div>
-          <div
-            className="input-group mb-3 border d-flex align-items-center "
-            style={{ width: 711 }}
-          >
-            <input
-              type="file"
-              accept=".bw"
-              className="form-control-file bg-white"
-              style={{ width: 500 }}
-              id="coverage"
-              {...register("coverage", { required: true })}
-            />
-            <div className="input-group-append">
-              <span className="input-group-text" id="basic-addon2">
-                Coverage (bigWig format)
-              </span>
-            </div>
-          </div>
-          <div
-            className="input-group mb-3 border d-flex align-items-center "
-            style={{ width: 648 }}
-          >
-            <input
-              type="file"
-              accept=".txt"
-              className="form-control-file bg-white"
-              style={{ width: 500 }}
-              id="expression"
-              {...register("expression", { required: true })}
-            />
-            <div className="input-group-append">
-              <span className="input-group-text" id="basic-addon2">
-                Expression (TPM)
-              </span>
-            </div>
-          </div>
-          <div className="input-group mb-3">
-            <div className="input-group-prepend">
-              <label className="input-group-text" htmlFor="inputGroupSelect01">
-                Type of dataset supplied
-              </label>
-            </div>
-            <select className="custom-select" id="inputGroupSelect01">
-              <option selected>Choose...</option>
-              {[
-                "DRIP-Seq",
-                "qDRIP-Seq",
-                "sDRIP-Seq",
-                "DRIPc-Seq",
-                " R-ChIP-Seq",
-                "MapR",
-              ].map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="input-group mb-3">
-            <div className="input-group-prepend">
-              <label className="input-group-text" htmlFor="inputGroupSelect01">
-                Specie
-              </label>
-            </div>
-            <select className="custom-select" id="inputGroupSelect02">
-              <option selected>Choose...</option>
-              {[
-                "hg19", "hg38", "mm9", "mm10"
-              ].map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-          <input type="submit" value="Submit" />
         </div>
+        <div className="row w-100 mb-3">
+          <div className="col-md">
+            <label htmlFor="group" className="form-label">
+              Group
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              id="group"
+              aria-describedby="group"
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div className="col-md">
+            <label htmlFor="uploadKey" className="form-label">
+              Upload Key
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              id="uploadKey"
+              aria-describedby="uploadKey"
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+        </div>
+        <button type="submit" className="btn btn-primary my-3">
+          Submit
+        </button>
       </form>
-    </div>
+    </main>
   );
-};
+}
 
 export default Upload;
