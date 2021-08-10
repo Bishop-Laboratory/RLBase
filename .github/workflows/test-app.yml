@@ -16,12 +16,12 @@ jobs:
         python-version: 3.9
     - name: Install dependencies
       run: |
-        cd rmapdb-api/
+        cd RMapDB-API/
         python -m pip install --upgrade pip
         bash install.sh
     - name: Lint with flake8
       run: |
-        cd rmapdb-api/
+        cd RMapDB-API/
         source env/bin/activate
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
@@ -29,7 +29,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with coverage + pytest
       run: |
-        cd rmapdb-api/
+        cd RMapDB-API/
         source env/bin/activate
         coverage run -m pytest
         coverage report -m
