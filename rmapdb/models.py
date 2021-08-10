@@ -119,7 +119,6 @@ class Genes(Base):
 
     id = Column(String, primary_key=True, index=True)
     symbol = Column(String)
-    description = Column(String)
     biotype = Column(String)
     location = Column(String)
     # Bidirectional many-to-many relationship with RLoops via GeneRLooopOverlap
