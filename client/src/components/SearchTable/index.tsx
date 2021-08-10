@@ -18,7 +18,9 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
         {
           Header: "ID",
           accessor: "id", // accessor is the "key" in the data
-          Cell: (props: any) => <p className="text-primary text-decoration-underline">{props.row.original.id}</p>, 
+          Cell: ({ row: { original: id } }: any) => (
+            <p className="text-primary text-decoration-underline">{id}</p>
+          ),
         },
         {
           Header: "Chr",
@@ -37,12 +39,17 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
           accessor: "type",
         },
       ];
-    } else if (match.params.type === "gene"){
+    }
+    if (match.params.type === "gene") {
       return [
         {
           Header: "EnsemblID",
           accessor: "ensemblId", // accessor is the "key" in the data,
-          Cell: (props: any) => <p className="text-primary text-decoration-underline">{props.row.original.ensemblID}</p>, 
+          Cell: ({
+            row: {
+              original: { ensemblID },
+            },
+          }: any) => <p className="text-primary text-decoration-underline">{ensemblID}</p>,
         },
         {
           Header: "Chr",
@@ -64,46 +71,46 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
           Header: "BioType",
           accessor: "type",
         },
-      ]
-    }
-     else
-      return [
-        {
-          Header: "R-Loop",
-          accessor: "SRX", // accessor is the "key" in the data,
-          Cell: (props: any) => <p className="text-primary text-decoration-underline">{props.row.original.SRX}</p>, 
-
-        },
-        {
-          Header: "Cell Type",
-          accessor: "Cell",
-          Filter: SelectColumnFilter,
-        },
-        {
-          Header: "Info",
-          accessor: "mode",
-        },
-        {
-          Header: "Genotype",
-          accessor: "Genotype",
-          Filter: SelectColumnFilter,
-        },
-        {
-          Header: "Study",
-          accessor: "Group",
-          Filter: SelectColumnFilter,
-        },
-        {
-          Header: "Specie",
-          accessor: "Species",
-          Filter: SelectColumnFilter,
-        },
       ];
+    }
+    return [
+      {
+        Header: "R-Loop",
+        accessor: "SRX", // accessor is the "key" in the data,
+        Cell: ({
+          row: {
+            original: { SRX },
+          },
+        }: any) => <p className="text-primary text-decoration-underline">{SRX}</p>,
+      },
+      {
+        Header: "Cell Type",
+        accessor: "Cell",
+        Filter: SelectColumnFilter,
+      },
+      {
+        Header: "Info",
+        accessor: "mode",
+      },
+      {
+        Header: "Genotype",
+        accessor: "Genotype",
+        Filter: SelectColumnFilter,
+      },
+      {
+        Header: "Study",
+        accessor: "Group",
+        Filter: SelectColumnFilter,
+      },
+      {
+        Header: "Specie",
+        accessor: "Species",
+        Filter: SelectColumnFilter,
+      },
+    ];
   }, [match.params.type]);
   // Define a default UI for filtering
-  function DefaultColumnFilter({
-    column: { filterValue, preFilteredRows, setFilter },
-  }: any) {
+  function DefaultColumnFilter({ column: { filterValue, preFilteredRows, setFilter } }: any) {
     const count = preFilteredRows.length;
 
     return (

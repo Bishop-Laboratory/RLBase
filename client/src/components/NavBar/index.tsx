@@ -54,7 +54,7 @@ const NavBar = () => {
           </li>
           <li className="nav-item">
             <Link to="/upload" className="nav-link">
-              Upload 
+              Upload
             </Link>
           </li>
           <li className="nav-item">
