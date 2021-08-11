@@ -80,7 +80,7 @@ function BarChart({
           .style("left", `${e.pageX}px`)
           .style("top", `${e.pageY}px`);
       })
-      .on("mouseout", (e: any) => {
+      .on("mouseout", () => {
         select("#tooltip").classed("d-none", true);
       })
       .join("rect")

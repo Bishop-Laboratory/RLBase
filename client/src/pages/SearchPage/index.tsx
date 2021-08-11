@@ -5,7 +5,7 @@ import React from "react";
 import { RouteComponentProps } from "react-router-dom";
 import SearchTable from "../../components/SearchTable";
 
-const SearchPage = ({ match, location }: RouteComponentProps) => {
+const SearchPage = ({ match, location }: RouteComponentProps): any => {
   const [results, setResults] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState<boolean>(false);
   React.useEffect(() => {
@@ -19,7 +19,7 @@ const SearchPage = ({ match, location }: RouteComponentProps) => {
         const res: any = await axios.get(`http://127.0.0.1:5000/api-v1/${type}${location.search}`);
         if (res) setResults(res.data);
       } catch (error) {
-        console.error(error);
+        return error;
       } finally {
         setLoading(false);
       }

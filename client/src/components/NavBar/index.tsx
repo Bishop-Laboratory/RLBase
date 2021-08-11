@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const NavBar = () => {
+const NavBar = (): any => {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
       <button
@@ -45,11 +45,6 @@ const NavBar = () => {
           <li className="nav-item">
             <Link to="/downloads" className="nav-link">
               Download
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link to="/upload" className="nav-link">
-              Upload
             </Link>
           </li>
           <li className="nav-item">
