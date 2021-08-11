@@ -20,17 +20,12 @@ def get_db() -> Session:
 app = FastAPI()
 
 
-@app.get("/api-v1")
-def hello_name(name: str = None):
-    return {"greeting": f"Welcome to the RMapDB API, {name if name else 'friend!'}"}
-
-
-@app.get("/api-v1/sample")
+@app.get("/api-v1/rmap-sample")
 def db_test(request: Request, db: Session = Depends(get_db)):
     return services.process_sample_dataset_query(request, db)
 
 
-@app.get("/api-v1/r-loop")
+@app.get("/api-v1/rloops")
 def r_loop_table():
     return {
         [
