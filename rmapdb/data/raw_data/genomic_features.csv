@@ -1,7 +1,0 @@
-feature_id,Type,Source,location
-GF0129,Promoter,Encode,chr1:0080923-12392192:+
-GF92103,Promoter,Encode,chrX:123124-125122:-
-GF29391,Enhancer,Encode,chr9:9893004-123125:*
-GF1293,Enhancer,Encode,chr12:0080923-12392192:*
-GF0192,Promoter,Encode,chr1:0080923-12392192:+
-GF10239,Promoter,Encode,chr9:9893004-123125:*

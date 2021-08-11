@@ -1,9 +1,0 @@
-rloop_id,type,location,confidence_level,conservation_level,is_rlfs
-RL8802823,Co-transcriptional,chr1:0080923-12392192:+,0.98,95,TRUE
-RL8802824,Regulatory,chrX:123124-125122:-,0.56,55,TRUE
-RL8802825,Unknown,chr9:9893004-123125:*,0.51,2,FALSE
-RL8802826,Regulatory,chr12:0080923-12392192:*,0.12,4,FALSE
-RL8802827,Co-transcriptional,chr1:0080923-12392192:+,0.64,64,TRUE
-RL8802828,Co-transcriptional,chrX:123124-125122:-,0.55,52,TRUE
-RL8802829,Regulatory,chr9:9893004-123125:*,0.84,26,FALSE
-RL8802830,Unknown,chr12:0080923-12392192:*,0.33,54,FALSE
