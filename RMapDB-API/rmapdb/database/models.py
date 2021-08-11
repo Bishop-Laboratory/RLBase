@@ -75,7 +75,7 @@ class SampleQualChar(Base):
 
 # Unclear if this is necessary since there is no extra information in the table
 # If unnecessary replace with non-class declared Table object containing left and right id foreign keys only
-class GenFeatRLooopOverlap(Base):
+class GenFeatRLoopOverlap(Base):
     # Association table for many-to-many relationship between RLoops and GenomicFeatures
     __tablename__ = "gf_rl_overlap"
 
@@ -101,7 +101,7 @@ class GenomicFeatures(Base):
 
 # Unclear if this is necessary since there is no extra information in the table
 # If unnecessary replace with non-class declared Table object containing left and right id foreign keys only
-class GeneRLooopOverlap(Base):
+class GeneRLoopOverlap(Base):
     # Association table for many-to-many relationship between RLoops and Genes
     __tablename__ = "gene_rl_overlap"
 
