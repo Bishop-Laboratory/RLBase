@@ -3,7 +3,6 @@
 *env/
 *.env/
 *.egg-info
-*instance/
 *__pycache__/
 .Rproj.user
 .Rhistory
