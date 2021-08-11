@@ -3,6 +3,12 @@
 *env/
 *.env/
 *.egg-info
-*instance/
 *__pycache__/
+<<<<<<< HEAD
 .vscode
+=======
+.Rproj.user
+.Rhistory
+.RData
+RMapDB-v2.Rproj
+>>>>>>> synchronize

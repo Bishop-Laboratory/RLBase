@@ -1,32 +1,7 @@
-# API backend README
+# RMapDB API
 
-## Set up and run the API server in a dev environment
+This API is built using `fastapi` and `sqlalchemy`. 
 
-To set up the API server, clone this repo:
+A mockup of the schema for the database is found [here](https://docs.google.com/spreadsheets/d/1bnMVxhtZzwX9P9T1--aIha6yq9QsUvtNS9g5hGfOWJg/edit?usp=sharing).
 
-```shell
-git clone https://github.com/Bishop-Laboratory/RMapDB-v2.git
-```
-
-Then, change to the repo folder and install dependencies:
-
-```shell
-cd RMapDB-v2/RMapDB-API/
-python -m pip install --upgrade pip
-bash install.sh
-```
-
-Run all tests to ensure the app works:
-
-```shell
-source env/bin/activate
-coverage run -m pytest
-coverage report -m
-```
-
-Launch the backend server (this is debugging mode):
-
-```shell
-bash run_server.sh
-```
 
