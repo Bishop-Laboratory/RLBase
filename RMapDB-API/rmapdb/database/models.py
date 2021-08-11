@@ -1,6 +1,6 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DECIMAL
 from sqlalchemy.orm import relationship
-from rmapdb.database import Base
+from .db import Base
 
 
 class RLoops(Base):

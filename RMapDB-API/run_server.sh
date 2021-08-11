@@ -1,5 +1,6 @@
 #!/bin/bash
 
-export FLASK_APP=rmapdb
-export FLASK_ENV=development
-flask run
+python3 -m venv env
+source env/bin/activate
+pip install -r requirements.txt
+python3 -m rmapdb.main
