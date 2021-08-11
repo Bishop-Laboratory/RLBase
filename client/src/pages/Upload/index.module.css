@@ -1,0 +1,7 @@
+@import "../../variables.css";
+
+.upload-form {
+  width: 100%;
+  max-width: var(--md);
+  margin: auto;
+}
