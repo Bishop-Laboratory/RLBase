@@ -5,3 +5,7 @@
 *.egg-info
 *instance/
 *__pycache__/
+.Rproj.user
+.Rhistory
+.RData
+RMapDB-v2.Rproj
