@@ -93,7 +93,6 @@ class GenomicFeatures(Base):
 
     id = Column(String, primary_key=True, index=True)
     type = Column(String)
-    source = Column(String)
     location = Column(String)
     # Bidirectional many-to-many relationship with RLoops via GenFeatRLooopOverlap
     rloops = relationship("GenFeatRLoopOverlap", back_populates="genomic_feature")
