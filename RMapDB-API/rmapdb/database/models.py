@@ -166,5 +166,4 @@ class GeneExpToRmapSamples(Base):
     # Foreign keys
     rmap_sample_id = Column(String, ForeignKey('rmap_samples.id'), primary_key=True)
     gene_exp_sample_id = Column(String, ForeignKey('gene_exp_samples.id'), primary_key=True)
-    # Relationships
-    gene_exp_sample = relationship("GeneExpSamples")
+    condition=Column(String)
