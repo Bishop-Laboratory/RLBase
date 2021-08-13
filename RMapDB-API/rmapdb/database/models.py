@@ -156,25 +156,15 @@ class GeneExpSamples(Base):
     __tablename__ = "gene_exp_samples"
 
     id = Column(String, primary_key=True, index=True)
-    sample_name = Column(String)
-    genome = Column(String)
-    lab = Column(String)
-    study_id = Column(String)
-    tissue = Column(String)
-    genotype = Column(String)
-    treatment = Column(String)
     condition = Column(String)
     paired_end = Column(Boolean)
-    type = Column(String)
 
-
+    
 class GeneExpToRmapSamples(Base):
     # Association table for many-to-many relationship between GeneExpSamples and RMapSamples
     __tablename__ = "gene_exp_to_rmap_samples"
     # Foreign keys
     rmap_sample_id = Column(String, ForeignKey('rmap_samples.id'), primary_key=True)
     gene_exp_sample_id = Column(String, ForeignKey('gene_exp_samples.id'), primary_key=True)
-    # Extra data
-    tissue = Column(String)
     # Relationships
     gene_exp_sample = relationship("GeneExpSamples")
