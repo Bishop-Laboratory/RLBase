@@ -1,7 +1,9 @@
 library(shiny)
 library(DT)
 library(plotly)
-library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
 library(bslib)
 library(RColorBrewer)
 
