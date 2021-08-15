@@ -1,5 +1,6 @@
 env:
   RENV_PATHS_ROOT: ~/.local/share/renv
+  UBUNTU_VERSION: 20.04
   
 on:
   push:
@@ -12,8 +13,7 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
-    
+    runs-on: ubuntu-${{ UBUNTU_VERSION }}
     strategy:
       matrix:
         config:
@@ -29,6 +29,13 @@ jobs:
     - uses: r-lib/actions/setup-r@v1
       with:
         r-version: ${{ matrix.config.r }}
+    - name: Install Sys dependencies
+        run: |
+          Rscript -e "install.packages('remotes')" -e "remotes::install_github('r-hub/sysreqs')"
+          sysreqs=$(Rscript -e "apt_get_install('renv.lock', distribution = 'ubuntu', release = '${{ UBUNTU_VERSION }}')")
+          echo $sysreqs
+          sudo apt-get update
+          sudo eval "$sysreqs"
     - name: Cache packages
       uses: actions/cache@v1
       with:
@@ -36,9 +43,13 @@ jobs:
         key: ${{ runner.os }}-renv-${{ hashFiles('**/renv.lock') }}
         restore-keys: |
           ${{ runner.os }}-renv-
-    
     - name: Restore packages
       shell: Rscript {0}
       run: |
         if (!requireNamespace("renv", quietly = TRUE)) install.packages("renv")
+        options(repos = c(RSPM = "https://packagemanager.rstudio.com/all/latest"))
         renv::restore()
+    - name: Run tests
+      shell: Rscript {0}
+      run: |
+        shiny::runTests(".", assert = TRUE)
