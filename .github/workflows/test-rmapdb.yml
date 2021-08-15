@@ -31,7 +31,7 @@ jobs:
         r-version: ${{ matrix.config.r }}
     - name: Install Sys dependencies
       run: |
-        Rscript -e "install.packages('remotes')" -e "remotes::install_github('r-hub/sysreqs')"
+        Rscript -e "install.packages('remotes')" -e "remotes::install_github('mdneuzerling/getsysreqs')"
         sysreqs=$(Rscript -e "apt_get_install('renv.lock', distribution = 'ubuntu', release = '20.04')")
         echo $sysreqs
         sudo apt-get update
