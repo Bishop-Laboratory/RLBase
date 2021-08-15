@@ -32,7 +32,7 @@ jobs:
     - name: Install Sys dependencies
       run: |
         Rscript -e "install.packages('remotes')" -e "remotes::install_github('mdneuzerling/getsysreqs')"
-        sysreqs=$(Rscript -e "apt_get_install('renv.lock', distribution = 'ubuntu', release = '20.04')")
+        sysreqs=$(Rscript -e "getsysreqs::apt_get_install('renv.lock', distribution = 'ubuntu', release = '20.04')")
         echo $sysreqs
         sudo apt-get update
         sudo eval "$sysreqs"
