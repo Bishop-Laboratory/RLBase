@@ -13,11 +13,11 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-${{ UBUNTU_VERSION }}
+    runs-on: ubuntu-${{ env.UBUNTU_VERSION }}
     strategy:
       matrix:
         config:
-          - {os: ubuntu-latest, r: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest"}
+          - {os: ubuntu-${{ env.UBUNTU_VERSION }}, r: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest"}
     
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
@@ -32,7 +32,7 @@ jobs:
     - name: Install Sys dependencies
       run: |
         Rscript -e "install.packages('remotes')" -e "remotes::install_github('r-hub/sysreqs')"
-        sysreqs=$(Rscript -e "apt_get_install('renv.lock', distribution = 'ubuntu', release = '${{ UBUNTU_VERSION }}')")
+        sysreqs=$(Rscript -e "apt_get_install('renv.lock', distribution = 'ubuntu', release = '${{ env.UBUNTU_VERSION }}')")
         echo $sysreqs
         sudo apt-get update
         sudo eval "$sysreqs"
