@@ -33,10 +33,10 @@ jobs:
       shell: bash {0}
       run: |
         Rscript -e "install.packages('remotes')" -e "remotes::install_github('mdneuzerling/getsysreqs')"
-        sysreqs=$(Rscript -e "getsysreqs::apt_get_install('renv.lock', distribution = 'ubuntu', release = '20.04')")
+        sysreqs=$(Rscript -e "cat(getsysreqs::apt_get_install('renv.lock', distribution = 'ubuntu', release = '20.04'))")
         echo $sysreqs
         sudo apt-get update
-        sudo -s eval "$sysreqs"
+        sudo eval "$sysreqs"
     - name: Cache packages
       uses: actions/cache@v1
       with:
