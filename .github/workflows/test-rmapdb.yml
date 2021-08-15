@@ -36,7 +36,7 @@ jobs:
         sysreqs=$(Rscript -e "getsysreqs::apt_get_install('renv.lock', distribution = 'ubuntu', release = '20.04')")
         echo $sysreqs
         sudo apt-get update
-        sudo eval "$sysreqs"
+        sudo -s eval "$sysreqs"
     - name: Cache packages
       uses: actions/cache@v1
       with:
