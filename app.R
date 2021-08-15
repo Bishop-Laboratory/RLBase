@@ -3,11 +3,22 @@ library(DT)
 library(plotly)
 library(tidyverse)
 library(bslib)
+library(RColorBrewer)
 
 # Get the data
 if (! "dataLst" %in% names(globalenv())) {
     load('dataLst.rda')
 }
+
+# Get corr dataset & wrangle
+torm <- "ERX2277510_E-MTAB-6318DRIP_mOHT"
+load(paste0("misc/report_rda/", torm, "_hg38.QC_report.rda"))
+keep <- which(! colnames(data_list$corr_data$corMat) %in% torm)
+corr_data <- data_list$corr_data$corMat[keep, keep]
+annoCorr <- data_list$corr_data$annoNow[colnames(corr_data),]
+newlabs <- gsub(rownames(annoCorr), pattern = ".+_([ES]{1}RX[0-9]+)$", replacement = "\\1")
+rownames(annoCorr) <- colnames(corr_data) <- rownames(corr_data) <- newlabs
+
 
 # Get ammptatopms
 anno_data <- dataLst %>%
@@ -97,13 +108,38 @@ ui <- function(request) {
                                            id = "samplesbookmark")
                         )
                     ),
+                    hr(),
                     fluidRow(
                         column(
-                            width = 5,
+                            width = 12,
+                            selectInput(
+                                inputId = "selectGenome", 
+                                label = "Genome",
+                                multiple = TRUE,
+                                choices = unique(dataLst$rmap_samples$genome),
+                            ),
+                            selectInput(
+                                inputId = "selectMode", 
+                                label = "Mode",
+                                multiple = TRUE,
+                                choices = unique(dataLst$rmap_samples$mode)
+                            ),
+                            selectInput(
+                                inputId = "selectCond", 
+                                label = "Condition",
+                                multiple = TRUE,
+                                choices = unique(dataLst$rmap_samples$condition)
+                            )
+                        )
+                    ),
+                    hr(),
+                    fluidRow(
+                        column(
+                            width = 4,
                             DTOutput('rmapSamples')
                         ),
                         column(
-                            width = 7,
+                            width = 8,
                             tabsetPanel(
                                 id = "rmapSampsTabset",
                                 tabPanel(
@@ -112,25 +148,29 @@ ui <- function(request) {
                                     icon = icon('home'),
                                     fluidRow(
                                         column(
-                                            width = 12,
-                                            selectInput(
-                                                inputId = 'chooseAnnoPlotData',
-                                                label = "Select Data Type",
-                                                choices = c("Log2 Ratio (obs/exp)",
-                                                            "LogP enrichment (+values depleted)"), 
-                                                selected = "Log2 Ratio (obs/exp)"
-                                            ),
-                                            plotOutput('sampleAnnotationPlot')
-                                        )
-                                    ),
-                                    fluidRow(
-                                        column(
                                             width = 6,
+                                            br(),
                                             plotOutput('zScorePlot')
                                         ),
                                         column(
                                             width = 6,
+                                            br(),
                                             plotOutput('rmapHeatmap')
+                                        )
+                                    ),
+                                    fluidRow(
+                                        column(
+                                            width = 12,
+                                            plotOutput('sampleAnnotationPlot'),
+                                            selectInput(
+                                                inputId = 'chooseAnnoPlotData',
+                                                label = "Select Data Type",
+                                                choices = c("Log2 Ratio (obs/exp)",
+                                                            "Number of peaks", 
+                                                            "Total size (bp)",
+                                                            "LogP enrichment (+values depleted)"), 
+                                                selected = "Log2 Ratio (obs/exp)"
+                                            )
                                         )
                                     )
                                 ),
@@ -257,7 +297,7 @@ server <- function(input, output, session) {
                     )
                 )
         }
-    )
+    ) 
     
     output$zScorePlot <- renderPlot({
         
@@ -279,7 +319,7 @@ server <- function(input, output, session) {
                        full.names = TRUE)
         
         # Load from file
-        # TODO: This is not an optimal way to get this data...
+        # TODO: This is really not an good way to get this data...
         suppressWarnings(load(current_file)) 
         
         # Get LZ
@@ -297,17 +337,20 @@ server <- function(input, output, session) {
             ylab("Peak Enrichment (Z-Score)") +
             xlab("Distance to RLFS (bp)") +
             theme_bw(base_size = 15)
-    })
+    }) %>%
+        bindCache(input$rmapSamples_rows_selected)
     
     
     output$sampleAnnotationPlot <- renderPlot({
         
         opt <- input$chooseAnnoPlotData
         
-        MIN_ALLOW <- ifelse(opt == "Log2 Ratio (obs/exp)", -7.5, -300)
-        MAX_ALLOW <- ifelse(opt == "Log2 Ratio (obs/exp)", 7.5, 300)
-        
-        print(MAX_ALLOW)
+        MIN_ALLOW <- ifelse(opt == "Log2 Ratio (obs/exp)", -7.5, 
+                            ifelse(opt == "LogP enrichment (+values depleted)", 
+                                   -1000, -Inf))
+        MAX_ALLOW <- ifelse(opt == "Log2 Ratio (obs/exp)", 7.5, 
+                            ifelse(opt == "LogP enrichment (+values depleted)", 
+                                   1000, Inf))
         
         # Get selected row from datatable
         selectedRow <- ifelse(is.null(input$rmapSamples_rows_selected), 
@@ -324,8 +367,6 @@ server <- function(input, output, session) {
         minplt <- (min(na.omit(anno_data)[, opt]) * 1.05 )%>% ifelse(. < MIN_ALLOW, MIN_ALLOW, .)
         maxplt <- (max(na.omit(anno_data)[, opt]) * 1.05) %>% ifelse(. > MAX_ALLOW, MAX_ALLOW, .)
         
-        print(maxplt)
-        
         boxFills <- c('gene' = 'firebrick', 'RNA' = 'goldenrod', 'rep' = 'forestgreen')
         titles <- c('gene' = 'Genomic Features', 'RNA' = 'ncRNAs', 'rep' = 'Repetitive Elements')
         genelvls <- c("CpG-Island",
@@ -337,7 +378,7 @@ server <- function(input, output, session) {
                       "TTS",
                       "Intergenic")
         
-        lapply(unique(anno_data$annotate_type), function(annoNow) {
+        suppressWarnings(lapply(unique(anno_data$annotate_type), function(annoNow) {
             anno_data %>%
                 filter(annotate_type == !!annoNow) %>%
                 mutate(Annotation = if (!! annoNow == "gene") 
@@ -377,11 +418,55 @@ server <- function(input, output, session) {
                 theme(axis.text.x = element_text(angle = 45, vjust = 1,
                                                  hjust = 1)) +
                 ylim(minplt, maxplt)
-        }) %>%
+        })) %>%
             ggpubr::ggarrange(plotlist = ., nrow = 1, align = "h")
-    })
+    }) %>%
+        bindCache(input$rmapSamples_rows_selected, input$chooseAnnoPlotData)
+    
+    
+    output$rmapHeatmap <- renderPlot({
+        # Get selected row from datatable
+        selectedRow <- ifelse(is.null(input$rmapSamples_rows_selected), 
+                              1, 
+                              input$rmapSamples_rows_selected)
+        
+        # Get current sample ID
+        current_samp <- dataLst %>%
+            pluck("rmap_samples") %>%
+            filter(row_number() == selectedRow) %>%
+            pull(id)
+        
+        # From: https://stackoverflow.com/questions/31677923/set-0-point-for-pheatmap-in-r
+        annoCorr$Source <- as.factor(ifelse(rownames(annoCorr) != current_samp, "", current_samp))
+        paletteLength <- 100
+        myColor <- colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(paletteLength)
+        # length(breaks) == length(paletteLength) + 1
+        # use floor and ceiling to deal with even/odd length pallettelengths
+        myBreaks <- c(seq(min(corr_data), 0, length.out=ceiling(paletteLength/2) + 1), 
+                      seq(max(corr_data)/paletteLength, max(corr_data), length.out=floor(paletteLength/2)))
+        src_col <- c("grey", "firebrick")
+        names(src_col) <- c("", current_samp)
+        
+        print("Hello ")
+        
+        pheatmap::pheatmap(corr_data, show_rownames = FALSE, 
+                           show_colnames = FALSE, silent = TRUE,
+                           annotation_colors = list(
+                               Source = src_col
+                           ), 
+                           color = myColor, breaks = myBreaks,
+                           annotation_col = annoCorr) %>%
+            pluck(4) %>%
+            ggplotify::as.ggplot()
+        
+    }) %>%
+        bindCache(input$rmapSamples_rows_selected)
+    
+    
+    
 }
 
 # TODO: Need URL cleaner
 # Run the application 
+graphics.off()
 shinyApp(ui, server, enableBookmarking = "url")
