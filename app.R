@@ -3,44 +3,14 @@ library(DT)
 library(plotly)
 library(dplyr)
 library(tidyr)
+library(tibble)
+library(purrr)
 library(ggplot2)
 library(bslib)
 library(RColorBrewer)
 
-# Get the data
-if (! "dataLst" %in% names(globalenv())) {
-    load('dataLst.rda')
-}
-
-# Get corr dataset & wrangle
-torm <- "ERX2277510_E-MTAB-6318DRIP_mOHT"
-load(paste0("misc/report_rda/", torm, "_hg38.QC_report.rda"))
-keep <- which(! colnames(data_list$corr_data$corMat) %in% torm)
-corr_data <- data_list$corr_data$corMat[keep, keep]
-annoCorr <- data_list$corr_data$annoNow[colnames(corr_data),]
-newlabs <- gsub(rownames(annoCorr), pattern = ".+_([ES]{1}RX[0-9]+)$", replacement = "\\1")
-rownames(annoCorr) <- colnames(corr_data) <- rownames(corr_data) <- newlabs
-
-
-# Get ammptatopms
-anno_data <- dataLst %>%
-    pluck("sample_quality_characteristics") %>%
-    filter(grepl(char_type, pattern = "__")) %>%
-    mutate(Annotation = gsub(char_type, pattern = "(.+)__(.+)", replacement = "\\1"),
-           data_type = gsub(char_type, pattern = "(.+)__(.+)", replacement = "\\2")) %>%
-    select(-char_type) %>%
-    inner_join(y = data.frame(
-        "Annotation" = c('Intergenic', 'Simple_repeat', 'Satellite', 'Promoter', 'pseudo',
-                         'Intron', 'TTS', 'LINE', 'LTR', 'SINE', 'DNA', 'CpG-Island', 'ncRNA',
-                         'Low_complexity', 'Exon', 'snRNA', 'Retroposon', '5UTR', '3UTR', 'srpRNA', 
-                         'tRNA', 'RC', 'scRNA', 'miRNA', 'RNA', 'snoRNA'),
-        "annotate_type" = c("gene", "rep", "rep", "gene", "RNA", "gene", "gene", 
-                            "rep", "rep", "rep", "rep", "gene", "RNA", "rep",
-                            "gene", "RNA", "rep", "gene", "gene", "RNA",
-                            "RNA", "RNA", "RNA", "RNA", "RNA", "RNA"), stringsAsFactors = FALSE
-    ), by = "Annotation") %>%
-    pivot_wider(id_cols = c(id, Annotation, annotate_type), names_from = data_type, values_from = value) %>%
-    inner_join(y = pluck(dataLst, "rmap_samples"), by = "id")
+# Get constants
+source("const.R")
 
 # Define UI for application that draws a histogram
 ui <- function(request) {
@@ -104,122 +74,191 @@ ui <- function(request) {
                     title = "RMapDB Samples",
                     fluidRow(
                         column(
-                            width = 12,
-                            bookmarkButton(label = "Share",
-                                           style="float:right",
-                                           id = "samplesbookmark")
-                        )
-                    ),
-                    hr(),
-                    fluidRow(
-                        column(
-                            width = 12,
-                            selectInput(
-                                inputId = "selectGenome", 
-                                label = "Genome",
-                                multiple = TRUE,
-                                choices = unique(dataLst$rmap_samples$genome),
-                            ),
-                            selectInput(
-                                inputId = "selectMode", 
-                                label = "Mode",
-                                multiple = TRUE,
-                                choices = unique(dataLst$rmap_samples$mode)
-                            ),
-                            selectInput(
-                                inputId = "selectCond", 
-                                label = "Condition",
-                                multiple = TRUE,
-                                choices = unique(dataLst$rmap_samples$condition)
-                            )
-                        )
-                    ),
-                    hr(),
-                    fluidRow(
-                        column(
                             width = 4,
-                            DTOutput('rmapSamples')
-                        ),
-                        column(
-                            width = 8,
-                            tabsetPanel(
-                                id = "rmapSampsTabset",
-                                tabPanel(
-                                    title = "QC",
-                                    # TODO: Need icon for QC
-                                    icon = icon('home'),
-                                    fluidRow(
-                                        column(
-                                            width = 6,
-                                            br(),
-                                            plotOutput('zScorePlot')
-                                        ),
-                                        column(
-                                            width = 6,
-                                            br(),
-                                            plotOutput('rmapHeatmap')
-                                        )
+                            fluidRow(
+                                column(
+                                    width = 6,
+                                    selectInput(
+                                        inputId = "selectGenome", 
+                                        label = "Genome",
+                                        multiple = FALSE,
+                                        selected = "hg38",
+                                        choices = unique(dataLst$rmap_samples$genome),
                                     ),
-                                    fluidRow(
-                                        column(
-                                            width = 12,
-                                            plotOutput('sampleAnnotationPlot'),
-                                            selectInput(
-                                                inputId = 'chooseAnnoPlotData',
-                                                label = "Select Data Type",
-                                                choices = c("Log2 Ratio (obs/exp)",
-                                                            "Number of peaks", 
-                                                            "Total size (bp)",
-                                                            "LogP enrichment (+values depleted)"), 
-                                                selected = "Log2 Ratio (obs/exp)"
-                                            )
-                                        )
+                                ),
+                                column(
+                                    width = 6,
+                                    selectInput(
+                                        inputId = "selectMode", 
+                                        label = "Mode",
+                                        multiple = TRUE,
+                                        selected = c("DRIP", "DRIPc", "sDRIP", "qDRIP"),
+                                        choices = unique(dataLst$rmap_samples$mode)
+                                    ),
+                                )
+                            ),
+                            fluidRow(
+                                column(
+                                    width = 6,
+                                    checkboxInput(
+                                        inputId = "selectCond", 
+                                        label = "Show Controls (e.g., 'RNH')",
+                                        value = FALSE
                                     )
                                 ),
-                                tabPanel(
-                                    title = "Expression",
-                                    # TODO: Need icon
-                                    icon = icon('home'),
-                                    fluidRow(
-                                        column(
-                                            width = 6,
-                                            fluidRow(
-                                                column(
-                                                    width = 12,
-                                                    plotlyOutput('rlVsExp')
-                                                )
-                                            ),
-                                            fluidRow(
-                                                selectInput(
-                                                    inputId = "selectExpType",
-                                                    label = "Select Normalization",
-                                                    choices = c("TPM", "VST", "Log2-counts"),
-                                                    selected = "TPM"
-                                                )
-                                            )
-                                        ),
-                                        column(
-                                            width = 6,
-                                            plotlyOutput('expPCA')
-                                        )
-                                    )
-                                ),
-                                tabPanel(
-                                    title = "Downloads",
-                                    # TODO: Need icon
-                                    icon = icon('home'),
-                                    downloadButton(
-                                        outputId = "downloadCoverage",
-                                        label = "Coverage"
-                                    ),
-                                    downloadButton(
-                                        outputId = "downloadPeaks",
-                                        label = "Peaks"
-                                    )
+                                column(
+                                    width = 6,
+                                    bookmarkButton(label = "Share",
+                                                   id = "samplesbookmark")
+                                )
+                            ),
+                            hr(),
+                            fluidRow(
+                                column(
+                                    width = 12,
+                                    DTOutput('rmapSamples')
                                 )
                             )
-                        )
-                    ),
+                       ),
+                       column(
+                           width = 8,
+                           column(
+                               width = 12,
+                               tabsetPanel(
+                                   id = "rmapSampsTabset",
+                                   tabPanel(
+                                       title = "QC",
+                                       # TODO: Need icon for QC
+                                       icon = icon('home'),
+                                       fluidRow(
+                                           column(
+                                               width = 4,
+                                               # fluidRow(
+                                               #     column(
+                                               #         width = 12,
+                                               #         plotOutput('heatDistPlot')
+                                               #     )
+                                               # ),
+                                               fluidRow(
+                                                   column(
+                                                       width = 12,
+                                                       hr(),
+                                                       tabsetPanel(
+                                                           id = "qualCharTabs",
+                                                           tabPanel(
+                                                               title = "Summary",
+                                                               icon = icon('home'),
+                                                               DTOutput('sumStats')
+                                                           ),
+                                                           tabPanel(
+                                                               title = "Reads",
+                                                               icon = icon('home'),
+                                                               tableOutput('fqStats')
+                                                           ),
+                                                           tabPanel(
+                                                               title = "Alignment",
+                                                               icon = icon('home'),
+                                                               tableOutput('bamStats')
+                                                           ),
+                                                           tabPanel(
+                                                               title = "Peaks",
+                                                               icon = icon('home'),
+                                                               tableOutput('pkStats')
+                                                           )
+                                                       )
+                                                   )
+                                               )
+                                           ),
+                                           column(
+                                               width = 8, 
+                                               plotOutput('rmapHeatmap',
+                                                          height = "500px")
+                                           )
+                                       ),
+                                       fluidRow(
+                                           column(
+                                               width = 4,
+                                               br(),
+                                               plotOutput('zScorePlot', 
+                                                          height = "300px")
+                                           ),
+                                           column(
+                                               width = 4,
+                                               br(),
+                                               plotOutput('pValPlot',
+                                                          height = "300px")
+                                           ),
+                                           column(
+                                               width = 4,
+                                               br(),
+                                               plotOutput('FFTAnalysis')
+                                           )
+                                       )
+                                   ),
+                                   tabPanel(
+                                       title = "Annotation",
+                                       icon = icon("home"),
+                                       fluidRow(
+                                           column(
+                                               width = 12,
+                                               selectInput(
+                                                   inputId = 'chooseAnnoPlotData',
+                                                   label = "Select Data Type",
+                                                   choices = c("Log2 Ratio (obs/exp)",
+                                                               "Number of peaks", 
+                                                               "Total size (bp)",
+                                                               "LogP enrichment (+values depleted)"), 
+                                                   selected = "Log2 Ratio (obs/exp)"
+                                               ),
+                                               plotOutput('sampleAnnotationPlot')
+                                           )
+                                       )
+                                   ),
+                                   tabPanel(
+                                       title = "Expression",
+                                       # TODO: Need icon
+                                       icon = icon('home'),
+                                       fluidRow(
+                                           column(
+                                               width = 6,
+                                               fluidRow(
+                                                   column(
+                                                       width = 12,
+                                                       plotlyOutput('rlVsExp')
+                                                   )
+                                               ),
+                                               fluidRow(
+                                                   selectInput(
+                                                       inputId = "selectExpType",
+                                                       label = "Select Normalization",
+                                                       choices = c("TPM", "VST", "Log2-counts"),
+                                                       selected = "TPM"
+                                                   )
+                                               )
+                                           ),
+                                           column(
+                                               width = 6,
+                                               plotlyOutput('expPCA')
+                                           )
+                                       )
+                                   ),
+                                   tabPanel(
+                                       title = "Downloads",
+                                       # TODO: Need icon
+                                       icon = icon('home'),
+                                       downloadButton(
+                                           outputId = "downloadCoverage",
+                                           label = "Coverage"
+                                       ),
+                                       downloadButton(
+                                           outputId = "downloadPeaks",
+                                           label = "Peaks"
+                                       )
+                                   )
+                               )
+                           )
+                       )
+                    )
                     
                 )
             ),
@@ -270,36 +309,46 @@ server <- function(input, output, session) {
         session$doBookmark()
     })
     
-    
     ### Sample Page ###
     # TODO: Should be sorted
     # TODO: Should contain quality score
     # TODO: Should contain link that will open the details modal
     # TODO: Should include UI to add hyperlink for clicking SRX
     # TODO: Should have better color for the selection of rows
+    rmapSampsRV <- reactive({
+        dataLst %>%
+            pluck("rmap_samples") %>%
+            filter(genome == input$selectGenome, 
+                   is_rnh_like %in% c(FALSE, input$selectCond),
+                   mode %in% input$selectMode) %>%
+            pull(id)
+    })
+        
     output$rmapSamples <- renderDT(
         server = FALSE, {
             dataLst %>%
                 pluck("rmap_samples") %>%
+                filter(id %in% rmapSampsRV()) %>%
                 select(Sample=id, 
                        Study=study_id,
                        Mode = mode,
-                       Genome = genome,
-                       Condition = condition,
                        Tissue=tissue,
+                       Condition = condition,
+                       Genome = genome,
                        Genotype = genotype,
                        Treatment = treatment) %>%
                 datatable(
                     selection = list(mode = "single",
                                      selected = 1),
-                    rownames = FALSE,
+                    rownames = FALSE, 
                     options = list(
                         pageLength = 10,
                         scrollX = TRUE
                     )
                 )
         }
-    ) 
+    ) %>%
+        bindCache(rmapSampsRV())
     
     output$zScorePlot <- renderPlot({
         
@@ -311,6 +360,7 @@ server <- function(input, output, session) {
         # Get current sample ID
         current_samp <- dataLst %>%
             pluck("rmap_samples") %>%
+            filter(id %in% rmapSampsRV()) %>%
             filter(row_number() == selectedRow) %>%
             pull(id)
         
@@ -340,8 +390,42 @@ server <- function(input, output, session) {
             xlab("Distance to RLFS (bp)") +
             theme_bw(base_size = 15)
     }) %>%
-        bindCache(input$rmapSamples_rows_selected)
+        bindCache(input$rmapSamples_rows_selected, rmapSampsRV())
     
+    
+    output$pValPlot <- renderPlot({
+        # Get selected row from datatable
+        selectedRow <- ifelse(is.null(input$rmapSamples_rows_selected), 
+                              1, 
+                              input$rmapSamples_rows_selected)
+        
+        # Get current sample ID
+        current_samp <- dataLst %>%
+            pluck("rmap_samples") %>%
+            filter(id %in% rmapSampsRV()) %>%
+            filter(row_number() == selectedRow) %>%
+            pull(id)
+        
+        # Get file to load from
+        current_file <-  current_samp %>%
+            list.files('misc/report_rda_small/', 
+                       pattern = .,
+                       full.names = TRUE)
+        
+        # Load from file
+        # TODO: This is really not an good way to get this data...
+        suppressWarnings(load(current_file)) 
+        
+        # Get pt
+        pt <- data_list %>%
+            pluck("rlfs_data", 
+                  1,
+                  "regioneR::numOverlaps")
+        
+        # Plot
+        regioneR:::plot.permTestResults(pt)
+        
+    })
     
     output$sampleAnnotationPlot <- renderPlot({
         
@@ -362,6 +446,7 @@ server <- function(input, output, session) {
         # Get current sample ID
         current_samp <- dataLst %>%
             pluck("rmap_samples") %>%
+            filter(id %in% rmapSampsRV()) %>%
             filter(row_number() == selectedRow) %>%
             pull(id)
         
@@ -369,29 +454,19 @@ server <- function(input, output, session) {
         minplt <- (min(na.omit(anno_data)[, opt]) * 1.05 )%>% ifelse(. < MIN_ALLOW, MIN_ALLOW, .)
         maxplt <- (max(na.omit(anno_data)[, opt]) * 1.05) %>% ifelse(. > MAX_ALLOW, MAX_ALLOW, .)
         
-        boxFills <- c('gene' = 'firebrick', 'RNA' = 'goldenrod', 'rep' = 'forestgreen')
-        titles <- c('gene' = 'Genomic Features', 'RNA' = 'ncRNAs', 'rep' = 'Repetitive Elements')
-        genelvls <- c("CpG-Island",
-                      "Promoter",
-                      "5UTR",
-                      "Exon",
-                      "Intron",
-                      "3UTR",
-                      "TTS",
-                      "Intergenic")
-        
         suppressWarnings(lapply(unique(anno_data$annotate_type), function(annoNow) {
             anno_data %>%
-                filter(annotate_type == !!annoNow) %>%
+                filter(annotate_type == !!annoNow,
+                       id %in% rmapSampsRV()) %>%
                 mutate(Annotation = if (!! annoNow == "gene") 
-                    factor(Annotation, levels =  genelvls) 
+                    factor(Annotation, levels =  annoPlot_genelvls) 
                     else Annotation) %>%
                 mutate(sample_now = id == !! current_samp) %>%
                 fill(everything(0)) %>%
                 arrange(sample_now) %>%
                 ggplot(mapping = aes(x = Annotation, 
                                      y = .data[[opt]])) +
-                geom_boxplot(fill = boxFills[annoNow],
+                geom_boxplot(fill = annoPlot_boxFills[annoNow],
                              outlier.shape = NA) +
                 geom_jitter(mapping = aes(
                     size = sample_now, 
@@ -402,7 +477,7 @@ server <- function(input, output, session) {
                 ggpubr::rremove("legend") +
                 ylab(opt) +
                 xlab(NULL) +
-                labs(title = titles[annoNow]) +
+                labs(title = annoPlot_titles[annoNow]) +
                 theme_bw() +
                 scale_color_manual(values = c(
                     "TRUE" = "#2F3940",
@@ -423,7 +498,7 @@ server <- function(input, output, session) {
         })) %>%
             ggpubr::ggarrange(plotlist = ., nrow = 1, align = "h")
     }) %>%
-        bindCache(input$rmapSamples_rows_selected, input$chooseAnnoPlotData)
+        bindCache(input$rmapSamples_rows_selected, input$chooseAnnoPlotData, rmapSampsRV())
     
     
     output$rmapHeatmap <- renderPlot({
@@ -435,37 +510,90 @@ server <- function(input, output, session) {
         # Get current sample ID
         current_samp <- dataLst %>%
             pluck("rmap_samples") %>%
+            filter(id %in% rmapSampsRV()) %>%
             filter(row_number() == selectedRow) %>%
             pull(id)
         
+        # Filter for current samples selected
+        annoCorrNow <- annoCorr[rmapSampsRV(),]
+        corrNow <- corr_data[rmapSampsRV(),rmapSampsRV()]
+        
         # From: https://stackoverflow.com/questions/31677923/set-0-point-for-pheatmap-in-r
-        annoCorr$Source <- as.factor(ifelse(rownames(annoCorr) != current_samp, "", current_samp))
+        annoCorrNow$sample <- as.factor(ifelse(rownames(annoCorrNow) != current_samp, "", "selected"))
+        
+        # Select isControl if there's a good reason to
+        if (any(annoCorrNow$isControl)) {
+            annoCorrNow$isControl <- as.factor(annoCorrNow$isControl)
+        } else {
+            annoCorrNow <- annoCorrNow[,-which(colnames(annoCorrNow) == "isControl")]
+        }
+        
         paletteLength <- 100
         myColor <- colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(paletteLength)
         # length(breaks) == length(paletteLength) + 1
         # use floor and ceiling to deal with even/odd length pallettelengths
-        myBreaks <- c(seq(min(corr_data), 0, length.out=ceiling(paletteLength/2) + 1), 
-                      seq(max(corr_data)/paletteLength, max(corr_data), length.out=floor(paletteLength/2)))
-        src_col <- c("grey", "firebrick")
-        names(src_col) <- c("", current_samp)
-        
-        print("Hello ")
-        
-        pheatmap::pheatmap(corr_data, show_rownames = FALSE, 
+        myBreaks <- c(seq(min(corrNow), 0, length.out=ceiling(paletteLength/2) + 1), 
+                      seq(max(corrNow)/paletteLength, max(corrNow), length.out=floor(paletteLength/2)))
+        pheatColLst$Mode <- pheatColLst$Mode[which(names(pheatColLst$Mode) %in% annoCorrNow$Mode)]
+        pheatmap::pheatmap(corrNow, show_rownames = FALSE, 
+                           main = paste0("RMapDB Corr Heatmap\n", current_samp),
                            show_colnames = FALSE, silent = TRUE,
-                           annotation_colors = list(
-                               Source = src_col
-                           ), 
+                           annotation_colors = pheatColLst, 
                            color = myColor, breaks = myBreaks,
-                           annotation_col = annoCorr) %>%
+                           annotation_col = annoCorrNow) %>%
             pluck(4) %>%
             ggplotify::as.ggplot()
         
     }) %>%
-        bindCache(input$rmapSamples_rows_selected)
+        bindCache(input$rmapSamples_rows_selected, rmapSampsRV())
     
     
     
+    output$sumStats <- renderDT({
+        
+        # Get selected row from datatable
+        selectedRow <- ifelse(is.null(input$rmapSamples_rows_selected), 
+                              1, 
+                              input$rmapSamples_rows_selected)
+        
+        # Get current sample ID
+        current_samp <- dataLst %>%
+            pluck("rmap_samples") %>%
+            filter(id %in% rmapSampsRV()) %>%
+            filter(row_number() == selectedRow) %>%
+            pull(id)
+        
+        # TODO: REFACTOR THIS!
+        
+        dataLst %>%
+            pluck("sample_quality_characteristics") %>%
+            filter(id == current_samp) %>%
+            left_join(y = qualCol, by = c("char_type" = "name")) %>%
+            pivot_longer(
+                cols = all_of(c("error", "ok", "warning")), names_repair = "minimal", values_to = "vals"
+            ) %>%
+            mutate(is_nl = map_lgl(
+                vals,
+                function(x) {is.null(x)}
+            )) %>%
+            filter(! is_nl) -> dd
+        dd$intervalTest <- sapply(rownames(dd), function(x) {
+            x <- as.numeric(x)
+            intv <- dd$vals[x] %>% unlist()
+            lab <- dd$name[x]
+            val <- dd$value[x]
+            return(findInterval(val, intv) == 1L)
+        })
+        dd %>%
+            filter(intervalTest) %>%
+            left_join(qualColors) %>%
+            mutate(value = paste0(
+                "<p style='color:", color,"'>", round(value, 4), "</p>"
+            )) %>%
+            select("QC Metric" = char_type, value = value) %>%
+            print()
+    }, escape=FALSE, rownames = FALSE, options = list(dom = "t")) %>%
+        bindCache(input$rmapSamples_rows_selected, rmapSampsRV())
 }
 
 # TODO: Need URL cleaner
