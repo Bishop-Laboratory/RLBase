@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable react/require-default-props */
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import React, { useRef, useEffect, SetStateAction } from "react";
 import { select, axisBottom, scaleLinear, scaleBand, axisLeft } from "d3";
 import { barChartDataItem } from "../../models";

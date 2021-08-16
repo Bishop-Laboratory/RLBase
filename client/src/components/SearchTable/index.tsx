@@ -2,8 +2,6 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable react/no-array-index-key */
 /* eslint-disable no-shadow */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-/* eslint-disable @typescript-eslint/no-use-before-define */
 import React from "react";
 import { useHistory } from "react-router-dom";
 import { useFilters, usePagination, useSortBy, useTable } from "react-table";
