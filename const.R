@@ -11,7 +11,7 @@ library(RColorBrewer)
 
 # Get the data
 if (! "dataLst" %in% names(globalenv())) {
-  load('dataLst.rda')
+  load('data/dataLst.rda')
 }
 
 # Get corr dataset & wrangle
@@ -65,6 +65,33 @@ annoPlot_genelvls <- c("CpG-Island",
                        "3UTR",
                        "TTS",
                        "Intergenic")
+
+
+# Get RLoops
+if (! file.exists("data/rltab.rda")) {
+  rmap_samps <- dataLst %>% pluck('rmap_samples')
+  rltab <- dataLst %>%
+    pluck("rloop_signal") %>%
+    filter(numOlap > 0) %>%
+    left_join(select(rmap_samps, id, study_id, tissue), by = c("rmap_sample_id" = "id")) %>%
+    group_by(rloop_id) %>%
+    summarise(samples=list(rmap_sample_id),
+              numStudies = list(study_id),
+              numTissues = list(tissue),
+              avgQVal = mean(qVal),
+              medQVal = median(qVal),
+              avgSignalValue = mean(signalVal),
+              medSignalValue = median(signalVal)) %>%
+    mutate(numSamps = map_int(samples, function(x) {length(unique(x))}),
+           numStudies = map_int(numStudies, function(x) {length(unique(x))}),
+           numTissues = map_int(numTissues, function(x) {length(unique(x))})) 
+  rltab <- left_join(dataLst$rloops, y = rltab, by = c("id" = "rloop_id"))
+  save(rltab, file = "data/rltab.rda")
+} else {
+  load("data/rltab.rda")
+}
+  
+
 
 # Mode colors
 # From https://stackoverflow.com/questions/8197559/emulate-ggplot2-default-color-palette

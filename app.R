@@ -272,13 +272,6 @@ ui <- function(request) {
                             width = 12,
                             DTOutput('rloops')
                         )
-                    ), 
-                    fluidRow(
-                        column(
-                            width = 12,
-                            bookmarkButton(label = "permalink",
-                                           id = "rloopsbookmark")
-                        )
                     )
                 )
             )
@@ -425,7 +418,8 @@ server <- function(input, output, session) {
         # Plot
         regioneR:::plot.permTestResults(pt)
         
-    })
+    }) %>%
+        bindCache(input$rmapSamples_rows_selected, rmapSampsRV())
     
     output$sampleAnnotationPlot <- renderPlot({
         
@@ -590,10 +584,13 @@ server <- function(input, output, session) {
             mutate(value = paste0(
                 "<p style='color:", color,"'>", round(value, 4), "</p>"
             )) %>%
-            select("QC Metric" = char_type, value = value) %>%
-            print()
-    }, escape=FALSE, rownames = FALSE, options = list(dom = "t")) %>%
-        bindCache(input$rmapSamples_rows_selected, rmapSampsRV())
+            select("QC Metric" = char_type, value = value)
+    }, escape=FALSE, rownames = FALSE, options = list(dom = "t")) 
+    
+    ### RLoops Page ###
+    output$rloops <- renderDT({
+        rltab
+    })
 }
 
 # TODO: Need URL cleaner
