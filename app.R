@@ -8,6 +8,7 @@ library(purrr)
 library(ggplot2)
 library(bslib)
 library(RColorBrewer)
+library()
 
 # Get constants
 source("const.R")
@@ -269,8 +270,41 @@ ui <- function(request) {
                     title = "R-Loops",
                     fluidRow(
                         column(
-                            width = 12,
+                            width = 3,
+                            checkboxInput(inputId = "showAllGenesRL",
+                                          label = "Show all genes", 
+                                          value = FALSE)  
+                        )
+                    ),
+                    fluidRow(
+                        column(
+                            width = 6,
                             DTOutput('rloops')
+                        ),
+                        column(
+                            width = 6,
+                            tabsetPanel(
+                                id = "rloopStats",
+                                tabPanel(
+                                    title = "Expression",
+                                    icon = icon("home"),
+                                    plotOutput(outputId = "RLvsExpbySample")
+                                    ## R-Loop vs Expression + classification
+                                    ## Clicking a row should highlight a sample
+                                    ## Should show which genes the R-loop overlaps with
+                                ),
+                                tabPanel(
+                                    title = "Genomic Features",
+                                    icon = icon("home"),
+                                    ## Genomic features content
+                                    ## Comparison with RLFS
+                                ),
+                                tabPanel(
+                                    title = "Downloads",
+                                    icon = icon("home"),
+                                    ## Download the R-Loops table
+                                )
+                            )
                         )
                     )
                 )
@@ -582,15 +616,46 @@ server <- function(input, output, session) {
             filter(intervalTest) %>%
             left_join(qualColors) %>%
             mutate(value = paste0(
-                "<p style='color:", color,"'>", round(value, 4), "</p>"
+                "<p style='color:", color,"'>", round(value, 3), "</p>"
             )) %>%
             select("QC Metric" = char_type, value = value)
-    }, escape=FALSE, rownames = FALSE, options = list(dom = "t")) 
+    }, escape=FALSE, server=FALSE, rownames = FALSE, options = list(dom = "t")) %>%
+        bindCache(input$rmapSamples_rows_selected, rmapSampsRV())
     
     ### RLoops Page ###
     output$rloops <- renderDT({
-        rltab
+        if (input$showAllGenesRL) {
+            rltabNow <- rltabShowNatGenes
+        } else {
+            rltabNow <- rltabShowGenFix
+        }
+        rltabNow %>%
+            select(-Type, -Modes)
+    }, rownames = FALSE, escape = FALSE, 
+    selection = list(mode = "single",
+                     selected = 1),
+    options = list(
+        pageLength = 5,
+        scrollX = TRUE
+    ))
+    
+    output$RLvsExpbySample <- renderPlot({
+        dataLst$gene_rl_overlap
+        
+        if (input$showAllGenesRL) {
+            rlExpNow <- rltabShowNatGenes
+        } else {
+            rlExpNow <- rltabShowGenFix
+        }
+        
+        
+        annoGenes
+        
+        
     })
+    
+    
+    
 }
 
 # TODO: Need URL cleaner

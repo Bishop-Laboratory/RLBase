@@ -69,28 +69,92 @@ annoPlot_genelvls <- c("CpG-Island",
 
 # Get RLoops
 if (! file.exists("data/rltab.rda")) {
+  
+  # Get pathways from msigdbr to clean up the genes we use
+  c("C2", "C5", "H", "C8") %>%
+    lapply(msigdbr::msigdbr, species = "Homo sapiens") %>%
+    bind_rows() %>%
+    pull(gene_symbol) %>%
+    unique() -> annoGenes
+  
+  
   rmap_samps <- dataLst %>% pluck('rmap_samples')
-  rltab <- dataLst %>%
+  
+  rmap_sig <- dataLst %>%
     pluck("rloop_signal") %>%
     filter(numOlap > 0) %>%
-    left_join(select(rmap_samps, id, study_id, tissue), by = c("rmap_sample_id" = "id")) %>%
+    left_join(select(rmap_samps, id, study_id, tissue, mode), by = c("rmap_sample_id" = "id"))
+  rmap_sig
+  
+  rltab <- rmap_sig %>%
     group_by(rloop_id) %>%
     summarise(samples=list(rmap_sample_id),
               numStudies = list(study_id),
               numTissues = list(tissue),
+              numModes = list(mode),
               avgQVal = mean(qVal),
               medQVal = median(qVal),
               avgSignalValue = mean(signalVal),
               medSignalValue = median(signalVal)) %>%
     mutate(numSamps = map_int(samples, function(x) {length(unique(x))}),
            numStudies = map_int(numStudies, function(x) {length(unique(x))}),
-           numTissues = map_int(numTissues, function(x) {length(unique(x))})) 
-  rltab <- left_join(dataLst$rloops, y = rltab, by = c("id" = "rloop_id"))
-  save(rltab, file = "data/rltab.rda")
+           numTissues = map_int(numTissues, function(x) {length(unique(x))}),
+           Modes = map_chr(numModes, function(x) {
+             unlist(x) %>% unique() %>% paste0(collapse = "\n")
+           }),
+           numModes = map_int(numModes, function(x) {length(unique(x))})) 
+  rltab <- left_join(dataLst$rloops, y = rltab, by = c("id" = "rloop_id")) %>%
+    mutate(location = gsub(location, pattern = "\\:\\*$", replacement = ""))
+  # Join with gene overlap
+  rlGeneOl <- full_join(rltab, dataLst$gene_rl_overlap, by = c("id" = "rloop_id")) %>%
+    left_join(select(dataLst$genes, gene_id = id, gene_symbol=symbol), by = c("gene_id")) %>%
+    group_by(id) %>%
+    summarise(
+      genes = list(gene_symbol)
+    )
+  
+  # Add genes back to rltab
+  rltab <- left_join(rltab, rlGeneOl, by = c("id"))
+  
+  # For show
+  rltabShow <- rltab %>%
+    mutate(avgSignalValue = round(avgSignalValue, 3),
+           avgQVal = round(avgQVal, 3)) %>%
+    select("RL Region" = id,
+           "Location" = location,
+           "Genes" = genes,
+           "Type" = type,
+           -origName, -is_rlfs,
+           "# of Studies" = numStudies,
+           "# of Samples" = numSamps,
+           "# of Tissues" = numTissues, 
+           Modes,
+           "Mean Signal" = avgSignalValue,
+           "Mean FDR" = avgQVal) %>%
+    arrange(desc(`# of Studies`), desc(`Mean Signal`)) 
+  
+  rltabShowNatGenes <- rltabShow %>%
+    mutate(`Genes` = map_chr(`Genes`, function(x) {
+      unlist(x) %>% paste0(collapse = "\n")
+    }))
+  
+  # rltabshow Genes
+  rltabShowGenFix <- rltabShow %>%
+    mutate(`Genes` = map_chr(`Genes`, function(x) {
+      genes <- unlist(x)
+      genes <- genes[genes %in% annoGenes]
+      paste0(genes, collapse = "\n")
+    }))
+  
+  save(rltab, rltabShow, rltabShowNatGenes, rltabShowGenFix, annoGenes, file = "data/rltab.rda")
 } else {
   load("data/rltab.rda")
 }
+
+# Gene EXP vs RLoop signal
+dataLst$gene_rl_overlap %>%
   
+
 
 
 # Mode colors
@@ -163,6 +227,8 @@ qualColors <- tibble(
   'name' = c("error", "warning", "ok"),
   'color' = c("red", "orange", "green")
 )
+
+
 
 
 
