@@ -6,3 +6,5 @@ exclude =
     settings.py
     env
     .env
+    frontend
+    rmapdb/misc

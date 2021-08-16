@@ -1,28 +1,11 @@
 import sqlite3
 
 import pytest
-from rmapdb.db import get_db
+from sqlalchemy.orm.session import Session
+from rmapdb.main import get_db
 
 
-def test_get_close_db(app):
-    with app.app_context():
-        db = get_db()
-        assert db is get_db()
-
-    with pytest.raises(sqlite3.ProgrammingError) as e:
-        db.execute('SELECT 1')
-
-    assert 'closed' in str(e.value)
-
-
-def test_init_db_command(runner, monkeypatch):
-    class Recorder(object):
-        called = False
-
-    def fake_init_db():
-        Recorder.called = True
-
-    monkeypatch.setattr('rmapdb.db.init_db', fake_init_db)
-    result = runner.invoke(args=['init-db'])
-    assert 'Initialized' in result.output
-    assert Recorder.called
+def test_db():
+    db: Session = next(get_db())
+    res = db.execute("SELECT 1;")
+    assert db is not None and res is not None
