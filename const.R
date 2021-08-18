@@ -9,7 +9,6 @@ library(readr)
 library(ggplot2)
 library(bslib)
 library(RColorBrewer)
-library(regioneR)
 
 # Get the data
 if (! "dataLst" %in% names(globalenv())) {
@@ -18,7 +17,7 @@ if (! "dataLst" %in% names(globalenv())) {
 
 # Get Blacklisted genome regions
 BLACKLIST <- "data/ENCFF356LFX.bed"
-bl <- toGRanges(BLACKLIST)
+bl <- regioneR::toGRanges(BLACKLIST)
 
 # Get repeat masker
 RMSK <- "data/hg38_repeatmasker.tsv.xz"
@@ -74,7 +73,7 @@ if (! "annoCorr" %in% names(globalenv())) {
 
 # Get annotations
 if (! "anno_data" %in% names(globalenv())) {
-  
+  anno_data <- dataLst %>%
     pluck("sample_quality_characteristics") %>%
     filter(grepl(char_type, pattern = "__")) %>%
     mutate(Annotation = gsub(char_type, pattern = "(.+)__(.+)", replacement = "\\1"),

@@ -1,15 +1,3 @@
-library(shiny)
-library(DT)
-library(plotly)
-library(dplyr)
-library(tidyr)
-library(tibble)
-library(purrr)
-library(ggplot2)
-library(bslib)
-library(RColorBrewer)
-library()
-
 # Get constants
 source("const.R")
 
@@ -36,8 +24,6 @@ ui <- function(request) {
              background-color: #2C3E50;
            }
                 "
-                
-                
                 )
             )
         ),
@@ -269,12 +255,10 @@ ui <- function(request) {
                 fluidPage(
                     title = "R-Loops",
                     fluidRow(
-                      column(
-                          width = 12,
-                          h3("Display Controls:")
-                      )  
-                    ),
-                    fluidRow(
+                        column(
+                            width = 1,
+                            h4("Display Controls")
+                        ),
                         column(
                             width = 1,
                             checkboxInput(inputId = "showAllGenesRL",
@@ -380,6 +364,7 @@ server <- function(input, output, session) {
         
     output$rmapSamples <- renderDT(
         server = FALSE, {
+            print("DATATABLE RMAP")
             dataLst %>%
                 pluck("rmap_samples") %>%
                 filter(id %in% rmapSampsRV()) %>%
