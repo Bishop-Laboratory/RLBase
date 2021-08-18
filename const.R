@@ -50,7 +50,7 @@ ctrmgr <- ctrm %>%
 # Get corr dataset & wrangle
 if (! "annoCorr" %in% names(globalenv())) {
   torm <- "ERX2277510_E-MTAB-6318DRIP_mOHT"
-  load(paste0("misc/report_rda/", torm, "_hg38.QC_report.rda"))
+  load(paste0("misc/report_rda_small/", torm, "_hg38.QC_report.rda"))
   keep <- which(! colnames(data_list$corr_data$corMat) %in% torm)
   corr_data <- data_list$corr_data$corMat[keep, keep]
   annoCorr <- data_list$corr_data$annoNow[colnames(corr_data),]
