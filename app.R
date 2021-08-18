@@ -269,16 +269,28 @@ ui <- function(request) {
                 fluidPage(
                     title = "R-Loops",
                     fluidRow(
+                      column(
+                          width = 12,
+                          h3("Display Controls:")
+                      )  
+                    ),
+                    fluidRow(
                         column(
-                            width = 3,
+                            width = 1,
                             checkboxInput(inputId = "showAllGenesRL",
-                                          label = "Show all genes", 
+                                          label = "All genes", 
                                           value = FALSE)  
                         ),
                         column(
-                            width = 3,
+                            width = 1,
                             checkboxInput(inputId = "showRep",
-                                          label = "Show repetitive regions", 
+                                          label = "Repetitive", 
+                                          value = FALSE)  
+                        ),
+                        column(
+                            width = 1,
+                            checkboxInput(inputId = "showCorr",
+                                          label = "Correlated with expression", 
                                           value = FALSE)  
                         )
                     ),
@@ -292,12 +304,21 @@ ui <- function(request) {
                             tabsetPanel(
                                 id = "rloopStats",
                                 tabPanel(
-                                    title = "Expression",
+                                    title = "Summary",
                                     icon = icon("home"),
                                     plotOutput(outputId = "RLvsExpbySample")
-                                    ## R-Loop vs Expression + classification
-                                    ## Clicking a row should highlight a sample
-                                    ## Should show which genes the R-loop overlaps with
+                                ),
+                                tabPanel(
+                                    title = "Expression",
+                                    icon = icon("home"),
+                                    selectInput(
+                                        inputId = "colorExpvRlBy",
+                                        label = "Color",
+                                        multiple = FALSE,
+                                        selected = "Tissue",
+                                        choices = c("Tissue", "Mode", "Study", "Condition")
+                                    ),
+                                    plotOutput(outputId = "RLvsExpbySample")
                                 ),
                                 tabPanel(
                                     title = "Genomic Features",
@@ -629,7 +650,15 @@ server <- function(input, output, session) {
         bindCache(input$rmapSamples_rows_selected, rmapSampsRV())
     
     ### RLoops Page ###
-    output$rloops <- renderDT({
+    # Get RLoops dataset
+    rloops <- reactive({
+        rltabShow <- rltabShow %>%
+            mutate(
+                across(
+                    corr:corrpadj, ~ signif(.x, digits = 4)
+                )
+            ) 
+        
         if (input$showAllGenesRL) {
             rltabNow <- rltabShow %>%
                 select(-Genes, -GenesFix) %>%
@@ -643,9 +672,21 @@ server <- function(input, output, session) {
         if (! input$showRep) {
             rltabNow <- filter(rltabNow, ! repeats)
         }
-        rltabNow %>%
+        
+        if (input$showCorr) {
+            rltabNow <- rltabNow %>%
+                filter(! is.na(corr)) %>%
+                arrange(corrpadj) 
+        }
+        
+        rltabNow
+    })
+    
+    # Make DataTable
+    output$rloops <- renderDT({
+        rloops() %>%
             select(-Type, -Modes, -`Mean RLCounts`, -repeats) %>%
-            relocate(Genes, .after = Location)
+            relocate(Genes, .after = Location) 
     }, rownames = FALSE, escape = FALSE, 
     selection = list(mode = "single",
                      selected = 1),
@@ -655,22 +696,39 @@ server <- function(input, output, session) {
     ))
     
     output$RLvsExpbySample <- renderPlot({
-        dataLst$gene_rl_overlap
         
-        if (input$showAllGenesRL) {
-            rlExpNow <- rltabShowNatGenes
-        } else {
-            rlExpNow <- rltabShowGenFix
-        }
+        # Get selected row from datatable
+        selectedRow <- ifelse(is.null(input$rloops_rows_selected), 
+                              1, 
+                              input$rloops_rows_selected)
         
+        # Get current sample
+        current_rl <- rloops() %>%
+            filter(row_number() == selectedRow)
         
-        annoGenes
+        # Get the corr and pval
+        corr <- pull(current_rl, "corr") %>% round(4)
+        corrpadj <- pull(current_rl, "corrpadj") %>% round(4)
         
+        # Get the color
+        rlExpCondLvlByRL %>%
+            dplyr::filter(rloop_id == current_rl$`RL Region`) %>%
+            dplyr::rename(
+                Treatment = treatment,
+                Mode = mode,
+                Tissue = tissue,
+                Study = study_id,
+                Condition = condition
+            ) %>%
+            ggplot(aes_string(x = "vst", y = "qVal", color = "Mode")) +
+            geom_point() +
+            ggtitle(current_rl, subtitle = "Expression vs. R-Loop Intensity") +
+            theme_bw(base_size = 14) +
+            annotate(geom = 'text', 
+                     label = paste0("Rho: ", corr, "; Padj: ", corrpadj), 
+                     x = -Inf, y = Inf, hjust = -.20, vjust = 3)
         
     })
-    
-    
-    
 }
 
 # TODO: Need URL cleaner

@@ -21,21 +21,23 @@ BLACKLIST <- "data/ENCFF356LFX.bed"
 bl <- toGRanges(BLACKLIST)
 
 # Get repeat masker
-RMSK <- "data/hg38_repeatmasker.tsv"
-rmsk <- read_tsv(RMSK)
-rmskgr <- rmsk %>%
-  # Remove the classes that are too ubiquitous 
-  filter(! repClass %in% c("SINE", "LINE", "Simple_repeat", "DNA", "LTR", "Low_complexity"),
-         ! grepl(repClass, pattern = ".+\\?.*")) %>%
-  dplyr::select(
-    seqnames = genoName, 
-    start = genoStart, 
-    end = genoEnd,
-    repClass
-  ) %>%
-  as.data.frame() %>%
-  GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) 
-
+RMSK <- "data/hg38_repeatmasker.tsv.xz"
+if (! "rmskgr" %in% names(globalenv())) {
+  rmsk <- read_tsv(RMSK)
+  rmskgr <- rmsk %>%
+    # Remove the classes that are too ubiquitous 
+    filter(! repClass %in% c("SINE", "LINE", "Simple_repeat", "DNA", "LTR", "Low_complexity"),
+           ! grepl(repClass, pattern = ".+\\?.*")) %>%
+    dplyr::select(
+      seqnames = genoName, 
+      start = genoStart, 
+      end = genoEnd,
+      repClass
+    ) %>%
+    as.data.frame() %>%
+    GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) 
+}
+  
 # Get Centromeres
 CTRM <- "data/centromeres.tsv"
 ctrm <- read_tsv(CTRM)
@@ -47,57 +49,62 @@ ctrmgr <- ctrm %>%
 
 
 # Get corr dataset & wrangle
-torm <- "ERX2277510_E-MTAB-6318DRIP_mOHT"
-load(paste0("misc/report_rda/", torm, "_hg38.QC_report.rda"))
-keep <- which(! colnames(data_list$corr_data$corMat) %in% torm)
-corr_data <- data_list$corr_data$corMat[keep, keep]
-annoCorr <- data_list$corr_data$annoNow[colnames(corr_data),]
-newlabs <- gsub(rownames(annoCorr), pattern = ".+_([ES]{1}RX[0-9]+)$", replacement = "\\1")
-rownames(annoCorr) <- colnames(corr_data) <- rownames(corr_data) <- newlabs
-annoCorr <- annoCorr %>%
-  rownames_to_column(var = "id") %>%
-  select(-Source) %>%
-  left_join(
-    dataLst %>%
-      pluck("rmap_samples") %>% 
-      mutate(isControl = is_rnh_like | is_input) %>%
-      select(id, isControl)
-  ) %>%
-  column_to_rownames(var = "id") %>%
-  mutate(isControl = ifelse(is.na(isControl), TRUE, isControl))
+if (! "annoCorr" %in% names(globalenv())) {
+  torm <- "ERX2277510_E-MTAB-6318DRIP_mOHT"
+  load(paste0("misc/report_rda/", torm, "_hg38.QC_report.rda"))
+  keep <- which(! colnames(data_list$corr_data$corMat) %in% torm)
+  corr_data <- data_list$corr_data$corMat[keep, keep]
+  annoCorr <- data_list$corr_data$annoNow[colnames(corr_data),]
+  newlabs <- gsub(rownames(annoCorr), pattern = ".+_([ES]{1}RX[0-9]+)$", replacement = "\\1")
+  rownames(annoCorr) <- colnames(corr_data) <- rownames(corr_data) <- newlabs
+  annoCorr <- annoCorr %>%
+    rownames_to_column(var = "id") %>%
+    select(-Source) %>%
+    left_join(
+      dataLst %>%
+        pluck("rmap_samples") %>% 
+        mutate(isControl = is_rnh_like | is_input) %>%
+        select(id, isControl)
+    ) %>%
+    column_to_rownames(var = "id") %>%
+    mutate(isControl = ifelse(is.na(isControl), TRUE, isControl))
+}
+  
+
 
 # Get annotations
-anno_data <- dataLst %>%
-  pluck("sample_quality_characteristics") %>%
-  filter(grepl(char_type, pattern = "__")) %>%
-  mutate(Annotation = gsub(char_type, pattern = "(.+)__(.+)", replacement = "\\1"),
-         data_type = gsub(char_type, pattern = "(.+)__(.+)", replacement = "\\2")) %>%
-  select(-char_type) %>%
-  inner_join(y = data.frame(
-    "Annotation" = c('Intergenic', 'Simple_repeat', 'Satellite', 'Promoter', 'pseudo',
-                     'Intron', 'TTS', 'LINE', 'LTR', 'SINE', 'DNA', 'CpG-Island', 'ncRNA',
-                     'Low_complexity', 'Exon', 'snRNA', 'Retroposon', '5UTR', '3UTR', 'srpRNA', 
-                     'tRNA', 'RC', 'scRNA', 'miRNA', 'RNA', 'snoRNA'),
-    "annotate_type" = c("gene", "rep", "rep", "gene", "RNA", "gene", "gene", 
-                        "rep", "rep", "rep", "rep", "gene", "RNA", "rep",
-                        "gene", "RNA", "rep", "gene", "gene", "RNA",
-                        "RNA", "RNA", "RNA", "RNA", "RNA", "RNA"), stringsAsFactors = FALSE
-  ), by = "Annotation") %>%
-  pivot_wider(id_cols = c(id, Annotation, annotate_type), names_from = data_type, values_from = value) %>%
-  inner_join(y = pluck(dataLst, "rmap_samples"), by = "id")
-
-# Values for plotting
-annoPlot_boxFills <- c('gene' = 'firebrick', 'RNA' = 'goldenrod', 'rep' = 'forestgreen')
-annoPlot_titles <- c('gene' = 'Genomic Features', 'RNA' = 'ncRNAs', 'rep' = 'Repetitive Elements')
-annoPlot_genelvls <- c("CpG-Island",
-                       "Promoter",
-                       "5UTR",
-                       "Exon",
-                       "Intron",
-                       "3UTR",
-                       "TTS",
-                       "Intergenic")
-
+if (! "anno_data" %in% names(globalenv())) {
+  
+    pluck("sample_quality_characteristics") %>%
+    filter(grepl(char_type, pattern = "__")) %>%
+    mutate(Annotation = gsub(char_type, pattern = "(.+)__(.+)", replacement = "\\1"),
+           data_type = gsub(char_type, pattern = "(.+)__(.+)", replacement = "\\2")) %>%
+    select(-char_type) %>%
+    inner_join(y = data.frame(
+      "Annotation" = c('Intergenic', 'Simple_repeat', 'Satellite', 'Promoter', 'pseudo',
+                       'Intron', 'TTS', 'LINE', 'LTR', 'SINE', 'DNA', 'CpG-Island', 'ncRNA',
+                       'Low_complexity', 'Exon', 'snRNA', 'Retroposon', '5UTR', '3UTR', 'srpRNA', 
+                       'tRNA', 'RC', 'scRNA', 'miRNA', 'RNA', 'snoRNA'),
+      "annotate_type" = c("gene", "rep", "rep", "gene", "RNA", "gene", "gene", 
+                          "rep", "rep", "rep", "rep", "gene", "RNA", "rep",
+                          "gene", "RNA", "rep", "gene", "gene", "RNA",
+                          "RNA", "RNA", "RNA", "RNA", "RNA", "RNA"), stringsAsFactors = FALSE
+    ), by = "Annotation") %>%
+    pivot_wider(id_cols = c(id, Annotation, annotate_type), names_from = data_type, values_from = value) %>%
+    inner_join(y = pluck(dataLst, "rmap_samples"), by = "id")
+  
+  # Values for plotting
+  annoPlot_boxFills <- c('gene' = 'firebrick', 'RNA' = 'goldenrod', 'rep' = 'forestgreen')
+  annoPlot_titles <- c('gene' = 'Genomic Features', 'RNA' = 'ncRNAs', 'rep' = 'Repetitive Elements')
+  annoPlot_genelvls <- c("CpG-Island",
+                         "Promoter",
+                         "5UTR",
+                         "Exon",
+                         "Intron",
+                         "3UTR",
+                         "TTS",
+                         "Intergenic")
+}
 
 # Get RLoops
 if (! file.exists("data/rltab.rda")) {
@@ -458,6 +465,26 @@ if (! file.exists("data/rltab.rda")) {
     dplyr::rename(corrpval = pval)
     
   rlExpCondLvlByRL <- left_join(rlExpCondLvlByRL, xadj, by = "rloop_id")
+  
+  # Clean up
+  rmap_sampsCond <- rmap_samps %>%
+    filter(! is_rnh_like) %>%
+    mutate(condition = paste0(study_id, "_", tissue, "_", treatment)) %>%
+    select(condition, tissue, genotype, treatment, mode, study_id) %>%
+    unique()
+  rlExpCondLvlByRL <- rlExpCondLvlByRL %>%
+    left_join(
+      rmap_sampsCond
+    )
+  rlExpCondLvlByGene <- rlExpCondLvlByGene %>%
+    left_join(
+      rmap_sampsCond
+    )
+  rltabShow <- rltabShow %>%
+    left_join(
+      rlExpCondLvlByRL %>% select(rloop_id, corr, corrpval, corrpadj) %>% unique(),
+      by = c("RL Region" = "rloop_id")
+    )
   
   save(rltab, rltabShow, rlExpCondLvlByGene, rlExpCondLvlByRL, annoGenes, file = "data/rltab.rda", compress = "xz")
 } else {
