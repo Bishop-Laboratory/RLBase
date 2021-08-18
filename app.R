@@ -274,6 +274,12 @@ ui <- function(request) {
                             checkboxInput(inputId = "showAllGenesRL",
                                           label = "Show all genes", 
                                           value = FALSE)  
+                        ),
+                        column(
+                            width = 3,
+                            checkboxInput(inputId = "showRep",
+                                          label = "Show repetitive regions", 
+                                          value = FALSE)  
                         )
                     ),
                     fluidRow(
@@ -625,12 +631,21 @@ server <- function(input, output, session) {
     ### RLoops Page ###
     output$rloops <- renderDT({
         if (input$showAllGenesRL) {
-            rltabNow <- rltabShowNatGenes
+            rltabNow <- rltabShow %>%
+                select(-Genes, -GenesFix) %>%
+                dplyr::rename(Genes = GenesNat)
         } else {
-            rltabNow <- rltabShowGenFix
+            rltabNow <- rltabShow %>%
+                select(-Genes, -GenesNat) %>%
+                dplyr::rename(Genes = GenesFix) 
+        }
+        
+        if (! input$showRep) {
+            rltabNow <- filter(rltabNow, ! repeats)
         }
         rltabNow %>%
-            select(-Type, -Modes)
+            select(-Type, -Modes, -`Mean RLCounts`, -repeats) %>%
+            relocate(Genes, .after = Location)
     }, rownames = FALSE, escape = FALSE, 
     selection = list(mode = "single",
                      selected = 1),
