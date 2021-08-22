@@ -13,7 +13,7 @@ interface FormData {
   csv: File | null;
 }
 
-function Upload() {
+export default function Upload(): JSX.Element {
   const [formData, setFormData] = useState<FormData>({
     sampleId: "",
     sampleCondition: "",
@@ -144,7 +144,7 @@ function Upload() {
               required
             />
           </div>
-          <div className=" col-md">
+          <div className="col-md">
             <label htmlFor="submitterEmail" className="form-label">
               Email
             </label>
@@ -193,5 +193,3 @@ function Upload() {
     </main>
   );
 }
-
-export default Upload;
