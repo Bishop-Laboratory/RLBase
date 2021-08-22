@@ -38,19 +38,21 @@ if (! "rmskgr" %in% names(globalenv())) {
 }
   
 # Get Centromeres
-CTRM <- "data/centromeres.tsv"
-ctrm <- read_tsv(CTRM)
-ctrmgr <- ctrm %>%
-  dplyr::select(-`#bin`) %>%
-  as.data.frame() %>%
-  GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) +
-  1E6  # Expand centromere regions by 1 Mb
+if (! "ctrmgr" %in% names(globalenv())) {
+  CTRM <- "data/centromeres.tsv"
+  ctrm <- read_tsv(CTRM)
+  ctrmgr <- ctrm %>%
+    dplyr::select(-`#bin`) %>%
+    as.data.frame() %>%
+    GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) +
+    1E6  # Expand centromere regions by 1 Mb
+}
 
-
+CORR_DATA <- "data/annoCorr__corr_data.rda"
+INPUT_CORR <- "misc/report_rda/ERX2277510_E-MTAB-6318DRIP_mOHT_hg38.QC_report.rda"
 # Get corr dataset & wrangle
-if (! file.exists("data/annoCorr__corr_data.rda")) {
-  torm <- "ERX2277510_E-MTAB-6318DRIP_mOHT"
-  load(paste0("misc/report_rda/", torm, "_hg38.QC_report.rda"))
+if (! file.exists(CORR_DATA)) {
+  load(INPUT_CORR)
   keep <- which(! colnames(data_list$corr_data$corMat) %in% torm)
   corr_data <- data_list$corr_data$corMat[keep, keep]
   annoCorr <- data_list$corr_data$annoNow[colnames(corr_data),]
@@ -67,9 +69,11 @@ if (! file.exists("data/annoCorr__corr_data.rda")) {
     ) %>%
     column_to_rownames(var = "id") %>%
     mutate(isControl = ifelse(is.na(isControl), TRUE, isControl))
-  save(annoCorr, corr_data, file = "data/annoCorr__corr_data.rda")
+  save(annoCorr, corr_data, file = CORR_DATA)
 } else {
-  load("data/annoCorr__corr_data.rda")
+  if (! all(c("annoCorr", "corr_data")) %in% names(globalenv())) {
+    load(CORR_DATA)
+  }
 }
   
 
@@ -490,38 +494,12 @@ if (! file.exists("data/rltab.rda")) {
   
   save(rltab, rltabShow, rlExpCondLvlByGene, rlExpCondLvlByRL, annoGenes, file = "data/rltab.rda", compress = "xz")
 } else {
-  load("data/rltab.rda")
+  if (! all(c("rltab", "rltabShow", "rlExpCondLvlByGene", "rlExpCondLvlByRL", "annoGenes") %in% names(globalenv()))) {
+    load("data/rltab.rda")
+  }
 }
 
   
-  
-  
-  
-# Mode colors
-# From https://stackoverflow.com/questions/8197559/emulate-ggplot2-default-color-palette
-gg_color_hue <- function(n) {
-  hues = seq(15, 375, length = n + 1)
-  hcl(h = hues, l = 65, c = 100)[1:n]
-}
-modes <- dataLst %>%
-  pluck("rmap_samples") %>%
-  pull(mode) %>%
-  unique() 
-modeCols <- gg_color_hue(
-  length(
-    modes
-  )
-)
-set.seed(42); names(modeCols) <- sample(modes, size = length(modes))
-
-# Values for annotation heatmap
-heatSampCol <- c("grey", "firebrick")
-names(heatSampCol) <- c("", "selected")
-pheatColLst <- list(
-  "sample" = heatSampCol,
-  "Mode" = modeCols,
-  "isControl" = c("TRUE" = "forestgreen", "FALSE" = "grey")
-)
 
 # Summary quality characteristics
 # TODO: Need to find a non-hardcoded way to get this
@@ -567,9 +545,5 @@ qualColors <- tibble(
   'name' = c("error", "warning", "ok"),
   'color' = c("red", "orange", "green")
 )
-
-
-
-
 
 
