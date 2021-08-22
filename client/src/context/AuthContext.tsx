@@ -8,6 +8,7 @@ import { auth } from "../firebase";
 interface AuthContextInterface {
   currentUser: firebase.User | null;
   signup: any;
+  sendEmailVerification: any;
   login: any;
   logout: any;
 }
@@ -24,6 +25,10 @@ export function AuthProvider({ children }: { children: JSX.Element }) {
 
   function signup(email: string, password: string): Promise<firebase.auth.UserCredential> {
     return auth.createUserWithEmailAndPassword(email, password);
+  }
+
+  function sendEmailVerification(user: firebase.User) {
+    return user.sendEmailVerification({ url: "http://localhost:3000" });
   }
 
   function login(email: string, password: string): Promise<firebase.auth.UserCredential> {
@@ -48,6 +53,7 @@ export function AuthProvider({ children }: { children: JSX.Element }) {
   const value: AuthContextInterface = {
     currentUser,
     signup,
+    sendEmailVerification,
     login,
     logout,
   };
