@@ -1,15 +1,3 @@
-library(shiny)
-library(DT)
-library(plotly)
-library(dplyr)
-library(tidyr)
-library(tibble)
-library(purrr)
-library(readr)
-library(ggplot2)
-library(bslib)
-library(RColorBrewer)
-
 # Get the data
 if (! "dataLst" %in% names(globalenv())) {
   load('data/dataLst.rda')
@@ -49,7 +37,8 @@ if (! "ctrmgr" %in% names(globalenv())) {
 }
 
 CORR_DATA <- "data/annoCorr__corr_data.rda"
-INPUT_CORR <- "misc/report_rda/ERX2277510_E-MTAB-6318DRIP_mOHT_hg38.QC_report.rda"
+torm <- "ERX2277510_E-MTAB-6318DRIP_mOHT_hg38"
+INPUT_CORR <- paste0("misc/report_rda/", torm, ".QC_report.rda")
 # Get corr dataset & wrangle
 if (! file.exists(CORR_DATA)) {
   load(INPUT_CORR)
@@ -64,19 +53,19 @@ if (! file.exists(CORR_DATA)) {
     left_join(
       dataLst %>%
         pluck("rmap_samples") %>% 
-        mutate(isControl = is_rnh_like | is_input) %>%
-        select(id, isControl)
+        mutate(pred_ctrl = prediction == "control") %>%
+        select(id, is_rnh_like, pred_ctrl)
     ) %>%
     column_to_rownames(var = "id") %>%
-    mutate(isControl = ifelse(is.na(isControl), TRUE, isControl))
+    mutate(is_ctrl = ifelse(is.na(is_rnh_like), TRUE, is_rnh_like)) %>%
+    select(-is_rnh_like)
   save(annoCorr, corr_data, file = CORR_DATA)
 } else {
-  if (! all(c("annoCorr", "corr_data")) %in% names(globalenv())) {
+  if (! all(c("annoCorr", "corr_data") %in% names(globalenv()))) {
     load(CORR_DATA)
   }
 }
   
-
 
 # Get annotations
 if (! "anno_data" %in% names(globalenv())) {

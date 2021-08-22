@@ -1,3 +1,17 @@
+# Libraries
+library(shiny)
+library(DT)
+library(plotly)
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(purrr)
+library(ggprism)
+library(readr)
+library(ggplot2)
+library(bslib)
+library(RColorBrewer)
+
 # Get constants
 source("const.R")
 source("ui_globals.R")
@@ -59,18 +73,6 @@ ui <- function(request) {
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
-    
-    # Need to exclude the buttons from themselves being bookmarked
-    setBookmarkExclude(c("samplesbookmark", "rloopsbookmark"))
-    
-    # Trigger bookmarking with either button
-    observeEvent(input$samplesbookmark, {
-        session$doBookmark()
-    })
-    observeEvent(input$rloopsbookmark, {
-        session$doBookmark()
-    })
-    
     ### Sample Page ###
     # TODO: Should be sorted
     # TODO: Should contain link that will open the details modal
@@ -79,9 +81,10 @@ server <- function(input, output, session) {
     rmapSampsRV <- reactive({
         dataLst %>%
             pluck("rmap_samples") %>%
+            mutate(pred_ctrl = prediction == "control") %>%
             filter(genome == input$selectGenome, 
                    is_rnh_like %in% c(FALSE, input$selectRNH),
-                   is_ctrl %in% c(FALSE, input$selectCTRL),
+                   pred_ctrl %in% c(FALSE, input$selectCTRL),
                    mode %in% input$selectMode) %>%
             pull(id)
     })
@@ -104,7 +107,6 @@ server <- function(input, output, session) {
     
     output$rmapSamples <- renderDT(
         server = FALSE, {
-            print("DATATABLE RMAP")
             dataLst %>%
                 pluck("rmap_samples") %>%
                 filter(id %in% rmapSampsRV()) %>%
@@ -203,7 +205,7 @@ server <- function(input, output, session) {
                 mutate(Annotation = if (!! annoNow == "gene") 
                     factor(Annotation, levels =  annoPlot_genelvls) 
                     else Annotation) %>%
-                mutate(sample_now = id == !! current_samp) %>%
+                mutate(sample_now = id == !! current_samp()) %>%
                 fill(everything(0)) %>%
                 arrange(sample_now) %>%
                 ggplot(mapping = aes(x = Annotation, 
@@ -238,7 +240,7 @@ server <- function(input, output, session) {
                                                  hjust = 1)) +
                 ylim(minplt, maxplt)
         })) %>%
-            ggpubr::ggarrange(plotlist = ., nrow = 2, align = "hv")
+            ggpubr::ggarrange(plotlist = ., nrow = 2, ncol = 2, align = "hv")
     }) %>%
         bindCache(input$chooseAnnoPlotData, rmapSampsRV(), current_samp())
     
@@ -251,13 +253,10 @@ server <- function(input, output, session) {
         # From: https://stackoverflow.com/questions/31677923/set-0-point-for-pheatmap-in-r
         annoCorrNow$sample <- as.factor(ifelse(rownames(annoCorrNow) != current_samp(), "", "selected"))
         
-        # Select isControl if there's a good reason to
-        if (any(annoCorrNow$isControl)) {
-            annoCorrNow$isControl <- as.factor(annoCorrNow$isControl)
-        } else {
-            annoCorrNow <- annoCorrNow[,-which(colnames(annoCorrNow) == "isControl")]
-        }
+        # Match up columns
+        annoCorrNow <- cleanAnnoCorrNow(annoCorrNow)
         
+        # Pallete
         paletteLength <- 100
         myColor <- colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(paletteLength)
         # length(breaks) == length(paletteLength) + 1
@@ -265,8 +264,11 @@ server <- function(input, output, session) {
         myBreaks <- c(seq(min(corrNow), 0, length.out=ceiling(paletteLength/2) + 1), 
                       seq(max(corrNow)/paletteLength, max(corrNow), length.out=floor(paletteLength/2)))
         pheatColLst$Mode <- pheatColLst$Mode[which(names(pheatColLst$Mode) %in% annoCorrNow$Mode)]
+        
         pheatmap::pheatmap(corrNow, show_rownames = FALSE, 
-                           main = paste0("RMapDB Corr Heatmap\n", current_samp()),
+                           main = paste0("RMapDB Corr Heatmap\n",
+                                         current_samp()
+                                         ), fontsize = 13.5,
                            show_colnames = FALSE, silent = TRUE,
                            annotation_colors = pheatColLst, 
                            color = myColor, breaks = myBreaks,
@@ -281,6 +283,7 @@ server <- function(input, output, session) {
     output$rmapPCA <- renderPlot({
         # Filter for current samples selected
         annoCorrNow <- annoCorr[rmapSampsRV(),]
+        corrNow <- corr_data[rmapSampsRV(), rmapSampsRV()]
         
         # Get the PCA data
         pcd <- pcaPlotDataFromCorr(corrNow)
@@ -288,28 +291,24 @@ server <- function(input, output, session) {
         # From: https://stackoverflow.com/questions/31677923/set-0-point-for-pheatmap-in-r
         annoCorrNow$sample <- as.factor(ifelse(rownames(annoCorrNow) != current_samp(), "", "selected"))
         
-        # Select isControl if there's a good reason to
-        if (any(annoCorrNow$isControl)) {
-            annoCorrNow$isControl <- as.factor(annoCorrNow$isControl)
-        } else {
-            annoCorrNow <- annoCorrNow[,-which(colnames(annoCorrNow) == "isControl")]
-        }
-        
         # Get the plot
         pcd %>%
             pluck("pcData") %>%
             inner_join(dataLst %>%
                            pluck("rmap_samples"),
                        by = "id") %>%
+            right_join(rownames_to_column(annoCorrNow, var = "id"), by = "id") %>%
             mutate(selected = as.factor(ifelse(id != current_samp(),
                                                "", "selected"))) %>%
             ggplot(
                 aes_string(x = "PC1", y = "PC2", color = input$PCA_colorBy, 
-                           shape = "selected", size = "selected")
+                           shape = input$PCA_shapeBy, size = "selected")
             ) +
-            rmap_scatter(colorBy = input$PCA_colorBy)
+            rmap_scatter(colorBy = input$PCA_colorBy) +
+            xlab(paste0("PC1 (", pcd$percentVar[1], "%)")) +
+            ylab(paste0("PC2 (", pcd$percentVar[2], "%)"))
     }) %>%
-        bindCache(rmapSampsRV(), current_samp())
+        bindCache(rmapSampsRV(), current_samp(), input$PCA_shapeBy, input$PCA_colorBy)
     
     
     output$sumStats <- renderDT({

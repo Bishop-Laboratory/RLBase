@@ -16,31 +16,41 @@ modeCols <- gg_color_hue(
 set.seed(42); names(modeCols) <- sample(modes, size = length(modes))
 
 # Values for annotation heatmap
-heatSampCol <- c("grey", "firebrick")
-names(heatSampCol) <- c("", "selected")
-pheatColLst <- list(
-  "sample" = heatSampCol,
-  "Mode" = modeCols,
-  "isControl" = c("TRUE" = "forestgreen", "FALSE" = "grey")
+sampleCol <- c("grey", "firebrick")
+names(sampleCol) <- c("", "selected")
+sampleSize <- c(5, 15)
+names(sampleSize) <- c("", "selected")
+# ColList
+colList <- list(
+  "mode" = modeCols,
+  "is_ctrl" = c("TRUE" = "forestgreen", "FALSE" = "grey"),
+  "pred_ctrl" =  c("TRUE" = "goldenrod", "FALSE" = "grey"),
+  "selected" = sampleCol
 )
+
+sizeList <- list(
+  "sample" = sampleSize
+)
+
 
 
 #' Scatter plots for RMapDB
 #' @param ... additional arguments to geom_point()
 #' @example ggplot(mtcars, aes(x = wt, y = mpg, color = cyl)) + rmap_scatter("mode")
-rmap_scatter <- function(colorBy, ...) {
-  
-  # Get colors
-  colorsNow <- switch(
-    colorBy,
-    "mode" = modeCols
-  )
-  
-  list(
+rmap_scatter <- function(colorBy, sizeBy, ...) {
+  pltLst <- list(
     geom_point(...),
-    scale_color_manual(values = colorsNow)
+    theme_prism(base_size = 16),
+    scale_size_manual(values = sizeList[["sample"]])
   )
   
+  if (! is.null(colorBy) & colorBy %in% names(colList)) {
+    # Get colors
+    pltLst <- c(pltLst, 
+                list(scale_color_manual(values = colList[[colorBy]])))
+  }
+  
+  pltLst
 }
 
 

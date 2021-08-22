@@ -1,3 +1,6 @@
+PAGE_PLOT_WIDTH = "90%"
+PAGE_PLOT_HEIGHT = "650px"
+
 SamplesPageContents <- function() {
   fluidPage(
     title = "RMapDB Samples",
@@ -41,7 +44,7 @@ RMapSamplesTable_panel <- function() {
     ),
     fluidRow(
       column(
-        width = 4,
+        width = 6,
         checkboxInput(
           inputId = "selectRNH", 
           label = "Show controls (e.g., RNH)",
@@ -49,17 +52,12 @@ RMapSamplesTable_panel <- function() {
         )
       ),
       column(
-        width = 4,
+        width = 6,
         checkboxInput(
           inputId = "selectCTRL", 
           label = "Show predicted controls",
           value = TRUE
         )
-      ),
-      column(
-        width = 4,
-        bookmarkButton(label = "Share",
-                       id = "samplesbookmark")
       )
     ),
     hr(),
@@ -82,6 +80,7 @@ RMapSamplesOutput_tabset <- function() {
         title = "Summary",
         # TODO: Need icon for QC
         icon = icon('home'),
+        br(),
         Summary_panel()
       ),
       tabPanel(
@@ -157,7 +156,9 @@ Annotation_panel <- function() {
     fluidRow(
       column(
         width = 12,
-        plotOutput("sampleAnnotationPlot")
+        plotOutput("sampleAnnotationPlot", 
+                   height = PAGE_PLOT_HEIGHT, 
+                   width = PAGE_PLOT_WIDTH)
       )
     )
   )
@@ -170,17 +171,36 @@ Summary_panel <- function() {
     type = "pills",
     tabPanel(
       title = "Heatmap",
-      column(
-        width = 8, 
-        plotOutput('rmapHeatmap',
-                   height = "500px")
-      )
+      plotOutput('rmapHeatmap',  
+                 height = PAGE_PLOT_HEIGHT, 
+                 width = PAGE_PLOT_WIDTH)
     ),
     tabPanel(
       title = "PCA",
+      fluidRow(
+        column(
+          width = 6,
+          selectInput(
+            inputId = "PCA_colorBy",
+            choices = c("mode", "study_id", "tissue"),
+            label = "Color"
+          )
+        ),
+        column(
+          width = 6,
+          selectInput(
+            inputId = "PCA_shapeBy",
+            choices = c("is_ctrl", "pred_ctrl"),
+            selected = "pred_ctrl",
+            label = "Shape"
+          )
+        )
+      ),
       column(
-        width = 8, 
-        plotOutput('rmapPCA')
+        width = 12, 
+        plotOutput('rmapPCA', 
+                   height = PAGE_PLOT_HEIGHT, 
+                   width = PAGE_PLOT_WIDTH)
       )
     )
   )

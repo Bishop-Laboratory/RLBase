@@ -20,3 +20,22 @@ pcaPlotDataFromCorr <- function(corr_data) {
 }
 
 
+cleanAnnoCorrNow <- function(annoCorrNow) {
+  # Select isControl if there's a good reason to
+  if (any(annoCorrNow$is_ctrl)) {
+    annoCorrNow$is_ctrl <- as.factor(annoCorrNow$is_ctrl)
+  } else {
+    annoCorrNow <- annoCorrNow[,-which(colnames(annoCorrNow) == "is_ctrl")]
+  }
+  
+  # Select pred_ctrl 
+  if (any(annoCorrNow$pred_ctrl)) {
+    annoCorrNow$pred_ctrl <- as.factor(annoCorrNow$pred_ctrl)
+  } else {
+    annoCorrNow <- annoCorrNow[,-which(colnames(annoCorrNow) == "pred_ctrl")]
+  }
+  
+  annoCorrNow
+}
+
+
