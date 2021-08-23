@@ -225,7 +225,7 @@ if (! file.exists("data/rltab.rda")) {
   RLToKeep <- rlgr[
     -unique(c(rangesBL, rangesRep, rangesCTRM))
   ] %>%
-    keepStandardChromosomes(pruning.mode = "coarse") %>%
+    GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>%
     names()
   
   # Add match as column
@@ -244,12 +244,6 @@ if (! file.exists("data/rltab.rda")) {
     ifelse(grepl(x = ., pattern = "SRP193695"), 
            gsub(., pattern = "SRP[0-9]+(_.+)", replacement = "GSE130242\\1"),
            .) 
-  
-  dataLst$gene_exp_samples 
-  dataLst$gene_expression
-  dataLst$genes
-  dataLst$gene_exp_to_rmap_samples
-  dataLst$gene_rl_overlap
   
   # Summarize RL signal to the condition level as well & scale
   rmap_sigSum <- rmap_sig %>%

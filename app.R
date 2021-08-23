@@ -531,9 +531,9 @@ server <- function(input, output, session) {
                 across(
                     corr:corrpadj, ~ signif(.x, digits = 4)
                 )
-            ) 
+            )
         
-        if (input$showAllGenesRL) {
+        if (input$showAllGenesRLSamp) {
             rltabNow <- rltabShowNow %>%
                 select(-Genes, -GenesFix) %>%
                 dplyr::rename(Genes = GenesNat)
@@ -543,23 +543,27 @@ server <- function(input, output, session) {
                 dplyr::rename(Genes = GenesFix) 
         }
         
-        if (! input$showRep) {
-            rltabNow <- filter(rltabNow, ! repeats)
+        if (! input$showRepSamp) {
+            rltabNow <- dplyr::filter(rltabNow, ! repeats)
+            print(rltabNow)
+        } else {
+            print(rltabNow)
         }
         
-        if (input$showCorr) {
+        if (input$showCorrSamp) {
             rltabNow <- rltabNow %>%
                 filter(! is.na(corr)) %>%
                 arrange(corrpadj) 
         }
         
-        rltabShowNow %>%
+        rltabNow %>%
             select(c("RL Region", "Location", "Genes", "Mean Signal", "Mean FDR", 
                      "# of Studies", "# of Samples", "# of Tissues", "# of Modes")) %>%
             relocate(Genes, .after = Location) %>%
             arrange(desc(`Mean FDR`))
     }, options = list(
-        scrollX = TRUE
+        scrollX = TRUE,
+        pageLength = 6
     ), selection = list(mode = "none"))
     
     ### RLoops Page ###

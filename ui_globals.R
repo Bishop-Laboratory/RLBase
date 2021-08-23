@@ -220,12 +220,36 @@ Summary_panel <- function() {
 
 
 RLoops_Panel <- function() {
-  fluidRow(
-    column(
-      12, 
-      DTOutput("RLoopsPerSample")
+  tagList(
+    br(),
+    fluidRow(
+      column(
+        width = 2,
+        checkboxInput(inputId = "showAllGenesRLSamp",
+                      label = "All genes", 
+                      value = FALSE)  
+      ),
+      column(
+        width = 2,
+        checkboxInput(inputId = "showRepSamp",
+                      label = "Repetitive", 
+                      value = FALSE)  
+      ),
+      column(
+        width = 3,
+        checkboxInput(inputId = "showCorrSamp",
+                      label = "Correlated with expression", 
+                      value = FALSE)  
+      )
+    ),
+    fluidRow(
+      column(
+        12, 
+        DTOutput("RLoopsPerSample")
+      )
     )
   )
+  
 }
 
 
