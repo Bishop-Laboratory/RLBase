@@ -110,11 +110,13 @@ server <- function(input, output, session) {
             dataLst %>%
                 pluck("rmap_samples") %>%
                 filter(id %in% rmapSampsRV()) %>%
+                mutate(Pred_CTRL = prediction == 'control') %>%
                 select(Sample=id, 
                        Study=study_id,
                        Mode = mode,
                        Tissue=tissue,
                        Condition = condition,
+                       Pred_CTRL,
                        Genome = genome,
                        Genotype = genotype,
                        Treatment = treatment) %>%
@@ -149,15 +151,136 @@ server <- function(input, output, session) {
                   2,
                   "regioneR::numOverlaps")
         
+        print(lz)
+        
         # Plot
         data.frame("zscore" = lz$shifted.z.scores,
                    "shift" = lz$shifts) %>%
             ggplot(aes(y = zscore, x = shift)) +
-            geom_line() +
-            labs(title = paste0(current_samp, ' RLFS analysis')) +
+            geom_vline(color = "firebrick", xintercept = 0, linetype = "dashed") +
+            geom_line(size = 1) +
+            ggtitle('ZScore around RLFS', subtitle = current_samp()) +
             ylab("Peak Enrichment (Z-Score)") +
+            scale_y_continuous(expand = c(0,0)) +
             xlab("Distance to RLFS (bp)") +
-            theme_bw(base_size = 15)
+            theme_prism(base_size = 15)
+    }) %>%
+        bindCache(rmapSampsRV(), current_samp())
+    
+    output$RLFSOutHTML <- renderUI({
+        
+        # Get the data for this sample
+        vals <- c(
+            dataLst %>%
+                pluck("sample_quality_characteristics") %>%
+                filter(char_type %in% c("id", "rlfs_pval", "MACS2__total_peaks"),
+                       id %in% current_samp()) %>%
+                select(-id) %>%
+                deframe(),
+            dataLst %>%
+                pluck("rmap_samples") %>%
+                filter(id %in% current_samp()) %>%
+                mutate(is_ctrl = is_rnh_like,
+                       pred_ctrl = prediction == "control") %>%
+                select(is_ctrl, pred_ctrl) %>%
+                pivot_longer(cols = everything()) %>%
+                deframe()
+        )
+        
+        tagList(
+            div(
+                class="col d-flex justify-content-center",
+                div(
+                    class = "card",
+                    div(
+                        class = "card-body",
+                        h5(
+                            class = "card-title",
+                            "RLFS analysis results"
+                        ),
+                        p(
+                            class = "card-text",
+                            HTML(paste0("RLFS-PVAL (min = 0.002): ", span(strong(
+                                style=paste0("color: ", ifelse(
+                                    vals[["rlfs_pval"]] > 2.6, 
+                                    "green", 
+                                    ifelse(
+                                        vals[["rlfs_pval"]] > 2.6,
+                                        "orange", "red"
+                                    ))),
+                                signif(10^(-1*vals[["rlfs_pval"]]), 3)
+                            ))))
+                        ),
+                        p(
+                            class = "card-text",
+                            HTML(paste0("Num. Peaks Available: ", span(strong(
+                                style=paste0("color: ", ifelse(
+                                    vals[["MACS2__total_peaks"]] > 6000, 
+                                    "green", 
+                                    ifelse(
+                                        vals[["rlfs_pval"]] > 3000,
+                                        "orange", "red"
+                                    ))),
+                                round(vals[["MACS2__total_peaks"]])            
+                            ))))
+                        ),
+                        p(
+                            class = "card-text",
+                            HTML(paste0("Control Sample (labeled): ", span(strong(
+                                style=paste0("color: ", ifelse(
+                                    vals[["is_ctrl"]] == 0, 
+                                    "green", "red"
+                                )),
+                                vals[["is_ctrl"]] == 1
+                            ))))
+                        ),
+                        p(
+                            class = "card-text",
+                            HTML(paste0("Control Sample (predicted): ", span(strong(
+                                style=paste0("color: ", ifelse(
+                                    vals[["pred_ctrl"]] == 0, 
+                                    "green", "red"
+                                )),
+                                vals[["pred_ctrl"]] == 1
+                            ))))
+                        )
+                    )
+                )
+            )
+        )
+    })
+    
+    
+    output$FFTPlot <- renderPlot({
+        
+        # Get file to load from
+        current_file <-  current_samp() %>%
+            list.files('misc/report_rda_small/', 
+                       pattern = .,
+                       full.names = TRUE)
+        
+        # Load from file
+        # TODO: This is really not an good way to get this data...
+        suppressWarnings(load(current_file)) 
+        
+        # Get LZ
+        lz <- data_list %>%
+            pluck("rlfs_data", 
+                  2,
+                  "regioneR::numOverlaps")
+        
+        print(lz)
+        
+        # Plot
+        data.frame("fftval" = Re(fft(lz$shifted.z.scores)),
+                   "freq" = seq(lz$shifts)) %>%
+            ggplot(aes(y = fftval, x = freq)) +
+            geom_hline(color = "firebrick", yintercept = 0, linetype = "dashed") +
+            geom_line(size = 1) +
+            ggtitle('Fourier Transform of ZScore around RLFS', subtitle = current_samp()) +
+            ylab("Center of Mass (Real Part)") +
+            xlab("Relative Frequency") +
+            theme_prism(base_size = 15)
     }) %>%
         bindCache(rmapSampsRV(), current_samp())
     
@@ -199,50 +322,72 @@ server <- function(input, output, session) {
         maxplt <- (max(na.omit(anno_data)[, opt]) * 1.05) %>% ifelse(. > MAX_ALLOW, MAX_ALLOW, .)
         
         suppressWarnings(lapply(unique(anno_data$annotate_type), function(annoNow) {
-            anno_data %>%
+            toPlt <- anno_data %>%
+                rename(is_ctrl = is_rnh_like) %>%
+                mutate(pred_ctrl = prediction == "control") %>%
                 filter(annotate_type == !!annoNow,
-                       id %in% rmapSampsRV()) %>%
+                       id %in% rmapSampsRV()
+                       ) %>%
                 mutate(Annotation = if (!! annoNow == "gene") 
                     factor(Annotation, levels =  annoPlot_genelvls) 
                     else Annotation) %>%
                 mutate(sample_now = id == !! current_samp()) %>%
                 fill(everything(0)) %>%
-                arrange(sample_now) %>%
-                ggplot(mapping = aes(x = Annotation, 
-                                     y = .data[[opt]])) +
-                geom_boxplot(fill = annoPlot_boxFills[annoNow],
-                             outlier.shape = NA) +
-                geom_jitter(mapping = aes(
-                    size = sample_now, 
-                    color = sample_now,
-                    alpha = sample_now, 
-                    ),
-                    width = 0.1) +
+                arrange(sample_now) 
+            
+            if (input$splitAnnoBy == "None") {
+                plt <- ggplot(toPlt, mapping = aes(x = Annotation, 
+                                                   y = !! sym(opt))) +
+                    geom_hline(yintercept = 0, linetype = "dashed") +
+                    geom_violin(
+                        # draw_quantiles = c(.50), 
+                        trim = FALSE,  position = position_dodge(.9),
+                        fill = vCols[[annoNow]]) +
+                    geom_boxplot(width=.12, color = "black",position = position_dodge(.9),
+                                 fill = boxCols[[annoNow]],
+                                 alpha = 1) +
+                    geom_point(mapping = aes(
+                        alpha = sample_now
+                    ), size = 4, color = "black", 
+                    shape=23, stroke = 2, fill = "#32889c")
+            } else {
+                plt <- ggplot(toPlt, mapping = aes(x = Annotation, 
+                                                   fill = !! sym(input$splitAnnoBy),
+                                                   y = !! sym(opt))) +
+                    geom_hline(yintercept = 0, linetype = "dashed") +
+                    geom_violin(
+                        # draw_quantiles = c(.50), 
+                        trim = FALSE,  position = position_dodge(.9)) +
+                    geom_boxplot(width=.12, 
+                                 color = "black",
+                                 position = position_dodge(.9),
+                                 alpha = 1) +
+                    geom_point(mapping = aes(
+                        alpha = sample_now
+                    ), inherit.aes = TRUE, size = 4, color = "black",
+                    shape=23, stroke = 2, fill = "#32889c") +
+                    scale_fill_manual(
+                        values = annoFillSplit[[input$splitAnnoBy]]
+                    )
+            }
+            
+            plt <- plt +
                 ggpubr::rremove("legend") +
                 ylab(opt) +
                 xlab(NULL) +
                 labs(title = annoPlot_titles[annoNow]) +
-                theme_bw() +
-                scale_color_manual(values = c(
-                    "TRUE" = "#2F3940",
-                    "FALSE" = "grey"
-                )) +
+                theme_prism(base_size = 16) +
                 scale_alpha_manual(values = c(
                     "TRUE" = 1,
-                    "FALSE" = .5
-                )) +
-                scale_size_manual(values = c(
-                    "TRUE" = 5,
-                    "FALSE" = .6
-                )) +
-                ggpubr::rremove("legend") +
+                    "FALSE" = 0
+                ), guide=FALSE) +
                 theme(axis.text.x = element_text(angle = 45, vjust = 1,
-                                                 hjust = 1)) +
-                ylim(minplt, maxplt)
+                                                 hjust = 1)) 
+                
         })) %>%
-            ggpubr::ggarrange(plotlist = ., nrow = 2, ncol = 2, align = "hv")
+            ggpubr::ggarrange(plotlist = ., nrow = 3, ncol = 1, align = "hv")
     }) %>%
-        bindCache(input$chooseAnnoPlotData, rmapSampsRV(), current_samp())
+        bindCache(input$chooseAnnoPlotData, input$splitAnnoBy, rmapSampsRV(), current_samp())
     
     
     output$rmapHeatmap <- renderPlot({
@@ -258,13 +403,15 @@ server <- function(input, output, session) {
         
         # Pallete
         paletteLength <- 100
-        myColor <- colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(paletteLength)
+        myColor <- colorRampPalette(rev(brewer.pal(n = 7, name = "RdBu")))(paletteLength)
         # length(breaks) == length(paletteLength) + 1
         # use floor and ceiling to deal with even/odd length pallettelengths
         myBreaks <- c(seq(min(corrNow), 0, length.out=ceiling(paletteLength/2) + 1), 
                       seq(max(corrNow)/paletteLength, max(corrNow), length.out=floor(paletteLength/2)))
-        pheatColLst$Mode <- pheatColLst$Mode[which(names(pheatColLst$Mode) %in% annoCorrNow$Mode)]
-        
+        pheatColLst <- colList[which(names(colList) %in% colnames(annoCorrNow))]
+        pheatColLst$Mode <- colList$mode[which(names(colList$mode) %in% annoCorrNow$Mode)]
+        print(pheatColLst)
+        print(colnames(annoCorrNow))
         pheatmap::pheatmap(corrNow, show_rownames = FALSE, 
                            main = paste0("RMapDB Corr Heatmap\n",
                                          current_samp()
@@ -305,8 +452,11 @@ server <- function(input, output, session) {
                            shape = input$PCA_shapeBy, size = "selected")
             ) +
             rmap_scatter(colorBy = input$PCA_colorBy) +
+            guides(colour = guide_legend(override.aes = list(size=9)),
+                   shape = guide_legend(override.aes = list(size=9))) +
             xlab(paste0("PC1 (", pcd$percentVar[1], "%)")) +
-            ylab(paste0("PC2 (", pcd$percentVar[2], "%)"))
+            ylab(paste0("PC2 (", pcd$percentVar[2], "%)")) + 
+            ggtitle("RMapDB PCA Plot", subtitle = current_samp())
     }) %>%
         bindCache(rmapSampsRV(), current_samp(), input$PCA_shapeBy, input$PCA_colorBy)
     

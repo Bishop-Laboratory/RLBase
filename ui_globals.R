@@ -1,5 +1,6 @@
 PAGE_PLOT_WIDTH = "90%"
-PAGE_PLOT_HEIGHT = "650px"
+PAGE_PLOT_HEIGHT = "600px"
+ANNO_PLOT_HEIGHT = "1000px"
 
 SamplesPageContents <- function() {
   fluidPage(
@@ -113,6 +114,7 @@ RMapSamplesOutput_tabset <- function() {
 
 RLFS_panel <- function() {
   tagList(
+    br(),
     fluidRow(
       column(
         width = 6,
@@ -130,7 +132,7 @@ RLFS_panel <- function() {
       ),
       column(
         width = 6,
-        plotOutput('FFTAnalysis')
+        plotOutput('FFTPlot')
       )
     )
   )
@@ -139,9 +141,10 @@ RLFS_panel <- function() {
 
 Annotation_panel <- function() {
   tagList(
+    br(),
     fluidRow(
       column(
-        width = 12,
+        width = 6,
         selectInput(
           inputId = 'chooseAnnoPlotData',
           label = "Select Data Type",
@@ -151,13 +154,22 @@ Annotation_panel <- function() {
                       "LogP enrichment (+values depleted)"), 
           selected = "Log2 Ratio (obs/exp)"
         )
+      ),
+      column(
+        width = 6,
+        selectInput(
+          inputId = "splitAnnoBy",
+          label = "Split",
+          choices = c("None", "pred_ctrl", "is_ctrl"),
+          selected = "None"
+        )
       )
     ),
     fluidRow(
       column(
         width = 12,
         plotOutput("sampleAnnotationPlot", 
-                   height = PAGE_PLOT_HEIGHT, 
+                   height = ANNO_PLOT_HEIGHT, 
                    width = PAGE_PLOT_WIDTH)
       )
     )
