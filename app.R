@@ -151,8 +151,6 @@ server <- function(input, output, session) {
                   2,
                   "regioneR::numOverlaps")
         
-        print(lz)
-        
         # Plot
         data.frame("zscore" = lz$shifted.z.scores,
                    "shift" = lz$shifts) %>%
@@ -269,8 +267,6 @@ server <- function(input, output, session) {
                   2,
                   "regioneR::numOverlaps")
         
-        print(lz)
-        
         # Plot
         data.frame("fftval" = Re(fft(lz$shifted.z.scores)),
                    "freq" = seq(lz$shifts)) %>%
@@ -346,29 +342,41 @@ server <- function(input, output, session) {
                     geom_boxplot(width=.12, color = "black",position = position_dodge(.9),
                                  fill = boxCols[[annoNow]],
                                  alpha = 1) +
-                    geom_point(mapping = aes(
-                        alpha = sample_now
-                    ), size = 4, color = "black", 
-                    shape=23, stroke = 2, fill = "#32889c")
+                    geom_point(alpha=ifelse(toPlt$sample_now, 1, 0), size = 4, color = "black", 
+                    shape=23, stroke = 2, fill = "#32889c") 
             } else {
-                plt <- ggplot(toPlt, mapping = aes(x = Annotation, 
-                                                   fill = !! sym(input$splitAnnoBy),
-                                                   y = !! sym(opt))) +
-                    geom_hline(yintercept = 0, linetype = "dashed") +
-                    geom_violin(
-                        # draw_quantiles = c(.50), 
-                        trim = FALSE,  position = position_dodge(.9)) +
-                    geom_boxplot(width=.12, 
-                                 color = "black",
-                                 position = position_dodge(.9),
-                                 alpha = 1) +
-                    geom_point(mapping = aes(
-                        alpha = sample_now
-                    ), inherit.aes = TRUE, size = 4, color = "black",
-                    shape=23, stroke = 2, fill = "#32889c") +
+                if (input$splitAnnoBy != "mode") {
+                    plt <- ggplot(toPlt, mapping = aes(x = Annotation, 
+                                                       fill = !! sym(input$splitAnnoBy),
+                                                       y = !! sym(opt))) +
+                        geom_hline(yintercept = 0, linetype = "dashed") +
+                        geom_violin(
+                            trim = FALSE,  position = position_dodge(.9)) 
+                } else {
+                    plt <- ggplot(toPlt, mapping = aes(x = Annotation, 
+                                                       fill = !! sym(input$splitAnnoBy),
+                                                       y = !! sym(opt))) +
+                        geom_hline(yintercept = 0, linetype = "dashed") 
+                }
+                
+                # So that only the colors in the factor level appear in the legend
+                cols <- annoFillSplit[[input$splitAnnoBy]][unique(as.character(as.data.frame(toPlt)[,input$splitAnnoBy]))]
+                
+                # Add box and jitter
+                plt <- plt + geom_boxplot(width=ifelse(input$splitAnnoBy != "mode", .12, .85), 
+                                   color = "black",
+                                   position = position_dodge(.9),
+                                   alpha = 1) +
+                    geom_jitter(alpha=ifelse(toPlt$sample_now, 1, 0), 
+                                size = 4, color = "black",
+                                position = position_jitterdodge(dodge.width = .9,
+                                                                jitter.width = 0, 
+                                                                jitter.height = 0),
+                                shape=23, stroke = 2) +
                     scale_fill_manual(
-                        values = annoFillSplit[[input$splitAnnoBy]]
+                        values = cols, drop=TRUE
                     )
+               
             }
             
             plt <- plt +
@@ -377,12 +385,10 @@ server <- function(input, output, session) {
                 xlab(NULL) +
                 labs(title = annoPlot_titles[annoNow]) +
                 theme_prism(base_size = 16) +
-                scale_alpha_manual(values = c(
-                    "TRUE" = 1,
-                    "FALSE" = 0
-                ), guide=FALSE) +
                 theme(axis.text.x = element_text(angle = 45, vjust = 1,
-                                                 hjust = 1)) 
+                                                 hjust = 1)) +
+                theme(legend.title = element_text(size=18),
+                      legend.text = element_text(size=14))
                 
         })) %>%
             ggpubr::ggarrange(plotlist = ., nrow = 3, ncol = 1, align = "hv")
@@ -410,8 +416,6 @@ server <- function(input, output, session) {
                       seq(max(corrNow)/paletteLength, max(corrNow), length.out=floor(paletteLength/2)))
         pheatColLst <- colList[which(names(colList) %in% colnames(annoCorrNow))]
         pheatColLst$Mode <- colList$mode[which(names(colList$mode) %in% annoCorrNow$Mode)]
-        print(pheatColLst)
-        print(colnames(annoCorrNow))
         pheatmap::pheatmap(corrNow, show_rownames = FALSE, 
                            main = paste0("RMapDB Corr Heatmap\n",
                                          current_samp()
@@ -429,8 +433,9 @@ server <- function(input, output, session) {
     
     output$rmapPCA <- renderPlot({
         # Filter for current samples selected
-        annoCorrNow <- annoCorr[rmapSampsRV(),]
-        corrNow <- corr_data[rmapSampsRV(), rmapSampsRV()]
+        annoCorrNow <- annoCorr[rmapSampsRV(),] %>%
+            na.omit()
+        corrNow <- corr_data[rownames(annoCorrNow), rownames(annoCorrNow)]
         
         # Get the PCA data
         pcd <- pcaPlotDataFromCorr(corrNow)
@@ -439,24 +444,37 @@ server <- function(input, output, session) {
         annoCorrNow$sample <- as.factor(ifelse(rownames(annoCorrNow) != current_samp(), "", "selected"))
         
         # Get the plot
-        pcd %>%
+        toPlt <- pcd %>%
             pluck("pcData") %>%
             inner_join(dataLst %>%
                            pluck("rmap_samples"),
                        by = "id") %>%
+            
             right_join(rownames_to_column(annoCorrNow, var = "id"), by = "id") %>%
             mutate(selected = as.factor(ifelse(id != current_samp(),
                                                "", "selected"))) %>%
-            ggplot(
-                aes_string(x = "PC1", y = "PC2", color = input$PCA_colorBy, 
-                           shape = input$PCA_shapeBy, size = "selected")
-            ) +
-            rmap_scatter(colorBy = input$PCA_colorBy) +
+            mutate(
+                across(any_of(names(colList)), as.factor)
+            )
+        
+        if (input$PCA_colorBy %in% names(colList)) {
+            cols <- colList[[input$PCA_colorBy]][unique(as.character(toPlt[,input$PCA_colorBy]))]
+        } else {
+            cols <- NA
+        }
+        
+        ggplot(
+            toPlt,
+            aes_string(x = "PC1", y = "PC2", color = input$PCA_colorBy, 
+                       shape = input$PCA_shapeBy, size = "selected")
+        ) +
+            rmap_scatter(cols) +
             guides(colour = guide_legend(override.aes = list(size=9)),
                    shape = guide_legend(override.aes = list(size=9))) +
             xlab(paste0("PC1 (", pcd$percentVar[1], "%)")) +
             ylab(paste0("PC2 (", pcd$percentVar[2], "%)")) + 
-            ggtitle("RMapDB PCA Plot", subtitle = current_samp())
+            ggtitle("RMapDB PCA Plot", subtitle = current_samp()) 
+            
     }) %>%
         bindCache(rmapSampsRV(), current_samp(), input$PCA_shapeBy, input$PCA_colorBy)
     
@@ -507,17 +525,42 @@ server <- function(input, output, session) {
             
     
         # Show the R-loops within that sample    
-        rltabShow %>%
-            filter(`RL Region` %in% to2show)
+        rltabShowNow <- rltabShow %>%
+            filter(`RL Region` %in% to2show) %>%
             mutate(
                 across(
                     corr:corrpadj, ~ signif(.x, digits = 4)
                 )
-            ) %>%
-            select(-Type, -Modes, -`Mean RLCounts`, -repeats) %>%
-            relocate(Genes, .after = Location) 
-    })
-    
+            ) 
+        
+        if (input$showAllGenesRL) {
+            rltabNow <- rltabShowNow %>%
+                select(-Genes, -GenesFix) %>%
+                dplyr::rename(Genes = GenesNat)
+        } else {
+            rltabNow <- rltabShowNow %>%
+                select(-Genes, -GenesNat) %>%
+                dplyr::rename(Genes = GenesFix) 
+        }
+        
+        if (! input$showRep) {
+            rltabNow <- filter(rltabNow, ! repeats)
+        }
+        
+        if (input$showCorr) {
+            rltabNow <- rltabNow %>%
+                filter(! is.na(corr)) %>%
+                arrange(corrpadj) 
+        }
+        
+        rltabShowNow %>%
+            select(c("RL Region", "Location", "Genes", "Mean Signal", "Mean FDR", 
+                     "# of Studies", "# of Samples", "# of Tissues", "# of Modes")) %>%
+            relocate(Genes, .after = Location) %>%
+            arrange(desc(`Mean FDR`))
+    }, options = list(
+        scrollX = TRUE
+    ), selection = list(mode = "none"))
     
     ### RLoops Page ###
     # Get RLoops dataset

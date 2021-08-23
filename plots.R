@@ -46,12 +46,13 @@ boxCols <- list(
 )
 annoFillSplit <- list(
   "is_ctrl" = c("TRUE" = "#d483a3", "FALSE" = "#c0d483"),
-  "pred_ctrl" = c("TRUE" = "purple", "FALSE" = "orange")
+  "pred_ctrl" = c("TRUE" = "purple", "FALSE" = "orange"),
+  "mode" = modeCols
 )
 
 #' Scatter plots for RMapDB
 #' @param ... additional arguments to geom_point()
-rmap_scatter <- function(colorBy, sizeBy, ...) {
+rmap_scatter <- function(cols, ...) {
   pltLst <- list(
     geom_point(...),
     theme_prism(base_size = 18),
@@ -62,11 +63,11 @@ rmap_scatter <- function(colorBy, sizeBy, ...) {
           legend.text = element_text(size=14))
   )
   
-  if (! is.null(colorBy) & colorBy %in% names(colList)) {
-    print(colList[[colorBy]])
+  if (! is.na(cols)) {
     # Get colors
     pltLst <- c(pltLst, 
-                list(scale_color_manual(values = colList[[colorBy]])))
+                list(scale_color_manual(values = cols,
+                                        drop=TRUE)))
   }
   
   pltLst

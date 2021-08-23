@@ -44,8 +44,9 @@ if (! file.exists(CORR_DATA)) {
   load(INPUT_CORR)
   keep <- which(! colnames(data_list$corr_data$corMat) %in% torm)
   corr_data <- data_list$corr_data$corMat[keep, keep]
-  annoCorr <- data_list$corr_data$annoNow[colnames(corr_data),]
-  newlabs <- gsub(rownames(annoCorr), pattern = ".+_([ES]{1}RX[0-9]+)$", replacement = "\\1")
+  annoCorr <- data_list$corr_data$annoNow[colnames(corr_data),] %>%
+    filter(Source == "RMapDB")
+  newlabs <- gsub(rownames(annoCorr), pattern = ".+_([ES]RX[0-9]+)$", replacement = "\\1")
   rownames(annoCorr) <- colnames(corr_data) <- rownames(corr_data) <- newlabs
   annoCorr <- annoCorr %>%
     rownames_to_column(var = "id") %>%

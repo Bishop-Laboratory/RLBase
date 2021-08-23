@@ -1,4 +1,4 @@
-PAGE_PLOT_WIDTH = "90%"
+PAGE_PLOT_WIDTH = "96%"
 PAGE_PLOT_HEIGHT = "600px"
 ANNO_PLOT_HEIGHT = "1000px"
 
@@ -7,11 +7,11 @@ SamplesPageContents <- function() {
     title = "RMapDB Samples",
     fluidRow(
       column(
-        width = 4,
+        width = 5,
         RMapSamplesTable_panel()
       ),
       column(
-        width = 8,
+        width = 7,
         RMapSamplesOutput_tabset()
       )
     )
@@ -160,7 +160,7 @@ Annotation_panel <- function() {
         selectInput(
           inputId = "splitAnnoBy",
           label = "Split",
-          choices = c("None", "pred_ctrl", "is_ctrl"),
+          choices = c("None", "pred_ctrl", "is_ctrl", "mode"),
           selected = "None"
         )
       )
