@@ -358,9 +358,13 @@ headerHTML <- function() {
 
 footerHTML <- function() {
   "
-                    <footer class='footer'>
-                    <div class='footer-copyright text-center py-3'><span style='color:white'>© 2021 Copyright:</span>
-                    <a href='https://gccri.uthscsa.edu/lab/bishop/' target='_blank'> Bishop Laboratory</a>
-                    </div>
-                    </footer>"
+    <footer class='footer'>
+      <div class='footer-copyright text-center py-3'><span style='color:white'>RMapDB © 2021 Copyright:</span>
+        <a href='https://gccri.uthscsa.edu/lab/bishop/' target='_blank'> Bishop Laboratory</a> 
+        <span>&nbsp</span>
+        <a href='https://github.com/Bishop-Laboratory/' target='_blank'> 
+          <img src='GitHub-Mark-Light-64px.png' height='20'>
+        </a>
+      </div>
+    </footer>"
 }

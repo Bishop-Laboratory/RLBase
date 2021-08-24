@@ -44,16 +44,6 @@ ui <- function(request) {
                 )
             ),
             tabPanel(
-                title = "About",
-                value = "aboutTab",
-                id = "about-tab",
-                icon = icon('info-circle'),
-                fluidPage(
-                    br(),
-                    includeHTML("www/about.html")
-                )
-            ),
-            tabPanel(
                 title = "Samples", 
                 id = "samples-tab",
                 icon = icon('vials'),
@@ -75,8 +65,11 @@ ui <- function(request) {
                 title = "Documentation", 
                 id = "docs-tab",
                 icon = icon('file-alt'),
-                p("Hello world")
-                # includeHTML("www/documentation.html")
+                # From https://stackoverflow.com/questions/43393310/include-markdown-with-options-in-shiny
+                tags$iframe(src = './documentation.html', # put myMarkdown.html to /www
+                            width = '100%', height = '800px', 
+                            frameborder = 0, scrolling = 'auto'
+                )
             )
         ),
         tags$footer(
