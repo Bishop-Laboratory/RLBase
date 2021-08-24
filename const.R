@@ -1,7 +1,12 @@
+## MAGIC ##
+baseURLBW <- "https://rmapdb-data.s3.us-east-2.amazonaws.com/bigwigs/rseq-coverage-unstranded/"
+baseURLPEAKS <- "https://rmapdb-data.s3.us-east-2.amazonaws.com/macs2-peaks-unstranded/"
+
 # Get the data
 if (! "dataLst" %in% names(globalenv())) {
   load('data/dataLst.rda')
 }
+load("data/rmapfftsmall.rda")
 
 # Get Blacklisted genome regions
 BLACKLIST <- "data/ENCFF356LFX.bed"
@@ -37,8 +42,9 @@ if (! "ctrmgr" %in% names(globalenv())) {
 }
 
 CORR_DATA <- "data/annoCorr__corr_data.rda"
-torm <- "ERX2277510_E-MTAB-6318DRIP_mOHT_hg38"
-INPUT_CORR <- paste0("misc/report_rda/", torm, ".QC_report.rda")
+torm <- "ERX2277510_E-MTAB-6318DRIP_mOHT"
+name <- paste0(torm, "_hg38")
+INPUT_CORR <- paste0("misc/report_rda/", name, ".QC_report.rda")
 # Get corr dataset & wrangle
 if (! file.exists(CORR_DATA)) {
   load(INPUT_CORR)
@@ -54,7 +60,7 @@ if (! file.exists(CORR_DATA)) {
     left_join(
       dataLst %>%
         pluck("rmap_samples") %>% 
-        mutate(pred_ctrl = prediction == "control") %>%
+        mutate(pred_ctrl = prediction == "Control") %>%
         select(id, is_rnh_like, pred_ctrl)
     ) %>%
     column_to_rownames(var = "id") %>%

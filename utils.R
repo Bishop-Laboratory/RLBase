@@ -38,4 +38,24 @@ cleanAnnoCorrNow <- function(annoCorrNow) {
   annoCorrNow
 }
 
+#' Makes a gene cards link for an official gene symbol
+makeGeneCards <- function(x) {
+  GENECARDS_BASE <- "https://www.genecards.org/cgi-bin/carddisp.pl?gene="
+  as.character(a(
+    href=paste0(GENECARDS_BASE, x),
+    target="_blank",
+    x
+  ))
+}
+
+
+#' Make RLoop consensus view in genome browser
+makeRLConsensusGB <- function(x) {
+  BASE_URL1 <- "http://genome.ucsc.edu/s/millerh1%40livemail.uthscsa.edu/RLoop_consensus?position="
+  as.character(a(
+    href=paste0(BASE_URL1, x),
+    target="_blank",
+    x
+  ))
+}
 

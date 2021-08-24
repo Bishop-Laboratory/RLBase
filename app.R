@@ -56,12 +56,27 @@ ui <- function(request) {
             tabPanel(
                 title = "Samples", 
                 id = "samples-tab",
+                icon = icon('vials'),
                 SamplesPageContents()
             ),
             tabPanel(
-                title = "R-Loops", 
+                title = "R-Loop DB", 
                 id = "rloops-tab",
+                icon = icon('database'),
                 RLoopsPageContents()
+            ),
+            tabPanel(
+                title = "Download", 
+                id = "download-tab",
+                icon = icon('download'),
+                DownloadPageContents()
+            ),
+            tabPanel(
+                title = "Documentation", 
+                id = "docs-tab",
+                icon = icon('file-alt'),
+                p("Hello world")
+                # includeHTML("www/documentation.html")
             )
         ),
         tags$footer(
@@ -73,6 +88,7 @@ ui <- function(request) {
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
+    
     ### Sample Page ###
     # TODO: Should be sorted
     # TODO: Should contain link that will open the details modal
@@ -81,7 +97,7 @@ server <- function(input, output, session) {
     rmapSampsRV <- reactive({
         dataLst %>%
             pluck("rmap_samples") %>%
-            mutate(pred_ctrl = prediction == "control") %>%
+            mutate(pred_ctrl = prediction == "Control") %>%
             filter(genome == input$selectGenome, 
                    is_rnh_like %in% c(FALSE, input$selectRNH),
                    pred_ctrl %in% c(FALSE, input$selectCTRL),
@@ -110,7 +126,7 @@ server <- function(input, output, session) {
             dataLst %>%
                 pluck("rmap_samples") %>%
                 filter(id %in% rmapSampsRV()) %>%
-                mutate(Pred_CTRL = prediction == 'control') %>%
+                mutate(Pred_CTRL = prediction == 'Control') %>%
                 select(Sample=id, 
                        Study=study_id,
                        Mode = mode,
@@ -134,10 +150,12 @@ server <- function(input, output, session) {
         bindCache(rmapSampsRV())
     
     output$zScorePlot <- renderPlot({
+      
+        RLFS_LOC <- "../RSeq-supplemental-analysis/misc/datasets_for_fft_testing/rlfs/"
         
         # Get file to load from
         current_file <-  current_samp() %>%
-            list.files('misc/report_rda_small/', 
+            list.files(RLFS_LOC, 
                        pattern = .,
                        full.names = TRUE)
         
@@ -146,9 +164,8 @@ server <- function(input, output, session) {
         suppressWarnings(load(current_file)) 
         
         # Get LZ
-        lz <- data_list %>%
-            pluck("rlfs_data", 
-                  2,
+        lz <- rlfsRes %>%
+            pluck("Z-scores", 
                   "regioneR::numOverlaps")
         
         # Plot
@@ -166,6 +183,18 @@ server <- function(input, output, session) {
         bindCache(rmapSampsRV(), current_samp())
     
     output$RLFSOutHTML <- renderUI({
+      
+      RLFS_LOC <- "../RSeq-supplemental-analysis/misc/datasets_for_fft_testing/rlfs/"
+      
+      # Get file to load from
+      current_file <-  current_samp() %>%
+        list.files(RLFS_LOC, 
+                   pattern = .,
+                   full.names = TRUE)
+      
+      # Load from file
+      # TODO: This is really not an good way to get this data...
+      suppressWarnings(load(current_file)) 
         
         # Get the data for this sample
         vals <- c(
@@ -179,11 +208,13 @@ server <- function(input, output, session) {
                 pluck("rmap_samples") %>%
                 filter(id %in% current_samp()) %>%
                 mutate(is_ctrl = is_rnh_like,
-                       pred_ctrl = prediction == "control") %>%
+                       pred_ctrl = prediction == "Control") %>%
                 select(is_ctrl, pred_ctrl) %>%
                 pivot_longer(cols = everything()) %>%
                 deframe()
         )
+        
+        vals['rlfs_pval'] <- -log10(rlfsRes$perTestResults$`regioneR::numOverlaps`$pval)
         
         tagList(
             div(
@@ -200,10 +231,10 @@ server <- function(input, output, session) {
                             class = "card-text",
                             HTML(paste0("RLFS-PVAL (min = 0.002): ", span(strong(
                                 style=paste0("color: ", ifelse(
-                                    vals[["rlfs_pval"]] > 2.6, 
+                                    vals[["rlfs_pval"]] > 1.6, 
                                     "green", 
                                     ifelse(
-                                        vals[["rlfs_pval"]] > 2.6,
+                                        vals[["rlfs_pval"]] > 1.3,
                                         "orange", "red"
                                     ))),
                                 signif(10^(-1*vals[["rlfs_pval"]]), 3)
@@ -213,10 +244,10 @@ server <- function(input, output, session) {
                             class = "card-text",
                             HTML(paste0("Num. Peaks Available: ", span(strong(
                                 style=paste0("color: ", ifelse(
-                                    vals[["MACS2__total_peaks"]] > 6000, 
+                                    vals[["MACS2__total_peaks"]] > 3000, 
                                     "green", 
                                     ifelse(
-                                        vals[["rlfs_pval"]] > 3000,
+                                        vals[["MACS2__total_peaks"]] > 1500,
                                         "orange", "red"
                                     ))),
                                 round(vals[["MACS2__total_peaks"]])            
@@ -248,24 +279,24 @@ server <- function(input, output, session) {
         )
     })
     
-    
     output$FFTPlot <- renderPlot({
+        
+        RLFS_LOC <- "../RSeq-supplemental-analysis/misc/datasets_for_fft_testing/rlfs/"
         
         # Get file to load from
         current_file <-  current_samp() %>%
-            list.files('misc/report_rda_small/', 
-                       pattern = .,
-                       full.names = TRUE)
+          list.files(RLFS_LOC, 
+                     pattern = .,
+                     full.names = TRUE)
         
         # Load from file
         # TODO: This is really not an good way to get this data...
         suppressWarnings(load(current_file)) 
         
         # Get LZ
-        lz <- data_list %>%
-            pluck("rlfs_data", 
-                  2,
-                  "regioneR::numOverlaps")
+        lz <- rlfsRes %>%
+          pluck("Z-scores", 
+                "regioneR::numOverlaps")
         
         # Plot
         data.frame("fftval" = Re(fft(lz$shifted.z.scores)),
@@ -274,7 +305,7 @@ server <- function(input, output, session) {
             geom_hline(color = "firebrick", yintercept = 0, linetype = "dashed") +
             geom_line(size = 1) +
             ggtitle('Fourier Transform of ZScore around RLFS', subtitle = current_samp()) +
-            ylab("Center of Mass (Real Part)") +
+            ylab("FT-ZScore (Real Component)") +
             xlab("Relative Frequency") +
             theme_prism(base_size = 15)
     }) %>%
@@ -283,20 +314,22 @@ server <- function(input, output, session) {
     
     output$pValPlot <- renderPlot({
         # Get file to load from
-        current_file <-  current_samp() %>%
-            list.files('misc/report_rda_small/', 
-                       pattern = .,
-                       full.names = TRUE)
-        
-        # Load from file
-        # TODO: This is really not an good way to get this data...
-        suppressWarnings(load(current_file)) 
-        
-        # Get pt
-        pt <- data_list %>%
-            pluck("rlfs_data", 
-                  1,
-                  "regioneR::numOverlaps")
+      RLFS_LOC <- "../RSeq-supplemental-analysis/misc/datasets_for_fft_testing/rlfs/"
+      
+      # Get file to load from
+      current_file <-  current_samp() %>%
+        list.files(RLFS_LOC, 
+                   pattern = .,
+                   full.names = TRUE)
+      
+      # Load from file
+      # TODO: This is really not an good way to get this data...
+      suppressWarnings(load(current_file)) 
+      
+      # Get LZ
+      pt <- rlfsRes %>%
+        pluck("perTestResults", 
+              "regioneR::numOverlaps")
         
         # Plot
         regioneR:::plot.permTestResults(pt)
@@ -320,7 +353,7 @@ server <- function(input, output, session) {
         suppressWarnings(lapply(unique(anno_data$annotate_type), function(annoNow) {
             toPlt <- anno_data %>%
                 rename(is_ctrl = is_rnh_like) %>%
-                mutate(pred_ctrl = prediction == "control") %>%
+                mutate(pred_ctrl = prediction == "Control") %>%
                 filter(annotate_type == !!annoNow,
                        id %in% rmapSampsRV()
                        ) %>%
@@ -512,8 +545,6 @@ server <- function(input, output, session) {
     }, escape=FALSE, server=FALSE, rownames = FALSE, options = list(dom = "t")) %>%
         bindCache(rmapSampsRV(), current_samp())
     
-    
-    
     output$RLoopsPerSample <- renderDT({
         
         # Get the R-loops for the current sample
@@ -545,10 +576,7 @@ server <- function(input, output, session) {
         
         if (! input$showRepSamp) {
             rltabNow <- dplyr::filter(rltabNow, ! repeats)
-            print(rltabNow)
-        } else {
-            print(rltabNow)
-        }
+        } 
         
         if (input$showCorrSamp) {
             rltabNow <- rltabNow %>%
@@ -560,11 +588,61 @@ server <- function(input, output, session) {
             select(c("RL Region", "Location", "Genes", "Mean Signal", "Mean FDR", 
                      "# of Studies", "# of Samples", "# of Tissues", "# of Modes")) %>%
             relocate(Genes, .after = Location) %>%
-            arrange(desc(`Mean FDR`))
-    }, options = list(
-        scrollX = TRUE,
-        pageLength = 6
-    ), selection = list(mode = "none"))
+            arrange(desc(`Mean FDR`)) %>%
+            DT::datatable(
+                extensions = 'Buttons',
+                options = list(
+                    scrollX = TRUE,
+                    server=FALSE,
+                    pageLength = 6
+                ), selection = list(mode = "none")
+            )
+    }) 
+    
+    
+    output$downloadsForSample <- renderUI({
+        
+        snamebw <- rmapfftsmall %>%
+            filter(id == current_samp()) %>%
+            mutate(sname = paste0(sample_name, ".", genome)) %>%
+            pull(sname)
+        snamepeak <- rmapfftsmall %>%
+            filter(id == current_samp()) %>%
+            mutate(sname = paste0(sample_name, "_", genome)) %>%
+            pull(sname)
+        
+        tagList(
+            fluidRow(
+                column(
+                    width = 6,
+                    h4(paste0(current_samp(), " - Downloads")),
+                    hr()
+                )
+            ),
+            fluidRow(
+                column(
+                    width = 4, 
+                    a(
+                        class="btn btn-default shiny-download-link",
+                        target="_blank",
+                        href=paste0(baseURLBW, snamebw, ".bw"),
+                        icon("download"),
+                        "Coverage (.bw)"
+                    )
+                ),
+                column(
+                    width = 4, 
+                    a(
+                        class="btn btn-default shiny-download-link",
+                        target="_blank",
+                        href=paste0(baseURLPEAKS, snamepeak, ".unstranded.broadPeak"),
+                        icon("download"),
+                        "Peaks (.broadPeak)"
+                    )
+                )
+            )
+        )
+    })
     
     ### RLoops Page ###
     # Get RLoops dataset
@@ -597,7 +675,7 @@ server <- function(input, output, session) {
         }
         
         rltabNow
-    })
+    }) %>% bindCache(input$showAllGenesRL, input$showRep, input$showCorr)
     
     # Make DataTable
     output$rloops <- renderDT({
@@ -610,26 +688,62 @@ server <- function(input, output, session) {
     options = list(
         pageLength = 5,
         scrollX = TRUE
-    ))
+    )) 
     
-    output$RLvsExpbySample <- renderPlot({
-        
+    # Current selected RL from DT
+    current_rl <- reactive({
         # Get selected row from datatable
         selectedRow <- ifelse(is.null(input$rloops_rows_selected), 
                               1, 
                               input$rloops_rows_selected)
         
         # Get current sample
-        current_rl <- rloops() %>%
-            filter(row_number() == selectedRow)
+        rloops() %>%
+            filter(row_number() == selectedRow) %>%
+            pull(`RL Region`)
+    }) %>%
+        bindCache(rloops(), input$rloops_rows_selected)
+    
+    # Make summary page
+    NA_LINK <- "<a href=\"https://www.genecards.org/cgi-bin/carddisp.pl?gene=NA\" target=\"_blank\">NA</a>"
+    output$RLoopsSummary <- renderUI({
+        rloopsNow <- rloops() %>%
+            filter(`RL Region` == current_rl()) %>%
+            left_join(
+                select(
+                    rltab, `RL Region`=id, confidence_level, is_rlfs, samples, genes
+                ),
+                by = "RL Region"
+            ) %>%
+            mutate(Genes = map_chr(
+                Genes, function(x) {
+                    paste0(sapply(unique(unlist(strsplit(Genes, split = "\n"))), makeGeneCards), collapse = "\n")
+                }
+            )) %>%
+            mutate(Genes = ifelse(Genes == NA_LINK, NA, Genes)) %>%
+            select(-genes) %>%
+            relocate(Genes, .before = Type) %>%
+            select(-`Mean RLCounts`, -repeats, -corrpval, -Type)
+        rloopsNow %>%
+            mutate(Location = makeRLConsensusGB(Location)) %>%
+            mutate(samples = paste0(unique(unlist(samples)), collapse = "\n")) %>%
+            t() %>%
+            kableExtra::kbl(format = "html", escape = FALSE) %>%
+            kableExtra::kable_styling() %>%
+            HTML()
+    })
+    
+    output$RLvsExpbySample <- renderPlot({
+        rloopsNow <- rloops() %>%
+            filter(`RL Region` == current_rl())
         
         # Get the corr and pval
-        corr <- pull(current_rl, "corr") %>% round(4)
-        corrpadj <- pull(current_rl, "corrpadj") %>% round(4)
+        corr <- pull(rloopsNow, "corr") %>% round(4)
+        corrpadj <- pull(rloopsNow, "corrpadj") %>% round(4)
         
         # Get the color
         rlExpCondLvlByRL %>%
-            dplyr::filter(rloop_id == current_rl$`RL Region`) %>%
+            dplyr::filter(rloop_id == current_rl()) %>%
             dplyr::rename(
                 Treatment = treatment,
                 Mode = mode,
@@ -639,15 +753,15 @@ server <- function(input, output, session) {
             ) %>%
             ggplot(aes_string(x = "vst", y = "qVal", color = "Mode")) +
             geom_point() +
-            ggtitle(current_rl, subtitle = "Expression vs. R-Loop Intensity") +
+            ggtitle(current_rl(), subtitle = "Expression vs. R-Loop Intensity") +
             theme_bw(base_size = 14) +
             annotate(geom = 'text', 
                      label = paste0("Rho: ", corr, "; Padj: ", corrpadj), 
                      x = -Inf, y = Inf, hjust = -.20, vjust = 3)
         
-    })
+    }) %>% bindCache(current_rl(), rloops())
 }
-
+    
 # TODO: Need URL cleaner
 # Run the application 
 graphics.off()

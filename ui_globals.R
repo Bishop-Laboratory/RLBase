@@ -80,31 +80,31 @@ RMapSamplesOutput_tabset <- function() {
       tabPanel(
         title = "Summary",
         # TODO: Need icon for QC
-        icon = icon('home'),
+        icon = icon('list'),
         br(),
         Summary_panel()
       ),
       tabPanel(
         title = "Annotation",
-        icon = icon("home"),
+        icon = icon("paint-brush"),
         Annotation_panel()
       ),
       tabPanel(
         title = "RLFS",
         # TODO: Need icon for QC
-        icon = icon('home'),
+        icon = icon('laptop-code'),
         RLFS_panel()
       ),
       tabPanel(
         title = "R-loops",
         # TODO: Need icon
-        icon = icon('home'),
+        icon = icon('table'),
         RLoops_Panel()
       ),
       tabPanel(
         title = "Downloads",
         # TODO: Need icon
-        icon = icon('home'),
+        icon = icon('download'),
         Downloads_panel()
       )
     )
@@ -254,16 +254,7 @@ RLoops_Panel <- function() {
 
 
 Downloads_panel <- function() {
-  tagList(
-    downloadButton(
-      outputId = "downloadCoverage",
-      label = "Coverage"
-    ),
-    downloadButton(
-      outputId = "downloadPeaks",
-      label = "Peaks"
-    )
-  )
+  uiOutput("downloadsForSample")
 }
 
 
@@ -305,12 +296,12 @@ RLoopsPageContents <- function() {
           id = "rloopStats",
           tabPanel(
             title = "Summary",
-            icon = icon("home"),
-            h4("Summary goes here!")
+            icon = icon("list"),
+            uiOutput("RLoopsSummary")
           ),
           tabPanel(
             title = "Expression",
-            icon = icon("home"),
+            icon = icon("dna"),
             selectInput(
               inputId = "colorExpvRlBy",
               label = "Color",
@@ -321,14 +312,8 @@ RLoopsPageContents <- function() {
             plotOutput(outputId = "RLvsExpbySample")
           ),
           tabPanel(
-            title = "Genomic Features",
-            icon = icon("home"),
-            ## Genomic features content
-            ## Comparison with RLFS
-          ),
-          tabPanel(
             title = "Downloads",
-            icon = icon("home"),
+            icon = icon("download"),
             ## Download the R-Loops table
           )
         )
@@ -337,6 +322,19 @@ RLoopsPageContents <- function() {
   )
 }
 
+
+HelpPageContents <- function() {
+  list(
+    h1("Help page")
+  )
+}
+
+
+DownloadPageContents <- function() {
+  list(
+    h1("Downloads page")
+  )
+}
 
 headerHTML <- function() {
   "
