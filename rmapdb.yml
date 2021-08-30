@@ -9,6 +9,7 @@ dependencies:
   - r-dt
   - r-plotly
   - r-tidyverse
+  - r-shinytest
   - r-bslib
   - r-rcolorbrewer
   - r-pheatmap
