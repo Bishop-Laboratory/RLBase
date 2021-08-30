@@ -33,11 +33,11 @@ jobs:
           channel-priority: true
           environment-file: rmapdb.yml
           activate-environment: rmapdb
-      - name: Other dependencies
+      - name: Other dependencies & run tests
         run: |
           conda activate rmapdb
           Rscript -e "install.packages('ggprism', repos='http://cran.us.r-project.org')"
-          Rscript -e "shinytest::testApp('.')"
+          Rscript -e "shinytest::testApp('.', compareImages = FALSE, interactive = FALSE, quiet = FALSE)"
       - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@v2

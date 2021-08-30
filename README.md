@@ -1,5 +1,5 @@
 # RMapDB
-![Build Status](https://github.com/Bishop-Laboratory/RMapDB/workflows/build/badge.svg)
+![Build Status](https://github.com/Bishop-Laboratory/RMapDB/workflows/tests/badge.svg)
 
 ## Quick-Start
 
