@@ -37,10 +37,7 @@ jobs:
         run: |
           conda activate rmapdb
           Rscript -e "install.packages('ggprism', repos='http://cran.us.r-project.org')"
-      - name: Run tests
-        shell: Rscript {0}
-        run: |
-          shiny::runTests(".", assert = TRUE)
+          Rscript -e "shinytest::testApp('.')"
       - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@v2
