@@ -1,0 +1,21 @@
+name: rmapdb
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+  - r
+dependencies:
+  - r-shiny
+  - r-dt
+  - r-plotly
+  - r-tidyverse
+  - r-bslib
+  - r-rcolorbrewer
+  - r-pheatmap
+  - r-ggplotify
+  - r-kableextra
+  - r-ggpubr
+  - r-msigdbr
+  - bioconductor-regioner
+  - bioconductor-genomeinfodb
+  - bioconductor-genomicranges

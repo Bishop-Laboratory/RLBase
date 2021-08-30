@@ -1,30 +1,38 @@
-# RMapDB-shiny
-![Build Status](https://github.com/Bishop-Laboratory/RMapDB-shiny/workflows/build/badge.svg)
+# RMapDB
+![Build Status](https://github.com/Bishop-Laboratory/RMapDB/workflows/build/badge.svg)
 
 ## Quick-Start
 
+### Installation
+
 To launch the RMapDB app, the easiest approach will be to do the following:
 
-First, clone the repository and `cd` into it:
+1. Clone the repository and `cd` into it:
 
-```bash
-git clone https://github.com/Bishop-Laboratory/RMapDB-shiny.git
-cd RMapDB-shiny/
+```shell
+git clone https://github.com/Bishop-Laboratory/RMapDB.git
+cd RMapDB/
 ```
 
-Then install all dependencies:
+2. Create the environment (requires conda installed):
 
-```R
-if (!requireNamespace("renv", quietly = TRUE)) install.packages("renv")
-options(repos = c(RSPM = "https://packagemanager.rstudio.com/all/latest"))
-renv::restore()
+```shell
+conda install -c conda-forge mamba -y
+mamba env create -f rmapdb.yml --force
+conda activate rmapdb
 ```
+
+3. Retrieve non-conda dependencies 
+
+```shell
+Rscript -e "install.packages('ggprism', repos='http://cran.us.r-project.org')"
+```
+
 
 Finally, launch the server:
 
 ```R
-library(shiny)
-runApp()
+Rscript runApp.R
 ```
 
 ## Issues and Bug Reports
