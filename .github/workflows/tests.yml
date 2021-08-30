@@ -38,7 +38,7 @@ jobs:
           conda activate rmapdb
           Rscript -e "install.packages('ggprism', repos='http://cran.us.r-project.org')"
           echo "Attempting to launch app for 120 seconds..."
-          timeout 120 Rscript runApp.R
+          timeout 120 Rscript runApp.R || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
           # echo "Attempted to launch tests at seed 1234"
           # Rscript -e "shinytest::testApp('.', compareImages = FALSE)"
       - name: Upload test results
