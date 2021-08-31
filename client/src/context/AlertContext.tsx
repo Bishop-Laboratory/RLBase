@@ -1,19 +1,17 @@
 import React, { useContext, useState } from "react";
 
-// TODO: set types
-
 interface Alert {
   message: string;
-  type: "success" | "danger" | "info"; // bootstrap alert types
+  type: "success" | "danger" | "info"; // matches bootstrap alert types
 }
 interface AlertContextInterface {
   alert: Alert | null;
-  setAlert: any;
+  setAlert: (alert: Alert | null) => void;
 }
 
 const AlertContext = React.createContext<AlertContextInterface>({} as AlertContextInterface);
 
-export function useAlert() {
+export function useAlert(): AlertContextInterface {
   return useContext(AlertContext);
 }
 

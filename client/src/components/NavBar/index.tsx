@@ -4,7 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useAlert } from "../../context/AlertContext";
 
 const NavBar = () => {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, isVerified, logout } = useAuth();
   const { setAlert } = useAlert();
 
   const history = useHistory();
@@ -16,8 +16,7 @@ const NavBar = () => {
       setAlert(null);
       history.push("/");
     } catch (err) {
-      // TODO: error handling for failed logout
-      console.log(err);
+      setAlert({ type: "danger", message: "Failed to sign out. Please try again." });
     }
   }
 
@@ -57,7 +56,7 @@ const NavBar = () => {
                 Download
               </Link>
             </li>
-            {currentUser && currentUser.emailVerified && (
+            {isVerified() && (
               <li className="nav-item me-1">
                 <Link to="/upload" className="nav-link">
                   Upload

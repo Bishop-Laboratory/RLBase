@@ -22,13 +22,15 @@ export default function Signup(): JSX.Element {
       setError("");
       setLoading(true);
       const userData: firebase.auth.UserCredential = await signup(email, password);
-      await sendEmailVerification(userData.user);
+      if (userData.user) {
+        await sendEmailVerification(userData.user);
+      }
       history.push("/");
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (

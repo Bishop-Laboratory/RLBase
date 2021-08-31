@@ -1,0 +1,15 @@
+.signInButton {
+  padding: 0.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.signInButton:hover {
+  background-image: linear-gradient(white, #f8f9fa)
+}
+
+.signInLogo {
+  height: 1.5em;
+  padding-right: 0.5em;
+}

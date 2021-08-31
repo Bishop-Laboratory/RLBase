@@ -4,10 +4,10 @@ import { useAuth } from "../../context/AuthContext";
 
 export default function Alert() {
   const { alert, setAlert } = useAlert();
-  const { currentUser } = useAuth();
+  const { currentUser, isVerified } = useAuth();
 
   useEffect(() => {
-    if (currentUser && !currentUser.emailVerified) {
+    if (currentUser && !isVerified()) {
       setAlert({
         type: "info",
         message: "Your account is unverified. Check your email for a verification link.",
@@ -15,7 +15,7 @@ export default function Alert() {
     } else {
       setAlert(null);
     }
-  }, [currentUser?.emailVerified]);
+  }, [currentUser]);
 
   if (alert) {
     return (

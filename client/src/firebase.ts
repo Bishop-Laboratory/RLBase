@@ -12,6 +12,6 @@ export const app = firebase.initializeApp({
 
 export const auth = app.auth();
 
-export const actionCodeSettings = {
-  url: "http://localhost:3000",
-};
+export const googleAuthProvider = new firebase.auth.GoogleAuthProvider();
+
+export const githubAuthProvider = new firebase.auth.GithubAuthProvider();

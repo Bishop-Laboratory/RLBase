@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import SigninButton from "../../components/SigninButton";
+import GoogleLogo from "../../assets/GoogleLogo.png";
+import GithubLogo from "../../assets/GithubLogo.png";
 
 export default function Login(): JSX.Element {
-  const { login } = useAuth();
+  const { loginWithEmailAndPAssword, signInWithGoogle, signInWithGithub } = useAuth();
   const history = useHistory();
 
   const [email, setEmail] = useState<string>("");
@@ -16,7 +19,7 @@ export default function Login(): JSX.Element {
     try {
       setError("");
       setLoading(true);
-      await login(email, password);
+      await loginWithEmailAndPAssword(email, password);
       history.push("/");
     } catch (err) {
       setError(err.message);
@@ -34,6 +37,18 @@ export default function Login(): JSX.Element {
             {error}
           </div>
         )}
+        <SigninButton
+          provider="Google"
+          logo={GoogleLogo}
+          handleSignIn={signInWithGoogle}
+          setError={setError}
+        />
+        <SigninButton
+          provider="Github"
+          logo={GithubLogo}
+          handleSignIn={signInWithGithub}
+          setError={setError}
+        />
         <div className="mb-3">
           <label htmlFor="loginEmail" className="form-label">
             Email
