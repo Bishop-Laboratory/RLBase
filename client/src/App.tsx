@@ -14,13 +14,14 @@ import Help from "./pages/Help";
 import Upload from "./pages/Upload";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
     <AlertProvider>
       <AuthProvider>
-        <Router>
           <Route path="/" component={NavBar} />
+        <Router>
           <Route path="/" component={Alert} />
           <Route exact path="/" component={Home} />
           <Route exact path="/search/:type" component={SearchPage} />
@@ -28,7 +29,7 @@ function App() {
           <Route exact path="/about" component={About} />
           <Route exact path="/api-reference" component={ApiReference} />
           <Route exact path="/downloads" component={Downloads} />
-          <Route exact path="/upload" component={Upload} />
+          <ProtectedRoute path="/upload" component={Upload} />
           <Route exact path="/help" component={Help} />
           <Route exact path="/signup" component={Signup} />
           <Route exact path="/login" component={Login} />
