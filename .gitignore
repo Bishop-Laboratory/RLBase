@@ -2,3 +2,19 @@
 .Rhistory
 .RData
 .Ruserdata
+**/*.bw
+interactivemetaplot/temp/*
+interactivemetaplot/matrix/*
+interactivemetaplot/**/*.bw
+interactivemetaplot/**/*.sbout
+interactivemetaplot/**/*.sbout*
+interactivemetaplot/**/*.sbatch
+interactivemetaplot/**/*.sbatch*
+interactivemetaplot/**/.slurm
+#interactivemetaplot/**/*.bed
+interactivemetaplot/**/*.matrix.gz
+interactivemetaplot/test*
+venv
+# Default ignored files
+/shelf/
+/workspace.xml
