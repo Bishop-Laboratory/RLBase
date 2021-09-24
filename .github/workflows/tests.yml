@@ -1,0 +1,49 @@
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+      
+name: tests
+
+jobs:
+  tests:
+    runs-on: "ubuntu-latest"
+    strategy:
+      matrix:
+        config:
+          - {os: ubuntu-latest, r: 'release'}
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - name: Checkout github repo (+ download lfs dependencies)
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+      - name: Checkout LFS objects
+        run: git lfs checkout
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          python-version: 3.9
+          mamba-version: "*"
+          channels: conda-forge, bioconda, r
+          channel-priority: true
+          environment-file: rmapdb.yml
+          activate-environment: rmapdb
+      - name: Other dependencies & run tests
+        run: |
+          conda activate rmapdb
+          Rscript -e "install.packages('ggprism', repos='http://cran.us.r-project.org')"
+          echo "Attempting to launch app for 120 seconds..."
+          timeout 120 Rscript runApp.R || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
+          # echo "Attempted to launch tests at seed 1234"
+          # Rscript -e "shinytest::testApp('.', compareImages = FALSE)"
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ runner.os }}-r${{ matrix.config.r }}-tests
+          path: tests
