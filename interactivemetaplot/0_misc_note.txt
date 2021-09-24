@@ -1,3 +1,0 @@
-s3://rmapdb-data/bigwigs/rseq-coverage-unstranded/
-
- grep "parameters\[" b|perl -pi -e 's/^.*parameters\[.([a-zA-Z0-9_\-\, ]+).\].*$/$1\ng/'|grep -vP "^g$"|unique_column.pl - 1|grep -v "#"|cut -f2|perl -pi -e 's/^(.+)$/parameters["$1"]:0,/'
