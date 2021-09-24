@@ -28,8 +28,8 @@ ui <- function(request) {
             )
         ),
         navbarPage(
-            title = "RMapDB",
-            id = "rmapdb",
+            title = "RLBase",
+            id = "rlbase",
             theme = bslib::bs_theme(bootswatch = "flatly"),
             
             # Pages
@@ -144,7 +144,7 @@ server <- function(input, output, session) {
     
     output$zScorePlot <- renderPlot({
       
-        RLFS_LOC <- "../RSeq-supplemental-analysis/misc/datasets_for_fft_testing/rlfs/"
+        RLFS_LOC <- "../RLBase-data/data-raw/rlfs_rda/"
         
         # Get file to load from
         current_file <-  current_samp() %>%
@@ -177,7 +177,7 @@ server <- function(input, output, session) {
     
     output$RLFSOutHTML <- renderUI({
       
-      RLFS_LOC <- "../RSeq-supplemental-analysis/misc/datasets_for_fft_testing/rlfs/"
+      RLFS_LOC <- "../RLBase-data/data-raw/rlfs_rda/"
       
       # Get file to load from
       current_file <-  current_samp() %>%
@@ -274,7 +274,7 @@ server <- function(input, output, session) {
     
     output$FFTPlot <- renderPlot({
         
-        RLFS_LOC <- "../RSeq-supplemental-analysis/misc/datasets_for_fft_testing/rlfs/"
+        RLFS_LOC <- "../RLBase-data/data-raw/rlfs_rda/"
         
         # Get file to load from
         current_file <-  current_samp() %>%
@@ -307,7 +307,7 @@ server <- function(input, output, session) {
     
     output$pValPlot <- renderPlot({
         # Get file to load from
-      RLFS_LOC <- "../RSeq-supplemental-analysis/misc/datasets_for_fft_testing/rlfs/"
+      RLFS_LOC <- "../RLBase-data/data-raw/rlfs_rda/"
       
       # Get file to load from
       current_file <-  current_samp() %>%
