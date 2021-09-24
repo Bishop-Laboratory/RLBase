@@ -1,0 +1,106 @@
+<div style="background-color: white; width: 960px; margin:0 auto; text-align: left; border: 1px;">
+  <h1>Biological insights from gene correlation data</h1>
+  <hr>
+  <div class="row">
+    <div class="col-sm-8 col-sm-offset-2">
+      <img src="Fig1.png" width="100%" style="padding-top: 3px;">
+    </div>
+  </div>
+  <hr>
+  <h2>Background</h2>
+  
+  <p>Recent initiatives to re-process and standardize publicly available RNA-Sequencing data have opened the door to mass-scale gene expression analysis. Utilizing the <a href="https://amp.pharm.mssm.edu/archs4/" target="_blank">ARCHS4</a> data repository, we obtained standardized gene counts from over 200,000 sequencing samples, parsed them into tissue and disease groups, and derived genome-wide co-expression correlations. <em>Correlation AnalyzeR</em> allows users to explore these correlations and extract the wealth of biological insights they can provide. It can be accessed through this website or by downloading the corresponding <a href="https://github.com/Bishop-Laboratory/correlationAnalyzeR" target="_blank">R package.</a></p>
+  <p>Correlation AnalyzeR provides four primary analysis modes:</p> 
+  
+  <ol>
+    <li>Single gene</li>
+    <li>Gene vs gene</li>
+    <li>Gene vs gene list</li>
+    <li>Topology</li>
+  </ol>
+  
+  <hr>
+  
+  <h2>Single gene</h2>
+  <br>
+  <h4>Use <em>single gene mode</em> to reveal the genome-wide co-expression correlation values for any gene of interest in multiple tissues and disease conditions:</h4>
+  <div class="row">
+    <div class="col-sm-6">
+      <img src="exampleSingleModeHist.png" width="100%">
+    </div>
+    <div class="col-sm-6">
+      <img src="exampleSingleModeHistData.png" width="100%">
+    </div>
+  </div>
+  <br>
+  <h4>Uncover co-expressed pathways with correlation-based geneset enrichment analysis (corGSEA):</h4>
+  <div class="row">
+    <div class="col-sm-12">
+      <img src="exampleSingleModeGSEA.png" width="100%">
+    </div>
+  </div>
+  <br>
+  <p>To learn more about GSEA, check out <a href="https://www.pnas.org/content/102/43/15545" target="_blank">this article</a>.</p>
+  <hr>
+  <h2>Gene vs gene</h2>
+  <br>
+  <h4>Use <em>Gene vs gene mode</em> to reveal tissue- and disease-specific differences between two genes of interest:</h4>
+  <div class="row">
+    <div class="col-sm-6">
+      <img src="exampleGeneVsGeneModeScatter.png" width="100%">
+    </div>
+    <div class="col-sm-6">
+      <img src="exampleGeneVsGeneModeHeatmap_Genes.png" width="100%">
+    </div>
+  </div>
+  <br>
+  <h4>Uncover divergent pathway correlations between two genes of interest with corGSEA:</h4>
+  <div class="row">
+    <div class="col-sm-10 col-sm-offset-1">
+      <img src="exampleGeneVsGeneModeHeatmap_Pathways.png" width="100%">
+    </div>
+  </div>
+  <br>
+  <hr>
+  <h2>Gene vs gene list</h2>
+  <br>
+  <h4>Use <em>Gene vs gene list mode</em> to reveal the location of secondary genes within a primary gene's correlation distribution:</h4>
+  <div class="row">
+    <div class="col-sm-12">
+      <img src="examplePairedModeCorrelations.png" width="100%">
+    </div>
+  </div>
+  <br>
+  <h4>Run significance tests to determine whether secondary genes are correlated compared to random chance:</h4>
+  <div class="row">
+    <div class="col-sm-8 col-sm-offset-2">
+      <img src="examplePairedModeSigTest.png" width="100%">
+    </div>
+  </div>
+  <br>
+  <hr>
+  <h2>Topology mode</h2>
+  <br>
+  <h4>Use principal component analysis (PCA) to explore the subgroups within an input gene list (<em>Dimension reduction</em> method):</h4>
+  <div class="row">
+    <div class="col-sm-8 col-sm-offset-2">
+      <img src="exampleDimensionReduction.png" width="100%">
+    </div>
+  </div>
+  <br>
+  <h4>Explore clusters and variant genes with an interactive heatmap (<em>Variant genes</em> method):</h4>
+  <div class="row">
+    <div class="col-sm-12">
+      <img src="exampleVariantGenes.png" width="100%">
+    </div>
+  </div>
+  <br>
+  <h4>Enrich for pathways within a list of interesting genes (<em>Pathway enrichment</em> method):</h4>
+  <div class="row">
+    <div class="col-sm-12">
+      <img src="examplePathEnrich.png" width="100%">
+    </div>
+  </div>
+  <br>
+  <p>For more information, see <em>Topology analysis explained</em> in the <strong>Topology mode</strong> tab.</p>
+</div>
