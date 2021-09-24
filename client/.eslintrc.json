@@ -3,13 +3,6 @@
     "browser": true,
     "es2021": true
   },
-  "extends": [
-    "plugin:react/recommended",
-    "airbnb",
-    "prettier/prettier",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:prettier/recommended"
-  ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaFeatures": {
@@ -18,36 +11,15 @@
     "ecmaVersion": 12,
     "sourceType": "module"
   },
-  "plugins": ["react", "@typescript-eslint", "react-hooks"],
+  "plugins": ["react", "react-hooks"],
   "rules": {
-    "no-use-before-define": "off",
-    "consistent-return": "off",
-    "default-case": "warn",
-    "@typescript-eslint/no-use-before-define": ["error"],
-    "react/jsx-filename-extension": [
-      "warn",
-      {
-        "extensions": [".tsx"]
-      }
-    ],
-    "react/jsx-props-no-spreading": "off",
-    "import/extensions": [
-      "error",
-      "ignorePackages",
-      {
-        "ts": "never",
-        "tsx": "never"
-      }
-    ],
-    "jsx-a11y/label-has-associated-control": [
-      "warn", {
-        "assert": "either"
-      }
-    ]
-  },
-  "settings": {
-    "import/resolver": {
-      "typescript": {}
-    }
-  }
+		// ...
+		"semi": "off",
+		"no-console": [
+			"error",
+			{ "allow": ["warn", "error", "info", "table", "debug", "group", "groupEnd"] }
+		],
+		"react-hooks/exhaustive-deps": "off", // Checks effect dependencies
+		"react-hooks/rules-of-hooks": "error" // Checks rules of Hooks
+	}
 }

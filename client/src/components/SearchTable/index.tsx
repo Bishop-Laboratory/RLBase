@@ -2,8 +2,6 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable react/no-array-index-key */
 /* eslint-disable no-shadow */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-/* eslint-disable @typescript-eslint/no-use-before-define */
 import React from "react";
 import { useHistory } from "react-router-dom";
 import { useFilters, usePagination, useSortBy, useTable } from "react-table";
@@ -18,6 +16,9 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
         {
           Header: "ID",
           accessor: "id", // accessor is the "key" in the data
+          Cell: ({ row: { original: id } }: any) => (
+            <p className="text-primary text-decoration-underline">{id}</p>
+          ),
         },
         {
           Header: "Chr",
@@ -37,10 +38,48 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
         },
       ];
     }
+    if (match.params.type === "gene") {
+      return [
+        {
+          Header: "EnsemblID",
+          accessor: "ensemblId", // accessor is the "key" in the data,
+          Cell: ({
+            row: {
+              original: { ensemblID },
+            },
+          }: any) => <p className="text-primary text-decoration-underline">{ensemblID}</p>,
+        },
+        {
+          Header: "Chr",
+          accessor: "chr",
+        },
+        {
+          Header: "start",
+          accessor: "start",
+        },
+        {
+          Header: "end",
+          accessor: "end",
+        },
+        {
+          Header: "Description",
+          accessor: "description",
+        },
+        {
+          Header: "BioType",
+          accessor: "type",
+        },
+      ];
+    }
     return [
       {
         Header: "R-Loop",
-        accessor: "SRX", // accessor is the "key" in the data
+        accessor: "SRX", // accessor is the "key" in the data,
+        Cell: ({
+          row: {
+            original: { SRX },
+          },
+        }: any) => <p className="text-primary text-decoration-underline">{SRX}</p>,
       },
       {
         Header: "Cell Type",
@@ -127,7 +166,7 @@ const SearchTable = ({ data, match }: { data: any[]; match: any }) => {
       case "sample":
         return push(`/explorer?GSM=${row.original.GSM}`);
       case "gene":
-        return push(`/samples?gene=${row.original.geneId}`);
+        return push(`/search/r-loop`);
       default:
         return push("/");
     }

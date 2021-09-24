@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable react/no-array-index-key */
-/* eslint-disable jsx-a11y/label-has-associated-control */
 import { stringify } from "qs";
 import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
@@ -93,7 +91,6 @@ const SearchBar = () => {
         </label>
       </div>
       <h5 className="mt-3">Find {radio}s with...</h5>
-      <p>(It is not necessary to fill in all the fields)</p>
       <form className="d-flex flex-column">
         {Object.keys(currentOptions).map((item, index) => (
           <div key={`input-${index}`} className="input-group mb-3">

@@ -55,7 +55,7 @@ const convertData = (row: any) => {
   return array;
 };
 
-function SampleView({ location }: RouteComponentProps) {
+function SampleView({ location }: RouteComponentProps): any {
   const [sampleData, setSampleData] = useState<barChartDataItem[]>(initialState);
   const [minAndMax, setMinAndMax] = useState<number[]>([0, 0]);
   const [, /* loading */ setLoading] = useState(false);
@@ -76,7 +76,7 @@ function SampleView({ location }: RouteComponentProps) {
           setMinAndMax([Math.min(...numericData), Math.max(...numericData)]);
         }
       } catch (error) {
-        console.error(error);
+        return error;
       } finally {
         setLoading(false);
       }

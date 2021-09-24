@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const NavBar = () => {
+const NavBar = (): any => {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
       <button
@@ -25,6 +25,16 @@ const NavBar = () => {
           <li className="nav-item">
             <Link to="/about" className="nav-link">
               About
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link to="/search/gene" className="nav-link">
+              Genes
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link to="/search/r-loop" className="nav-link">
+              RLoops
             </Link>
           </li>
           <li className="nav-item">
