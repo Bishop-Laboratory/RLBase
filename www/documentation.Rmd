@@ -1,0 +1,26 @@
+---
+title: "RMapDB"
+subtitle: "Documentation and FAQs"
+author: "Henry Miller"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false 
+    theme: flatly
+---
+
+# Usage
+
+RMapDB can be used in the following ways:
+
+1.  To view R-loop-mapping samples and their associated quality information.
+2.  To view R-loop regions, the evidence for their existence, and their association with expression.
+3.  To access the underlying data-sets through our download links.
+4.  To analyze user data and generate an HTML report.
+
+## Samples
+
+To view samples in the RMapDB database, navigate to the "Samples" tab.
