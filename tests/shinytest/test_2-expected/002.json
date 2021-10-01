@@ -198,7 +198,7 @@
     "rmapSamples_state": null,
     "RMapSamplesSummary": "Heatmap",
     "rmapSampsTabset": "RLFS",
-    "selectCTRL": true,
+    "select_prediction_NEG": true,
     "selectGenome": "hg38",
     "selectMode": [
       "DRIPc",

@@ -29,7 +29,7 @@ RMapSamplesTable_panel <- function() {
           label = "Genome",
           multiple = FALSE,
           selected = "hg38",
-          choices = unique(dataLst$rmap_samples$genome),
+          choices = unique(rlsamples$genome),
         ),
       ),
       column(
@@ -39,7 +39,7 @@ RMapSamplesTable_panel <- function() {
           label = "Mode",
           multiple = TRUE,
           selected = c("DRIP", "DRIPc", "sDRIP", "qDRIP"),
-          choices = unique(dataLst$rmap_samples$mode)
+          choices = unique(rlsamples$mode)
         ),
       )
     ),
@@ -47,16 +47,16 @@ RMapSamplesTable_panel <- function() {
       column(
         width = 6,
         checkboxInput(
-          inputId = "selectRNH", 
-          label = "Show controls (e.g., RNH)",
+          inputId = "select_label_NEG", 
+          label = "Show labeled controls (e.g., 'RNaseH1-treated')",
           value = FALSE
         )
       ),
       column(
         width = 6,
         checkboxInput(
-          inputId = "selectCTRL", 
-          label = "Show predicted controls",
+          inputId = "select_prediction_NEG", 
+          label = "Show predicted controls (i.g., predicted 'CTRL')",
           value = TRUE
         )
       )
@@ -146,31 +146,17 @@ Annotation_panel <- function() {
       column(
         width = 6,
         selectInput(
-          inputId = 'chooseAnnoPlotData',
-          label = "Select Data Type",
-          choices = c("Log2 Ratio (obs/exp)",
-                      "Number of peaks", 
-                      "Total size (bp)",
-                      "LogP enrichment (+values depleted)"), 
-          selected = "Log2 Ratio (obs/exp)"
-        )
-      ),
-      column(
-        width = 6,
-        selectInput(
-          inputId = "splitAnnoBy",
+          inputId = "splitby",
           label = "Split",
-          choices = c("None", "pred_ctrl", "is_ctrl", "mode"),
-          selected = "None"
+          choices = c("none", "prediction", "label"),
+          selected = "none"
         )
       )
     ),
     fluidRow(
       column(
         width = 12,
-        plotOutput("sampleAnnotationPlot", 
-                   height = ANNO_PLOT_HEIGHT, 
-                   width = PAGE_PLOT_WIDTH)
+        uiOutput(outputId = "annoPlots")
       )
     )
   )
@@ -183,7 +169,7 @@ Summary_panel <- function() {
     type = "pills",
     tabPanel(
       title = "Heatmap",
-      plotOutput('rmapHeatmap',  
+      plotOutput('heatmap',  
                  height = PAGE_PLOT_HEIGHT, 
                  width = PAGE_PLOT_WIDTH)
     ),
@@ -368,3 +354,69 @@ footerHTML <- function() {
       </div>
     </footer>"
 }
+
+
+RLFSTagList <- function(vals) {
+  tagList(
+    div(
+      class="col d-flex justify-content-center",
+      div(
+        class = "card",
+        div(
+          class = "card-body",
+          h5(
+            class = "card-title",
+            "RLFS analysis results"
+          ),
+          p(
+            class = "card-text",
+            HTML(paste0("RLFS-PVAL (min = 0.002): ", span(strong(
+              style=paste0("color: ", ifelse(
+                vals[["rlfs_pval"]] > 1.6,
+                "green",
+                ifelse(
+                  vals[["rlfs_pval"]] > 1.3,
+                  "orange", "red"
+                ))),
+              signif(10^(-1*vals[["rlfs_pval"]]), 3)
+            ))))
+          ),
+          p(
+            class = "card-text",
+            HTML(paste0("Num. Peaks Available: ", span(strong(
+              style=paste0("color: ", ifelse(
+                vals[["MACS2__total_peaks"]] > 3000,
+                "green",
+                ifelse(
+                  vals[["MACS2__total_peaks"]] > 1500,
+                  "orange", "red"
+                ))),
+              round(vals[["MACS2__total_peaks"]])
+            ))))
+          ),
+          p(
+            class = "card-text",
+            HTML(paste0("Labeled Condition: ", span(strong(
+              style=paste0("color: ", ifelse(
+                vals[["label"]] == "POS",
+                "green", "red"
+              )),
+              vals[["condition"]]
+            ))))
+          ),
+          p(
+            class = "card-text",
+            HTML(paste0("Predicted Condition: ", span(strong(
+              style=paste0("color: ", ifelse(
+                vals[["prediction"]] == "Case",
+                "green", "red"
+              )),
+              vals[["prediction"]]
+            ))))
+          )
+        )
+      )
+    )
+  )
+}
+

@@ -59,3 +59,94 @@ makeRLConsensusGB <- function(x) {
   ))
 }
 
+
+#' Makes the global data for the app
+makeGlobalData <- function() {
+  rlsamples <- RLHub::rlbase_samples()
+  rlfsres <- RLHub::rlfs_res()
+  rlbaseRes <- RLHub::feat_enrich_samples()
+  gss <- RLHub::gs_signal()
+  rlregions <- RLHub::rlregions_meta()
+  
+  # Get membership matrix
+  memMat <- parallel::mclapply(
+    rlsamples$rlsample,
+    function(rlsample) {
+      tibble(
+        membership = grepl(rlregions$samples, pattern = rlsample, perl = TRUE)
+      ) %>%
+        rename(!!quo_name(rlsample) := membership)
+    }, mc.cores = 20
+  )
+  rlMembershipMatrix <- bind_cols(rlregions$rlregion, memMat) %>%
+    column_to_rownames("...1") %>%
+    as.matrix() %>% 
+    Matrix::Matrix(sparse=TRUE)
+  
+  # Pick an hg38 and an mm10 and get plotting data
+  featPlotData <- lapply(list("mm10"="mm10","hg38"="hg38"), function(gen) {
+    message(gen)
+    rlr <- aws.s3::s3readRDS(bucket = RLSeq:::RLBASE_S3, object = rlsamples$rlranges_rds_s3[rlsamples$genome == gen][1])
+    
+    # No split
+    return(
+      list(
+        "none" = plotEnrichment(rlr, rlbaseRes=rlbaseRes, rlsamples=rlsamples, returnData = TRUE),
+        "prediction" = plotEnrichment(rlr, splitby = "prediction", label_POS_only = FALSE,
+                                      returnData = TRUE, pred_POS_only = FALSE,
+                                      rlbaseRes=rlbaseRes, rlsamples=rlsamples),
+        "label" = plotEnrichment(rlr, splitby = "label", 
+                                 label_POS_only = FALSE, pred_POS_only = FALSE,
+                                 returnData = TRUE,
+                                 rlbaseRes=rlbaseRes, rlsamples=rlsamples) 
+      )
+    )
+  })
+  # Get the correlation data
+  heatData <- corrHeatmap(
+    aws.s3::s3readRDS(bucket = RLSeq:::RLBASE_S3, object = rlsamples$rlranges_rds_s3[rlsamples$genome == "hg38"][1]),
+    returnData = TRUE
+  )
+  
+  save(rlsamples, rlfsres, rlbaseRes, gss,
+       featPlotData, heatData, rlMembershipMatrix,
+       file = "app_data.rda", compress = "gzip")
+}
+
+
+
+
+#' Make downloads for a specific sample
+sampleDownloads <- function(sample, rlsamples) {
+  tagList(
+    fluidRow(
+      column(
+        width = 6,
+        h4(paste0(current_samp(), " - Downloads")),
+        hr()
+      )
+    ),
+    fluidRow(
+      column(
+        width = 4,
+        a(
+          class="btn btn-default shiny-download-link",
+          target="_blank",
+          href=paste0(baseURLBW, snamebw, ".bw"),
+          icon("download"),
+          "Coverage (.bw)"
+        )
+      ),
+      column(
+        width = 4,
+        a(
+          class="btn btn-default shiny-download-link",
+          target="_blank",
+          href=paste0(baseURLPEAKS, snamepeak, ".unstranded.broadPeak"),
+          icon("download"),
+          "Peaks (.broadPeak)"
+        )
+      )
+    )
+  )
+} 

@@ -1,55 +1,3 @@
-# Mode colors
-# From https://stackoverflow.com/questions/8197559/emulate-ggplot2-default-color-palette
-gg_color_hue <- function(n) {
-  hues = seq(15, 375, length = n + 1)
-  hcl(h = hues, l = 65, c = 100)[1:n]
-}
-modes <- dataLst %>%
-  pluck("rmap_samples") %>%
-  pull(mode) %>%
-  unique() 
-modeCols <- gg_color_hue(
-  length(
-    modes
-  )
-)
-set.seed(5)
-names(modeCols) <- sample(modes, size = length(modes))
-
-# Values for annotation heatmap
-sampleCol <- c("grey", "firebrick")
-names(sampleCol) <- c("", "selected")
-sampleSize <- c(5, 15)
-names(sampleSize) <- c("", "selected")
-# ColList
-colList <- list(
-  "mode" = modeCols,
-  "is_ctrl" = c("TRUE" = "#4d2121", "FALSE" = "#c4c4c4"),
-  "pred_ctrl" =  c("TRUE" = "#264157", "FALSE" = "#c4c4c4"),
-  "sample" = sampleCol
-)
-
-sizeList <- list(
-  "sample" = sampleSize
-)
-
-# Violin colors for annoPlot
-vCols <- list(
-  "gene" = "#EBC7C7",
-  "RNA" = "#b3a150",
-  "rep" = "#71b350"
-)
-boxCols <- list(
-  "gene" = "#CE7474",
-  "RNA" = "#a18600",
-  "rep" = "#36a100"
-)
-annoFillSplit <- list(
-  "is_ctrl" = c("TRUE" = "#d483a3", "FALSE" = "#c0d483"),
-  "pred_ctrl" = c("TRUE" = "purple", "FALSE" = "orange"),
-  "mode" = modeCols
-)
-
 #' Scatter plots for RMapDB
 #' @param ... additional arguments to geom_point()
 rmap_scatter <- function(cols, ...) {
@@ -73,3 +21,103 @@ rmap_scatter <- function(cols, ...) {
   pltLst
 }
 
+corrHeatmapShiny <- function() {
+  # Get dots -- get values used by RLBase
+  # Provides RLBase with a speed boost by pre-supplying
+  # data from memory when plotting. Not intended for regular use.
+  dots <- list(...)
+  selected <- NULL
+  rlsamples <- NULL
+  if (length(dots) > 0) {
+    selected <- dots$selected
+    rlsamples <- dots$rlsamples
+  }
+  
+  # Get RLBase samples
+  suppressMessages({
+    if (is.null(rlsamples)) rlsamples <- RLHub::rlbase_samples() 
+  })
+  
+  # Get the correlation matrix
+  corrRes <- rlresult(object, resultName = "correlationMat")
+  
+  # Get the mode and prediction and label
+  prediction <- rlresult(object, resultName = "predictRes")
+  
+  # Wrangle the annotation data
+  rlsamples <- rlsamples[rlsamples$rlsample != object@metadata$sampleName,]
+  annoCorr <- rlsamples %>%
+    dplyr::mutate(group = "RLBase") %>%
+    dplyr::select(
+      .data$rlsample, .data$mode,
+      # .data$label,
+      .data$prediction, .data$group
+    ) %>%
+    dplyr::bind_rows(
+      dplyr::tibble(
+        rlsample = object@metadata$sampleName,
+        mode = object@metadata$mode,
+        # label = object@metadata$label,
+        prediction = prediction$prediction,
+        group = object@metadata$sampleName
+      )
+    ) %>%
+    dplyr::distinct(.data$rlsample, .keep_all = TRUE)
+  annoCorr <- as.data.frame(annoCorr)
+  rownames(annoCorr) <- annoCorr$rlsample
+  annoCorr <- annoCorr[, -which(colnames(annoCorr) == "rlsample")]
+  
+  # Filter for available / desired samples
+  toSelect <- colnames(corrRes)
+  if (!is.null(selected)) {
+    toSelect <- intersect(selected, toSelect)
+  }
+  corrNow <- corrRes[toSelect, toSelect]
+  annoCorr <- annoCorr[toSelect, ]
+  
+  # Pallete
+  paletteLength <- 100
+  myColor <- grDevices::colorRampPalette(
+    rev(RColorBrewer::brewer.pal(n = 7, name = "RdBu"))
+  )(paletteLength)
+  # length(breaks) == length(paletteLength) + 1
+  # use floor and ceiling to deal with even/odd length pallettelengths
+  myBreaks <- c(
+    seq(min(corrNow), 0, length.out = ceiling(paletteLength / 2) + 1),
+    seq(max(corrNow) / paletteLength, max(corrNow),
+        length.out = floor(paletteLength / 2)
+    )
+  )
+  
+  # Wrangle colors
+  mode_cols <- auxdata$mode_cols$col
+  names(mode_cols) <- auxdata$mode_cols$mode
+  cond_cols <- auxdata$label_cols$col
+  names(cond_cols) <- auxdata$label_cols$label
+  verd_cols <- auxdata$prediction_cols$col
+  names(verd_cols) <- auxdata$prediction_cols$prediction
+  group_cols <- stats::setNames(c(
+    auxdata$heat_cols$col[auxdata$heat_cols$selected == "user_selected"],
+    auxdata$heat_cols$col[auxdata$heat_cols$selected == "RLBase"]
+  ), nm = c(object@metadata$sampleName, "RLBase"))
+  cat_cols <- list(
+    "mode" = mode_cols,
+    # "label" = c(cond_cols, "grey"),
+    "prediction" = verd_cols,
+    "group" = group_cols
+  )
+  cat_cols$mode <- cat_cols$mode[names(cat_cols$mode) %in% annoCorr$mode]
+  
+  # Build heatmap
+  pheatmap::pheatmap(
+    corrRes, 
+    color = myColor, breaks = myBreaks,
+    annotation_col = annoCorr[,c(3, 2, 1)], 
+    annotation_colors = cat_cols,
+    show_colnames = FALSE, 
+    show_rownames = FALSE,
+    silent = TRUE
+  )
+  
+  return(hm)
+}
