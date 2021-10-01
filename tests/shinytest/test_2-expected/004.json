@@ -3,7 +3,7 @@
     "chooseAnnoPlotData": "Log2 Ratio (obs/exp)",
     "colorExpvRlBy": "Tissue",
     "PCA_colorBy": "mode",
-    "PCA_shapeBy": "pred_ctrl",
+    "PCA_shapeBy": "prediction",
     "rloops_cell_clicked": {
 
     },
@@ -59140,7 +59140,7 @@
     "rloops_search": "",
     "rloops_state": null,
     "rloopStats": "Expression",
-    "rmapdb": "R-Loop DB",
+    "RLBase": "R-Loop DB",
     "rmapSamples_cell_clicked": {
 
     },
@@ -61353,7 +61353,7 @@
             "Inh 3d"
           ]
         ],
-        "container": "<table class=\"table table-striped table-hover row-border order-column display\">\n  <thead>\n    <tr>\n      <th>Sample<\/th>\n      <th>Study<\/th>\n      <th>Mode<\/th>\n      <th>Tissue<\/th>\n      <th>Condition<\/th>\n      <th>Pred_CTRL<\/th>\n      <th>Genome<\/th>\n      <th>Genotype<\/th>\n      <th>Treatment<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>",
+        "container": "<table class=\"table table-striped table-hover row-border order-column display\">\n  <thead>\n    <tr>\n      <th>Sample<\/th>\n      <th>Study<\/th>\n      <th>Mode<\/th>\n      <th>Tissue<\/th>\n      <th>Condition<\/th>\n      <th>prediction<\/th>\n      <th>Genome<\/th>\n      <th>Genotype<\/th>\n      <th>Treatment<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>",
         "options": {
           "pageLength": 10,
           "scrollX": true,

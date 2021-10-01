@@ -31,11 +31,11 @@ jobs:
           mamba-version: "*"
           channels: conda-forge, bioconda, r
           channel-priority: true
-          environment-file: rmapdb.yml
-          activate-environment: rmapdb
+          environment-file: RLBase.yml
+          activate-environment: RLBase
       - name: Other dependencies & run tests
         run: |
-          conda activate rmapdb
+          conda activate RLBase
           Rscript -e "install.packages('ggprism', repos='http://cran.us.r-project.org')"
           echo "Attempting to launch app for 120 seconds..."
           timeout 120 Rscript runApp.R || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi

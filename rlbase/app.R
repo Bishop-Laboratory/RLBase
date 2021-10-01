@@ -3,29 +3,26 @@ library(shiny)
 library(RLSeq)
 library(RLHub)
 library(DT)
+library(tidyverse)
+library(kableExtra)
 library(plotly)
-library(dplyr)
-library(tidyr)
-library(tibble)
-library(purrr)
+library(pheatmap)
 library(ggprism)
-library(readr)
-library(ggplot2)
 library(bslib)
 library(RColorBrewer)
 
-# Global data
-if (! file.exists("app_data.rda")) {
-  makeGlobalData()
+# Get constants
+source("utils.R")
+APP_DATA <- "misc/app_data.rda"
+if (! file.exists(APP_DATA)) {
+  makeGlobalData(APP_DATA)
+  load(APP_DATA)
 } else {
-  load("app_data.rda")
+  load(APP_DATA)
   rlMemMat <- as.matrix(rlMembershipMatrix)  # Decompress
 }
-
-# Get constants
 source("const.R")
 source("ui_globals.R")
-source("utils.R")
 source("plots.R")
 
 
@@ -60,18 +57,18 @@ ui <- function(request) {
         icon = icon('vials'),
         SamplesPageContents()
       ),
-      # tabPanel(
-      #   title = "R-Loop DB", 
-      #   id = "rloops-tab",
-      #   icon = icon('database'),
-      #   RLoopsPageContents()
-      # ),
-      # tabPanel(
-      #   title = "Download", 
-      #   id = "download-tab",
-      #   icon = icon('download'),
-      #   DownloadPageContents()
-      # ),
+      tabPanel(
+        title = "R-Loop DB",
+        id = "rloops-tab",
+        icon = icon('database'),
+        RLoopsPageContents()
+      ),
+      tabPanel(
+        title = "Download",
+        id = "download-tab",
+        icon = icon('download'),
+        DownloadPageContents()
+      ),
       tabPanel(
         title = "Documentation",
         id = "docs-tab",
@@ -94,6 +91,7 @@ ui <- function(request) {
 server <- function(input, output, session) {
   
   # ### Sample Page ###
+  
   # # TODO: Should be sorted
   # # TODO: Should contain link that will open the details modal
   # # TODO: Should include UI to add hyperlink for clicking SRX
@@ -143,40 +141,29 @@ server <- function(input, output, session) {
   
   # Z-score plot
   output$zScorePlot <- renderPlot({
-    rlfsres %>%
-      pluck(current_samp(), "rlfsData") %>%
-      plotRLFSRes(plotName = current_samp())
-  }) %>%
-    bindCache(current_samp())
+    plotRLFSRes(rlfsres[[current_samp()]]$rlfsData, plotName = current_samp())
+  }) %>% bindCache(current_samp())
 
   # Z-score plot (FFT)
   output$FFTPlot <- renderPlot({
-    rlfsres %>%
-      pluck(current_samp(), "rlfsData") %>%
-      plotRLFSRes(plotName = current_samp(), fft=TRUE)
-  }) %>%
-    bindCache(current_samp())
+    plotRLFSRes(rlfsres[[current_samp()]]$rlfsData, plotName = current_samp(), fft = TRUE)
+  }) %>% bindCache(current_samp())
 
+  # P-val plot
   output$pValPlot <- renderPlot({
-    rlfsres %>%
-      pluck(current_samp(), "rlfsData",
-            "perTestResults", "regioneR::numOverlaps") %>%
-      regioneR:::plot.permTestResults()
+    regioneR:::plot.permTestResults(rlfsres[[current_samp()]]$rlfsData$perTestResults[["regioneR::numOverlaps"]])
+  }) %>%  bindCache(current_samp())
 
-  }) %>%
-    bindCache(current_samp())
-
+  # HTML summary
   output$RLFSOutHTML <- renderUI({
     rlfsRes <- rlfsres %>% pluck(current_samp(), "rlfsData")
-    list(
-      rlfs_pval=-log10(rlfsRes$perTestResults$`regioneR::numOverlaps`$pval),
-      MACS2__total_peaks=rlsamples$numPeaks[rlsamples$rlsample == current_samp()],
-      label=rlsamples$label[rlsamples$rlsample == current_samp()],
-      condition=rlsamples$condition[rlsamples$rlsample == current_samp()],
-      prediction=rlsamples$prediction[rlsamples$rlsample == current_samp()]
-    ) %>% RLFSTagList()
+    list(rlfs_pval=-log10(rlfsRes$perTestResults$`regioneR::numOverlaps`$pval),
+         MACS2__total_peaks=rlsamples$numPeaks[rlsamples$rlsample == current_samp()],
+         label=rlsamples$label[rlsamples$rlsample == current_samp()],
+         condition=rlsamples$condition[rlsamples$rlsample == current_samp()],
+         prediction=rlsamples$prediction[rlsamples$rlsample == current_samp()]) %>% RLFSTagList()
   })
-
+  
   ## Annotation plots ##
   annodbs <- reactive({
     names(featPlotData[[input$selectGenome]]$none)
@@ -200,76 +187,52 @@ server <- function(input, output, session) {
     })
   })
   
-  ## Heatmap ##
+  
+  ## Summary page ##
+  
+  # Heatmap
   output$heatmap <- renderPlot({
-    
     toshow <- rmapSampsRV()[which(rmapSampsRV() %in% rownames(heatData$corrRes))]
-    
     corrRes <- heatData$corrRes[toshow, toshow]
     annoCorr <- heatData$annoCorr[toshow,]
-    annoCorr$group <- ifelse(rownames(annoCorr) == current_samp(),
-                             current_samp(), "Unselected")
+    annoCorr$group <- ifelse(rownames(annoCorr) == current_samp(), current_samp(), "Unselected")
     names(heatData$cat_cols$group)[1] <- current_samp()
     names(heatData$cat_cols$group)[2] <- "Unselected"
-    pheatmap::pheatmap(
-      corrRes, 
-      color = heatData$pheatmap_color, breaks = heatData$pheatmap_breaks,
-      annotation_col = annoCorr[,c(4, 3, 2, 1)], 
-      annotation_colors = heatData$cat_cols,
-      show_colnames = FALSE, 
-      show_rownames = FALSE,
-      silent = FALSE, fontsize = 15
-    )
+    pheatmap(corrRes, color = heatData$pheatmap_color, breaks = heatData$pheatmap_breaks,
+             annotation_col = annoCorr[,c(4, 3, 2, 1)], annotation_colors = heatData$cat_cols,
+             show_colnames = FALSE, show_rownames = FALSE, silent = FALSE, fontsize = 15)
+  }) %>% bindCache(rmapSampsRV(), current_samp())
+  
+  # PCA
+  output$rmapPCA <- renderPlot({
+    # Filter for current samples selected
+    toshow <- rmapSampsRV()[which(rmapSampsRV() %in% rownames(heatData$corrRes))]
+    corrRes <- heatData$corrRes[toshow, toshow]
+    annoCorr <- heatData$annoCorr[toshow,]
+    annoCorr$group <- ifelse(rownames(annoCorr) == current_samp(), "Selected", "Unselected")
+    # Get the PCA data
+    pcd <- pcaPlotDataFromCorr(corrRes)
+    toPlt <- pcd[["pcData"]] %>%
+      right_join(rownames_to_column(annoCorr, var = "rlsample"), by = "rlsample")
+    ggplot(
+      toPlt,
+      aes_string(x = "PC1", y = "PC2", color = input$PCA_colorBy,
+                 shape = input$PCA_shapeBy, size = "group")
+    ) +
+      rlbase_scatter(sizes = c("Selected" = 10, "Unselected" = 3),
+                     cols = heatData$cat_cols$mode,
+                     shapes = c("POS" = 19, "NEG" = 4)) +
+      guides(colour = guide_legend(override.aes = list(size=4), ncol = 2),
+             shape = guide_legend(override.aes = list(size=4))) +
+      xlab(paste0("PC1 (", pcd$percentVar[1], "%)")) +
+      ylab(paste0("PC2 (", pcd$percentVar[2], "%)")) +
+      ggtitle("RLBase PCA Plot", subtitle = current_samp())
   }) %>%
-    bindCache(rmapSampsRV(), current_samp())
+    bindCache(rmapSampsRV(), current_samp(), input$PCA_shapeBy, input$PCA_colorBy)
 
-  # output$rmapPCA <- renderPlot({
-  #   # Filter for current samples selected
-  #   annoCorrNow <- annoCorr[rmapSampsRV(),] %>%
-  #     na.omit()
-  #   corrNow <- corr_data[rownames(annoCorrNow), rownames(annoCorrNow)]
-  #   
-  #   # Get the PCA data
-  #   pcd <- pcaPlotDataFromCorr(corrNow)
-  #   
-  #   # From: https://stackoverflow.com/questions/31677923/set-0-point-for-pheatmap-in-r
-  #   annoCorrNow$sample <- as.factor(ifelse(rownames(annoCorrNow) != current_samp(), "", "selected"))
-  #   
-  #   # Get the plot
-  #   toPlt <- pcd %>%
-  #     pluck("pcData") %>%
-  #     inner_join(dataLst %>%
-  #                  pluck("rmap_samples"),
-  #                by = "id") %>%
-  #     
-  #     right_join(rownames_to_column(annoCorrNow, var = "id"), by = "id") %>%
-  #     mutate(selected = as.factor(ifelse(id != current_samp(),
-  #                                        "", "selected"))) %>%
-  #     mutate(
-  #       across(any_of(names(colList)), as.factor)
-  #     )
-  #   
-  #   if (input$PCA_colorBy %in% names(colList)) {
-  #     cols <- colList[[input$PCA_colorBy]][unique(as.character(toPlt[,input$PCA_colorBy]))]
-  #   } else {
-  #     cols <- NA
-  #   }
-  #   
-  #   ggplot(
-  #     toPlt,
-  #     aes_string(x = "PC1", y = "PC2", color = input$PCA_colorBy, 
-  #                shape = input$PCA_shapeBy, size = "selected")
-  #   ) +
-  #     rmap_scatter(cols) +
-  #     guides(colour = guide_legend(override.aes = list(size=9)),
-  #            shape = guide_legend(override.aes = list(size=9))) +
-  #     xlab(paste0("PC1 (", pcd$percentVar[1], "%)")) +
-  #     ylab(paste0("PC2 (", pcd$percentVar[2], "%)")) + 
-  #     ggtitle("RMapDB PCA Plot", subtitle = current_samp()) 
-  #   
-  # }) %>%
-  #   bindCache(rmapSampsRV(), current_samp(), input$PCA_shapeBy, input$PCA_colorBy)
-  # 
+  ## R-loop summary ##
+  
+  # R-loop table
   output$RLoopsPerSample <- renderDT({
 
     # Get the R-loops for the current sample
@@ -278,43 +241,41 @@ server <- function(input, output, session) {
     rltabNow <- rlregions[rlregions$rlregion %in% to2show,]
 
     # Show the R-loops within that sample
-    if (! input$showRepSamp) {
-      rltabNow <- dplyr::filter(rltabNow, ! is_repeat)
-    }
-    if (input$showCorrSamp) {
-      rltabNow <- rltabNow %>%
-        filter(! is.na(corrR)) %>%
-        arrange(corrPAdj)
-    }
+    if (! input$showRepSamp) rltabNow <- dplyr::filter(rltabNow, ! is_repeat)
+    if (input$showCorrSamp) rltabNow <- filter(rltabNow, ! is.na(corrR)) %>% arrange(corrPAdj)
     rltabNow$Genes <- rltabNow$mainGenes
-    if (input$showAllGenesRLSamp) {
-      rltabNow$Genes <- rltabNow$allGenes
-    }
-
+    if (input$showAllGenesRLSamp) rltabNow$Genes <- rltabNow$allGenes
     rltabNow %>%
-      select(`RL Region` = rlregion, 
-             Location = location, 
-             Genes,
-             `Mean Signal` = avgSignalVal,
-             `Mean FDR` = avgQVal,
-             `# of Studies` = nStudies,
-             `# of Samples` = nSamples,
-             `# of Tissues` = nTissues, 
-             `# of Modes` = nModes) %>%
-      relocate(Genes, .after = Location) %>%
-      arrange(desc(`Mean FDR`)) %>%
-      DT::datatable(
-        extensions = 'Buttons',
-        options = list(
-          scrollX = TRUE,
-          server=FALSE,
-          pageLength = 6
-        ), selection = list(mode = "none"), rownames = FALSE
-      )
+      select(`RL Region` = rlregion, Location = location, Genes, `Mean Signal` = avgSignalVal,
+             `Mean FDR` = avgQVal, `# of Studies` = nStudies, `# of Samples` = nSamples,
+             `# of Tissues` = nTissues, `# of Modes` = nModes) %>% 
+      relocate(Genes, .after = Location) %>% arrange(desc(`Mean FDR`)) %>%
+      DT::datatable(extensions = 'Buttons', selection = list(mode = "none"), rownames = FALSE,
+                    options = list(scrollX = TRUE, server=FALSE, pageLength = 6))
   })
   
-  output$downloadsForSample <- renderUI(sampleDownloads(current_sample(), rlsamples))
-  # 
+  ## Downloads ##
+  output$downloadsForSample <- function() {
+    # From https://cran.r-project.org/web/packages/kableExtra/vignettes/use_kable_in_shiny.html
+    currentrlsample <- rlsamples[rlsamples$rlsample == current_samp(),] 
+    currentrlsample <- mutate(currentrlsample, across(contains("_S3"), function(x) {
+      paste0("<a href='", file.path(RLSeq:::RLBASE_URL, x), "' target='_blank' >",
+             gsub(x, pattern = ".+/", replacement = ""), "</a>")
+    }))
+    tribble(
+      ~Item, ~URL,
+      "Peaks (.broadPeak)", currentrlsample$peaks_s3,
+      "Coverage (.bw)", currentrlsample$coverage_s3,
+      "RLSeq RLRanges object (.rds)", currentrlsample$rlranges_rds_s3,
+      "RLSeq report (.html)", currentrlsample$report_html_s3,
+      "FASTQ stats from fastp (.json)", currentrlsample$fastq_stats_s3,
+      "BAM stats from samtools (.txt)", currentrlsample$bam_stats_s3
+    ) %>%
+      knitr::kable("html", escape = FALSE) %>%
+      kable_styling("hover", full_width = F) %>%
+      add_header_above(set_names(2, nm = current_samp()), align = "left")
+  }
+  
   # ### RLoops Page ###
   # # Get RLoops dataset
   # rloops <- reactive({

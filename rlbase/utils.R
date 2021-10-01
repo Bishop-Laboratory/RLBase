@@ -11,7 +11,7 @@ pcaPlotDataFromCorr <- function(corr_data) {
   
   # assembly the data for the plot
   d <- data.frame(PC1=pca$x[,1], PC2=pca$x[,2], 
-                  id=colnames(corr_data))
+                  rlsample=colnames(corr_data))
   return(list(
     'pcData' = d,
     'percentVar' = round(percentVar[1:2] * 100)
@@ -19,24 +19,6 @@ pcaPlotDataFromCorr <- function(corr_data) {
   
 }
 
-
-cleanAnnoCorrNow <- function(annoCorrNow) {
-  # Select isControl if there's a good reason to
-  if (any(annoCorrNow$is_ctrl)) {
-    annoCorrNow$is_ctrl <- as.factor(annoCorrNow$is_ctrl)
-  } else {
-    annoCorrNow <- annoCorrNow[,-which(colnames(annoCorrNow) == "is_ctrl")]
-  }
-  
-  # Select pred_ctrl 
-  if (any(annoCorrNow$pred_ctrl)) {
-    annoCorrNow$pred_ctrl <- as.factor(annoCorrNow$pred_ctrl)
-  } else {
-    annoCorrNow <- annoCorrNow[,-which(colnames(annoCorrNow) == "pred_ctrl")]
-  }
-  
-  annoCorrNow
-}
 
 #' Makes a gene cards link for an official gene symbol
 makeGeneCards <- function(x) {
@@ -48,7 +30,6 @@ makeGeneCards <- function(x) {
   ))
 }
 
-
 #' Make RLoop consensus view in genome browser
 makeRLConsensusGB <- function(x) {
   BASE_URL1 <- "http://genome.ucsc.edu/s/millerh1%40livemail.uthscsa.edu/RLoop_consensus?position="
@@ -59,9 +40,8 @@ makeRLConsensusGB <- function(x) {
   ))
 }
 
-
 #' Makes the global data for the app
-makeGlobalData <- function() {
+makeGlobalData <- function(APP_DATA) {
   rlsamples <- RLHub::rlbase_samples()
   rlfsres <- RLHub::rlfs_res()
   rlbaseRes <- RLHub::feat_enrich_samples()
@@ -109,8 +89,9 @@ makeGlobalData <- function() {
   )
   
   save(rlsamples, rlfsres, rlbaseRes, gss,
+       rlregions,
        featPlotData, heatData, rlMembershipMatrix,
-       file = "app_data.rda", compress = "gzip")
+       file = APP_DATA, compress = "gzip")
 }
 
 

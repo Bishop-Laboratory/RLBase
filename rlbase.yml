@@ -1,4 +1,4 @@
-name: rmapdb
+name: rlbase
 channels:
   - conda-forge
   - bioconda
@@ -15,8 +15,7 @@ dependencies:
   - r-pheatmap
   - r-ggplotify
   - r-kableextra
-  - r-ggpubr
-  - r-msigdbr
+  - r-tidyverse
   - bioconductor-regioner
   - bioconductor-genomeinfodb
   - bioconductor-genomicranges

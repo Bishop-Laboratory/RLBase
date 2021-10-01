@@ -1,7 +1,7 @@
 app <- ShinyDriver$new("../../", seed = 1234, loadTimeout = 1e+05)
 app$snapshotInit("test_2")
 
-app$setInputs(rmapdb = "Samples")
+app$setInputs(RLBase = "Samples")
 app$setInputs(rmapSampsTabset = "Annotation")
 app$snapshot()
 app$setInputs(rmapSampsTabset = "RLFS")
@@ -15,6 +15,6 @@ app$setInputs(selectMode = c("DRIPc", "DRIP", "qDRIP", "sDRIP", "RDIP", "DRIVE",
 app$setInputs(selectMode = c("DRIPc", "DRIP", "qDRIP", "sDRIP", "RDIP", "DRIVE", "R-ChIP", "MapR", "RNH-CnR"))
 app$setInputs(selectMode = c("DRIPc", "DRIP", "qDRIP", "sDRIP", "RDIP", "DRIVE", "R-ChIP", "MapR", "RNH-CnR", "RR-ChIP"))
 app$snapshot()
-app$setInputs(rmapdb = "R-Loop DB")
+app$setInputs(RLBase = "R-Loop DB")
 app$setInputs(rloopStats = "Expression")
 app$snapshot()

@@ -1,23 +1,20 @@
-#' Scatter plots for RMapDB
+#' Scatter plots for RLBase
+#' @param cols A named vector supplied to \code{scale_color_manual()}
+#' @param sizes A named vector supplied to \code{scale_size_manual()}
+#' @param shapes A named vector supplied to \code{scale_shape_manual()}
 #' @param ... additional arguments to geom_point()
-rmap_scatter <- function(cols, ...) {
+rlbase_scatter <- function(cols=NULL, sizes=NULL, shapes=NULL, ...) {
   pltLst <- list(
     geom_point(...),
     theme_prism(base_size = 18),
-    scale_size_manual(values = sizeList[["sample"]]),
     theme(legend.key.width = unit(3, 'cm'),
           legend.title = element_text(size=18),
           legend.key.height = unit(1, "cm"),
           legend.text = element_text(size=14))
   )
-  
-  if (! is.na(cols)) {
-    # Get colors
-    pltLst <- c(pltLst, 
-                list(scale_color_manual(values = cols,
-                                        drop=TRUE)))
-  }
-  
+  if (! is.null(cols)) pltLst <- c(pltLst, list(scale_color_manual(values = cols, drop=TRUE)))
+  if (! is.null(sizes)) pltLst <- c(pltLst, list(scale_size_manual(values = sizes, drop=TRUE)))
+  if (! is.null(shapes)) pltLst <- c(pltLst, list(scale_shape_manual(values = shapes, drop=TRUE)))
   pltLst
 }
 
@@ -118,6 +115,5 @@ corrHeatmapShiny <- function() {
     show_rownames = FALSE,
     silent = TRUE
   )
-  
   return(hm)
 }

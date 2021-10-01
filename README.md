@@ -1,33 +1,34 @@
-# RMapDB
-![Build Status](https://github.com/Bishop-Laboratory/RMapDB/workflows/tests/badge.svg)
+# RLBase
+![Build Status](https://github.com/Bishop-Laboratory/RLBase/workflows/tests/badge.svg)
 
 ## Quick-Start
 
 ### Installation
 
-To launch the RMapDB app, the easiest approach will be to do the following:
+To launch the RLBase app, the easiest approach will be to do the following:
 
 1. Clone the repository and `cd` into it:
 
 ```shell
-git clone https://github.com/Bishop-Laboratory/RMapDB.git
-cd RMapDB/
+git clone https://github.com/Bishop-Laboratory/RLBase.git
+cd RLBase/
 ```
 
 2. Create the environment (requires conda installed):
 
 ```shell
 conda install -c conda-forge mamba -y
-mamba env create -f rmapdb.yml --force
-conda activate rmapdb
+mamba env create -f rlbase.yml --force
+conda activate rlbase
 ```
 
 3. Retrieve non-conda dependencies 
 
 ```shell
-Rscript -e "install.packages('ggprism', repos='http://cran.us.r-project.org')"
+R -e "install.packages('ggprism', repos='http://cran.us.r-project.org')"
+R -e "remotes::install_github("Bishop-Laboratory/RLHub", dependencies = TRUE, force=TRUE)"
+R -e "remotes::install_github("Bishop-Laboratory/RLSeq", dependencies = TRUE, force=TRUE)"
 ```
-
 
 Finally, launch the server:
 

@@ -1,5 +1,5 @@
 ---
-title: "RMapDB"
+title: "RLBase"
 subtitle: "Documentation and FAQs"
 author: "Henry Miller"
 date: "`r Sys.Date()`"
@@ -14,7 +14,7 @@ output:
 
 # Usage
 
-RMapDB can be used in the following ways:
+RLBase can be used in the following ways:
 
 1.  To view R-loop-mapping samples and their associated quality information.
 2.  To view R-loop regions, the evidence for their existence, and their association with expression.
@@ -23,4 +23,4 @@ RMapDB can be used in the following ways:
 
 ## Samples
 
-To view samples in the RMapDB database, navigate to the "Samples" tab.
+To view samples in the RLBase database, navigate to the "Samples" tab.

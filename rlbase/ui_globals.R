@@ -4,7 +4,7 @@ ANNO_PLOT_HEIGHT = "1000px"
 
 SamplesPageContents <- function() {
   fluidPage(
-    title = "RMapDB Samples",
+    title = "RLBase Samples",
     fluidRow(
       column(
         width = 5,
@@ -188,8 +188,8 @@ Summary_panel <- function() {
           width = 6,
           selectInput(
             inputId = "PCA_shapeBy",
-            choices = c("is_ctrl", "pred_ctrl"),
-            selected = "pred_ctrl",
+            choices = c("label", "prediction"),
+            selected = "prediction",
             label = "Shape"
           )
         )
@@ -240,7 +240,7 @@ RLoops_Panel <- function() {
 
 
 Downloads_panel <- function() {
-  uiOutput("downloadsForSample")
+  tableOutput("downloadsForSample")
 }
 
 
@@ -408,7 +408,7 @@ RLFSTagList <- function(vals) {
             class = "card-text",
             HTML(paste0("Predicted Condition: ", span(strong(
               style=paste0("color: ", ifelse(
-                vals[["prediction"]] == "Case",
+                vals[["prediction"]] == "POS",
                 "green", "red"
               )),
               vals[["prediction"]]
