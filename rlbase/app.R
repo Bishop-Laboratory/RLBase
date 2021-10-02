@@ -22,8 +22,24 @@ if (! file.exists(APP_DATA)) {
   rlMemMat <- as.matrix(rlMembershipMatrix)  # Decompress
 }
 source("const.R")
+print(ls())
 source("ui_globals.R")
 source("plots.R")
+rltabShow <- rlregions %>%
+  arrange(desc(nStudies), desc(nModes), desc(pct_case)) %>%
+  select(`RL Region` = rlregion, Location = location, 
+         `# of Studies` = nStudies, 
+         `# of Modes` = nModes,
+         `Mean Signal` = avgSignalVal,
+         `Mean FDR` = avgQVal,
+         `# of Samples` = nSamples,
+         `# of Tissues` = nTissues, 
+         `Source type`=source,
+         contains("corr"), 
+         allGenes, mainGenes, is_repeat, samples) %>%
+  mutate(allGenes = gsub(allGenes, pattern = ",", replacement = " ", perl = TRUE),
+         mainGenes = gsub(mainGenes, pattern = ",", replacement = " ", perl = TRUE),
+         Location = gsub(Location, pattern = ":\\.$", replacement = ""))
 
 
 # Define UI for application that draws a histogram
@@ -55,7 +71,7 @@ ui <- function(request) {
         title = "Samples",
         id = "samples-tab",
         icon = icon('vials'),
-        SamplesPageContents()
+        SamplesPageContents(rlsamples)
       ),
       tabPanel(
         title = "R-Loop DB",
@@ -238,18 +254,14 @@ server <- function(input, output, session) {
     # Get the R-loops for the current sample
     sampRLMem <- rlMemMat[,current_samp()]
     to2show <- names(sampRLMem[which(sampRLMem)])
-    rltabNow <- rlregions[rlregions$rlregion %in% to2show,]
+    rltabNow <- rltabShow[rltabShow$`RL Region` %in% to2show,]
 
     # Show the R-loops within that sample
     if (! input$showRepSamp) rltabNow <- dplyr::filter(rltabNow, ! is_repeat)
-    if (input$showCorrSamp) rltabNow <- filter(rltabNow, ! is.na(corrR)) %>% arrange(corrPAdj)
+    if (input$showCorrSamp) rltabNow <- filter(rltabNow, ! is.na(corrR) & corrPVal < .05) %>% arrange(corrPAdj)
     rltabNow$Genes <- rltabNow$mainGenes
     if (input$showAllGenesRLSamp) rltabNow$Genes <- rltabNow$allGenes
-    rltabNow %>%
-      select(`RL Region` = rlregion, Location = location, Genes, `Mean Signal` = avgSignalVal,
-             `Mean FDR` = avgQVal, `# of Studies` = nStudies, `# of Samples` = nSamples,
-             `# of Tissues` = nTissues, `# of Modes` = nModes) %>% 
-      relocate(Genes, .after = Location) %>% arrange(desc(`Mean FDR`)) %>%
+    rltabNow %>% select(-samples) %>%
       DT::datatable(extensions = 'Buttons', selection = list(mode = "none"), rownames = FALSE,
                     options = list(scrollX = TRUE, server=FALSE, pageLength = 6))
   })
@@ -276,122 +288,60 @@ server <- function(input, output, session) {
       add_header_above(set_names(2, nm = current_samp()), align = "left")
   }
   
-  # ### RLoops Page ###
-  # # Get RLoops dataset
-  # rloops <- reactive({
-  #   rltabShowNow <- rltabShow %>%
-  #     mutate(
-  #       across(
-  #         corr:corrpadj, ~ signif(.x, digits = 4)
-  #       )
-  #     ) 
-  #   
-  #   if (input$showAllGenesRL) {
-  #     rltabNow <- rltabShowNow %>%
-  #       select(-Genes, -GenesFix) %>%
-  #       dplyr::rename(Genes = GenesNat)
-  #   } else {
-  #     rltabNow <- rltabShowNow %>%
-  #       select(-Genes, -GenesNat) %>%
-  #       dplyr::rename(Genes = GenesFix) 
-  #   }
-  #   
-  #   if (! input$showRep) {
-  #     rltabNow <- filter(rltabNow, ! repeats)
-  #   }
-  #   
-  #   if (input$showCorr) {
-  #     rltabNow <- rltabNow %>%
-  #       filter(! is.na(corr)) %>%
-  #       arrange(corrpadj) 
-  #   }
-  #   
-  #   rltabNow
-  # }) %>% bindCache(input$showAllGenesRL, input$showRep, input$showCorr)
-  # 
-  # # Make DataTable
-  # output$rloops <- renderDT({
-  #   rloops() %>%
-  #     select(-Type, -Modes, -`Mean RLCounts`, -repeats) %>%
-  #     relocate(Genes, .after = Location) 
-  # }, rownames = FALSE, escape = FALSE, 
-  # selection = list(mode = "single",
-  #                  selected = 1),
-  # options = list(
-  #   pageLength = 5,
-  #   scrollX = TRUE
-  # )) 
-  # 
-  # # Current selected RL from DT
-  # current_rl <- reactive({
-  #   # Get selected row from datatable
-  #   selectedRow <- ifelse(is.null(input$rloops_rows_selected), 
-  #                         1, 
-  #                         input$rloops_rows_selected)
-  #   
-  #   # Get current sample
-  #   rloops() %>%
-  #     filter(row_number() == selectedRow) %>%
-  #     pull(`RL Region`)
-  # }) %>%
-  #   bindCache(rloops(), input$rloops_rows_selected)
-  # 
-  # # Make summary page
-  # NA_LINK <- "<a href=\"https://www.genecards.org/cgi-bin/carddisp.pl?gene=NA\" target=\"_blank\">NA</a>"
-  # output$RLoopsSummary <- renderUI({
-  #   rloopsNow <- rloops() %>%
-  #     filter(`RL Region` == current_rl()) %>%
-  #     left_join(
-  #       select(
-  #         rltab, `RL Region`=id, confidence_level, is_rlfs, samples, genes
-  #       ),
-  #       by = "RL Region"
-  #     ) %>%
-  #     mutate(Genes = map_chr(
-  #       Genes, function(x) {
-  #         paste0(sapply(unique(unlist(strsplit(Genes, split = "\n"))), makeGeneCards), collapse = "\n")
-  #       }
-  #     )) %>%
-  #     mutate(Genes = ifelse(Genes == NA_LINK, NA, Genes)) %>%
-  #     select(-genes) %>%
-  #     relocate(Genes, .before = Type) %>%
-  #     select(-`Mean RLCounts`, -repeats, -corrpval, -Type)
-  #   rloopsNow %>%
-  #     mutate(Location = makeRLConsensusGB(Location)) %>%
-  #     mutate(samples = paste0(unique(unlist(samples)), collapse = "\n")) %>%
-  #     t() %>%
-  #     kableExtra::kbl(format = "html", escape = FALSE) %>%
-  #     kableExtra::kable_styling() %>%
-  #     HTML()
-  # })
-  # 
-  # output$RLvsExpbySample <- renderPlot({
-  #   rloopsNow <- rloops() %>%
-  #     filter(`RL Region` == current_rl())
-  #   
-  #   # Get the corr and pval
-  #   corr <- pull(rloopsNow, "corr") %>% round(4)
-  #   corrpadj <- pull(rloopsNow, "corrpadj") %>% round(4)
-  #   
-  #   # Get the color
-  #   rlExpCondLvlByRL %>%
-  #     dplyr::filter(rloop_id == current_rl()) %>%
-  #     dplyr::rename(
-  #       Treatment = treatment,
-  #       Mode = mode,
-  #       Tissue = tissue,
-  #       Study = study_id,
-  #       Condition = condition
-  #     ) %>%
-  #     ggplot(aes_string(x = "vst", y = "qVal", color = "Mode")) +
-  #     geom_point() +
-  #     ggtitle(current_rl(), subtitle = "Expression vs. R-Loop Intensity") +
-  #     theme_bw(base_size = 14) +
-  #     annotate(geom = 'text', 
-  #              label = paste0("Rho: ", corr, "; Padj: ", corrpadj), 
-  #              x = -Inf, y = Inf, hjust = -.20, vjust = 3)
-  #   
-  # }) %>% bindCache(current_rl(), rloops())
+  ### RLoops Page ###
+  
+  # Get RLoops dataset
+  rloops <- reactive({
+    rltabShowNow <- mutate(rltabShow, across(contains("corr"), ~ signif(.x, digits = 4)))
+    rltabNow <- select(rltabShowNow, -allGenes) %>% rename(Genes = mainGenes)
+    if (input$showAllGenesRL) rltabNow <- select(rltabShowNow, -mainGenes) %>% rename(Genes = allGenes)
+    if (! input$showRep) rltabNow <- filter(rltabNow, ! is_repeat)
+    if (input$showCorr) rltabNow <- filter(rltabNow, ! is.na(corrR) & corrPVal < .05) %>% arrange(corrPAdj)
+    rltabNow
+  }) %>% bindCache(input$showAllGenesRL, input$showRep, input$showCorr)
+
+  # Make DataTable
+  output$rloops <- renderDT({
+    relocate(rloops(), Genes, .after = Location) %>% select(-samples)
+  }, rownames = FALSE, escape = FALSE, selection = list(mode = "single", selected = 1),
+  options = list(pageLength = 5, scrollX = TRUE))
+
+  # Current selected RL from DT
+  current_rl <- reactive({
+    selectedRow <- ifelse(is.null(input$rloops_rows_selected), 1, input$rloops_rows_selected)
+    filter(rloops(), row_number() == selectedRow) %>% pull(`RL Region`)
+  }) %>% bindCache(rloops(), input$rloops_rows_selected)
+
+  # Make summary page
+  NA_LINK <- "<a href=\"https://www.genecards.org/cgi-bin/carddisp.pl?gene=NA\" target=\"_blank\">NA</a>"
+  output$RLoopsSummary <- renderUI({
+    rloopsNow <- filter(rloops(), `RL Region` == current_rl()) %>%
+      mutate(Genes = map_chr(Genes, function(x) {paste0(sapply(unique(unlist(strsplit(Genes, split = "\n"))), makeGeneCards), collapse = "\n")})) %>%
+      mutate(Genes = ifelse(Genes == NA_LINK, NA, Genes)) %>%
+      select(-is_repeat, -contains("corr"))
+    mutate(rloopsNow, Location = makeRLConsensusGB(Location)) %>%
+      mutate(samples = paste0(unique(unlist(samples)), collapse = "\n")) %>% t() %>%
+      kableExtra::kbl(format = "html", escape = FALSE) %>%
+      kableExtra::kable_styling() %>% HTML()
+  })
+
+  output$RLvsExpbySample <- renderPlot({
+    rloopsNow <- filter(rloops(), `RL Region` == current_rl())
+    # Get the corr and pval
+    corr <- pull(rloopsNow, "corr") %>% round(4)
+    corrPAdj <- pull(rloopsNow, "corrPAdj") %>% round(4)
+    # Get the color
+    filter(rlExpCondLvlByRL, rloop_id == current_rl()) %>%
+      dplyr::rename(Treatment = treatment, Mode = mode, Tissue = tissue,
+        Study = study_id, Condition = condition) %>%
+      ggplot(aes_string(x = "vst", y = "qVal", color = "Mode")) +
+      geom_point() +
+      ggtitle(current_rl(), subtitle = "Expression vs. R-Loop Intensity") +
+      theme_bw(base_size = 14) +
+      annotate(geom = 'text',
+               label = paste0("Rho: ", corr, "; Padj: ", corrPAdj),
+               x = -Inf, y = Inf, hjust = -.20, vjust = 3)
+  }) %>% bindCache(current_rl(), rloops())
 }
 
 # TODO: Need URL cleaner

@@ -2,13 +2,13 @@ PAGE_PLOT_WIDTH = "96%"
 PAGE_PLOT_HEIGHT = "600px"
 ANNO_PLOT_HEIGHT = "1000px"
 
-SamplesPageContents <- function() {
+SamplesPageContents <- function(rlsamples) {
   fluidPage(
     title = "RLBase Samples",
     fluidRow(
       column(
         width = 5,
-        RMapSamplesTable_panel()
+        RMapSamplesTable_panel(rlsamples)
       ),
       column(
         width = 7,
@@ -19,7 +19,7 @@ SamplesPageContents <- function() {
 }
 
 
-RMapSamplesTable_panel <- function() {
+RMapSamplesTable_panel <- function(rlsamples) {
   tagList(
     fluidRow(
       column(
@@ -105,7 +105,15 @@ RMapSamplesOutput_tabset <- function() {
         title = "Downloads",
         # TODO: Need icon
         icon = icon('download'),
-        Downloads_panel()
+        fluidRow(
+          column(
+            width = 6, offset = 3,
+            br(),br(),br(),br(),br(),br(),
+            h4("Downloads"),
+            br(),
+            Downloads_panel()
+          )
+        )
       )
     )
   )

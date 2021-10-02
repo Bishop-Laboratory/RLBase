@@ -59460,7 +59460,7 @@
       "x": {
         "style": "bootstrap4",
         "filter": "none",
-        "container": "<table class=\"table table-striped table-hover row-border order-column display\">\n  <thead>\n    <tr>\n      <th>RL Region<\/th>\n      <th>Location<\/th>\n      <th>Genes<\/th>\n      <th># of Studies<\/th>\n      <th># of Samples<\/th>\n      <th># of Tissues<\/th>\n      <th># of Modes<\/th>\n      <th>Mean Signal<\/th>\n      <th>Mean FDR<\/th>\n      <th>corr<\/th>\n      <th>corrpval<\/th>\n      <th>corrpadj<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>",
+        "container": "<table class=\"table table-striped table-hover row-border order-column display\">\n  <thead>\n    <tr>\n      <th>RL Region<\/th>\n      <th>Location<\/th>\n      <th>Genes<\/th>\n      <th># of Studies<\/th>\n      <th># of Samples<\/th>\n      <th># of Tissues<\/th>\n      <th># of Modes<\/th>\n      <th>Mean Signal<\/th>\n      <th>Mean FDR<\/th>\n      <th>corr<\/th>\n      <th>corrpval<\/th>\n      <th>corrPAdj<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>",
         "options": {
           "pageLength": 5,
           "scrollX": true,
