@@ -42,12 +42,7 @@ makeRLConsensusGB <- function(x) {
 
 #' Makes the global data for the app
 makeGlobalData <- function(APP_DATA) {
-  rlsamples <- RLHub::rlbase_samples()
-  rlfsres <- RLHub::rlfs_res()
-  rlbaseRes <- RLHub::feat_enrich_samples()
-  gss <- RLHub::gs_signal()
-  rlregions <- RLHub::rlregions_meta()
-  
+    
   # Get membership matrix
   memMat <- parallel::mclapply(
     rlsamples$rlsample,
@@ -89,7 +84,7 @@ makeGlobalData <- function(APP_DATA) {
   )
   
   save(rlsamples, rlfsres, rlbaseRes, gss,
-       rlregions,
+       rlregions, 
        featPlotData, heatData, rlMembershipMatrix,
        file = APP_DATA, compress = "gzip")
 }

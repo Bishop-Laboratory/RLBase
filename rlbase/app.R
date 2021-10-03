@@ -214,7 +214,7 @@ server <- function(input, output, session) {
     annoCorr$group <- ifelse(rownames(annoCorr) == current_samp(), current_samp(), "Unselected")
     names(heatData$cat_cols$group)[1] <- current_samp()
     names(heatData$cat_cols$group)[2] <- "Unselected"
-    pheatmap(corrRes, color = heatData$pheatmap_color, breaks = heatData$pheatmap_breaks,
+    pheatmap(corrRes, color = heatData$pheatmap_color, main = current_samp(), breaks = heatData$pheatmap_breaks,
              annotation_col = annoCorr[,c(4, 3, 2, 1)], annotation_colors = heatData$cat_cols,
              show_colnames = FALSE, show_rownames = FALSE, silent = FALSE, fontsize = 15)
   }) %>% bindCache(rmapSampsRV(), current_samp())
@@ -238,7 +238,7 @@ server <- function(input, output, session) {
       rlbase_scatter(sizes = c("Selected" = 10, "Unselected" = 3),
                      cols = heatData$cat_cols$mode,
                      shapes = c("POS" = 19, "NEG" = 4)) +
-      guides(colour = guide_legend(override.aes = list(size=4), ncol = 2),
+      guides(colour = guide_legend(override.aes = list(size=4), ncol = 1),
              shape = guide_legend(override.aes = list(size=4))) +
       xlab(paste0("PC1 (", pcd$percentVar[1], "%)")) +
       ylab(paste0("PC2 (", pcd$percentVar[2], "%)")) +
@@ -316,7 +316,7 @@ server <- function(input, output, session) {
   NA_LINK <- "<a href=\"https://www.genecards.org/cgi-bin/carddisp.pl?gene=NA\" target=\"_blank\">NA</a>"
   output$RLoopsSummary <- renderUI({
     rloopsNow <- filter(rloops(), `RL Region` == current_rl()) %>%
-      mutate(Genes = map_chr(Genes, function(x) {paste0(sapply(unique(unlist(strsplit(Genes, split = "\n"))), makeGeneCards), collapse = "\n")})) %>%
+      mutate(Genes = map_chr(Genes, function(x) {paste0(sapply(unique(unlist(strsplit(Genes, split = " "))), makeGeneCards), collapse = "\n")})) %>%
       mutate(Genes = ifelse(Genes == NA_LINK, NA, Genes)) %>%
       select(-is_repeat, -contains("corr"))
     mutate(rloopsNow, Location = makeRLConsensusGB(Location)) %>%
