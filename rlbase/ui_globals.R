@@ -296,19 +296,8 @@ RLoopsPageContents <- function() {
           tabPanel(
             title = "Expression",
             icon = icon("dna"),
-            selectInput(
-              inputId = "colorExpvRlBy",
-              label = "Color",
-              multiple = FALSE,
-              selected = "Tissue",
-              choices = c("Tissue", "Mode", "Study", "Condition")
-            ),
+            br(),
             plotOutput(outputId = "RLvsExpbySample")
-          ),
-          tabPanel(
-            title = "Downloads",
-            icon = icon("download"),
-            ## Download the R-Loops table
           )
         )
       )
@@ -324,9 +313,47 @@ HelpPageContents <- function() {
 }
 
 
-DownloadPageContents <- function() {
+DownloadPageContents <- function(bucket_sizes, rlsamples) {
+  md <- "
+  ## RLBase Downloads
+  <hr>
+  
+  *RLBase* provides access to the raw and processed data sets which were generated
+  as part of the *RLSuite* project. With the exception of raw `.bam` files, these
+  data are stored on the publicly-avialable *RLBase-data* AWS bucket (`s3://rlbase-data/`).
+  
+  For **bulk access** to *RLBase-data* (**67.8 GB**), please use <a href='https://anaconda.org/conda-forge/awscli' target='_blank'>*AWS CLI*</a>:
+  
+  ```shell
+  # conda install -c conda-forge awscli
+  aws s3 sync --no-sign-request s3://rlbase-data/ rlbase_data/  # Downloads all RLBase-data
+  ```
+  For **fine-grained access** to specific resources, please see the following guides:
+  <br>
+  "
   list(
-    h1("Downloads page")
+    shiny::markdown(md),
+    tabsetPanel(
+      id = "downloads",
+      tabPanel(
+        title = "Processed data files",
+        icon = icon("table"),
+        processedDataDownloads(bucket_sizes, rlsamples)
+      ),
+      tabPanel(
+        title = "RLHub downloads",
+        icon = icon("database"),
+        br(),
+        rlhubDownloads(bucket_sizes)
+      ),
+      tabPanel(
+        title = "Raw and misc data",
+        icon = icon("dna"),
+        br(),
+        rawDataDownloads()
+      )
+    ),
+    br()
   )
 }
 
@@ -423,6 +450,226 @@ RLFSTagList <- function(vals) {
             ))))
           )
         )
+      )
+    )
+  )
+}
+
+
+#' Downloads for all
+rlhubDownloads <- function(bucket_sizes) {
+  
+  md <- paste0("
+  ### RData objects via RLHub
+  
+  Processed RData objects are provided via the <a href='https://github.com/Bishop-Laboratory/RLHub' target='_blank'>*RLHub*</a> R package (part of the *RLSuite*).
+  A full description of the data is provided in the table below. 
+  
+  <details>
+  <summary><strong>Data Access</strong> Details</summary>
+  
+  <br>
+  
+  To access these data, there are several options:
+  
+  * **RLHub** (preferred)
+    - Download the `RLHub` R package via `remotes` (requires Bioconductor 3.14): 
+    
+    ```r
+    if (!requireNamespace('BiocManager', quietly = TRUE))
+      install.packages('BiocManager', version='devel')
+  
+    remotes::install_github('Bishop-Laboratory/RLHub')
+    ```
+    - Access data using the functions shown in the table below. For example, to access 'GS-Signal':
+    
+    ```r
+    gssignal <- RLHub::gs_signal()
+    ```
+    - For further details, please see the <a href='https://rlbase-data.s3.amazonaws.com/misc/rlhub_vignette.html' target='_blank'>RLHub vignette</a>.
+    
+  <br>
+  
+  * **Direct download**
+    - All files are in `.rda` (RData) format and have a direct download link.
+    - For example, to download and load `annotations_primary_hg38` in R:
+    
+    ```r
+    tmp <- tempfile()
+    download.file('https://rlbase-data.s3.amazonaws.com/RLHub/annotations_primary_hg38.rda', destfile=tmp)
+    load(tmp)
+    ```
+  * **AWS CLI**:
+    - Files can also be synced from AWS using the AWS CLI.
+    - To download the entire RLHub bucket (", bucket_sizes$RLHub,"), for example:
+    
+    ```shell
+    # conda install -c conda-forge awscli
+    aws s3 sync --no-sign-request s3://rlbase-data/RLHub RLHub/  # Downloads the entire folder
+    ```
+  </details>
+  <br>
+  
+  ")
+  tagList(
+    fluidRow(
+      column(
+        width = 12,
+        shiny::markdown(md),
+        read_csv(system.file("extdata", "metadata.csv", package = "RLHub"), show_col_types = FALSE, progress = FALSE) %>% 
+          mutate(
+            Direct_Download = paste0("<a class='button' href='", file.path(RLSeq:::RLBASE_URL, RDataPath),
+                                     "' target='_blank' download><i class='fa fa-download'></i> Link</a>"),
+            RLHub_Accessor = paste0("<code>RLHub::", Tags, "()</code>")
+          ) %>%
+          dplyr::select(Title, Description, Genome, RDataClass, Direct_Download, RLHub_Accessor) %>%
+          kableExtra::kable(format = "html", escape = FALSE) %>%
+          kableExtra::kable_styling("hover") %>%
+          HTML()
+      )
+    )
+  )
+}
+
+processedDataDownloads <- function(bucket_sizes, rlsamples) {
+  
+  md <- paste0("
+  ### Processed data files
+  
+  All data in *RLBase* were processed using the
+  <a href='https://github.com/Bishop-Laboratory/RLPipes' target='_blank'>*RLPipes*</a>
+  program (part of *RLSuite*). Peaks and coverage files were generated from genomic alignments, 
+  and the <a href='https://github.com/Bishop-Laboratory/RLSeq' target='_blank'>*RLSeq*</a>
+  analysis package (also part of *RLSuite*) was used to analyze the data and generate 
+  an HTML report. *RLBase* provides both bulk and fine-grained access to these data.
+  
+  <details>
+  <summary><strong>Data details</strong> (and bulk download instructions)</summary>
+  
+  <br>
+  
+  Data sets (below) can be downloaded in bulk using the AWS CLI.
+  
+  * **Peaks** (", bucket_sizes$peaks,")
+    - Peaks were called from genomic alignments (`*.bam`) using <a href='https://github.com/macs3-project/MACS' target='_blank'>`macs3`</a>.
+      When available, an input control was used. 
+      See <a href='https://github.com/Bishop-Laboratory/RLPipes' target='_blank'>*RLPipes*</a>.
+    - Files are uncompressed, in `.broadPeak` (<a href='https://genome.ucsc.edu/FAQ/FAQformat.html#format13' target='_blank'>broadPeak</a>) format.
+    - AWS CLI: `aws s3 sync --no-sign-request s3://rlbase-data/peaks/ peaks/`
+  * **Coverage** (", bucket_sizes$coverage,")
+    - Coverage tracks were generated from genomic alignments (`*.bam`) with 
+      <a href='https://deeptools.readthedocs.io/en/develop/' target='_blank'>`deepTools`</a>. 
+      See <a href='https://github.com/Bishop-Laboratory/RLPipes' target='_blank'>*RLPipes*</a>.
+    - Files are in `.bw` (<a href='https://genome.ucsc.edu/FAQ/FAQformat.html#format6.1' target='_blank'>bigWig</a>) format.
+    - AWS CLI: `aws s3 sync --no-sign-request s3://rlbase-data/coverage/ coverage/`
+  * **RLRanges** (from *RLSeq*) (", bucket_sizes$rlranges, ")
+    - The *RLSeq* analysis package was used to analyze the peak and coverage tracks to assess quality, genomic annotation enrichment, 
+      and other features of interest. The usage of *RLSeq* is found in the vignette 
+      <a href='https://rlbase-data.s3.amazonaws.com/misc/analyzing-rloop-data-with-rlseq.html' target='_blank'>here</a>.
+      See <a href='https://github.com/Bishop-Laboratory/RLSeq' target='_blank'>*RLSeq*</a>.
+    - The files are compressed `.rds` files. They can be loaded with the `readRDS()` function in R. 
+    - AWS CLI: `aws s3 sync --no-sign-request s3://rlbase-data/rlranges/ rlranges/`
+  * ***RLSeq* Reports** (", bucket_sizes$reports,")
+    - The *RLSeq* analysis package also generates quality and analysis reports of samples analyzed with it. 
+      For each sample in *RLBase*, a report was generated (via the `RLSeq::report()` command).
+      See <a href='https://github.com/Bishop-Laboratory/RLSeq' target='_blank'>*RLSeq*</a>.
+    - The files are in uncompressed `*.html` format.
+    - AWS CLI: `aws s3 sync --no-sign-request s3://rlbase-data/reports/ reports/`
+  * **FASTQ Stats** (", bucket_sizes$fastq_stats, ")
+    - Quality statistics for the raw reads were generated via the `fastp` program
+      (<a href='https://github.com/OpenGene/fastp' target='_blank'>link</a>).
+      See <a href='https://github.com/Bishop-Laboratory/RLPipes' target='_blank'>*RLPipes*</a>.
+    - The files are in uncompressed `*.json` format.
+    - AWS CLI: `aws s3 sync --no-sign-request s3://rlbase-data/fastq_stats/ fastq_stats/`
+  * **BAM Stats** (", bucket_sizes$bam_stats, ")
+    - Quality statistics for the genomic alignments (`*.bam` files) were generated via the
+      `samtools` program (<a href='http://www.htslib.org/' target='_blank'>link</a>).
+      See <a href='https://github.com/Bishop-Laboratory/RLPipes' target='_blank'>*RLPipes*</a>.
+    - The files are in uncompressed `*.txt` format.
+    - AWS CLI: `aws s3 sync --no-sign-request s3://rlbase-data/bam_stats/ bam_stats/`
+  * **Quantified expression** (", bucket_sizes$quant, ")
+    - Expression samples were quantified via *Salmon* `v1.5.2` (<a href='https://github.com/COMBINE-lab/salmon'>link</a>). 
+      See <a href='https://github.com/Bishop-Laboratory/RLPipes' target='_blank'>*RLPipes*</a>.
+    - The files are in compressed archive (`*.tar.xz`) format. The archive contains the output of salmon as described 
+      in the *Salmon* documentation (<a href='https://salmon.readthedocs.io/en/latest/file_formats.html'>link</a>)
+    - AWS CLI: `aws s3 sync --no-sign-request s3://rlbase-data/quant/ quant/`
+      
+  </details>
+  <br>
+  
+  The **full list** of samples in *RLBase* and their corresponding download links are listed below:
+    
+  ")
+  
+  tagList(
+    fluidRow(
+      column(
+        width = 12,
+        shiny::markdown(md),
+        dataTableOutput('rlsamplesDownloadFiles')
+      )
+    )
+  )
+}
+
+
+rawDataDownloads <- function() {
+  md <- "
+  ### Raw data
+  
+  The raw data was downloaded from <a href='https://www.ncbi.nlm.nih.gov/sra' target='_blank'>SRA</a>
+  programmatically as part of the <a href='https://github.com/Bishop-Laboratory/RLPipes' target='_blank'>*RLPipes*</a>
+  processing pipeline. Raw reads were aligned to the genome using 
+  <a href='https://github.com/bwa-mem2/bwa-mem2' target='_blank'>*bwa-mem2*</a> and uploaded
+  to a publicly-accessible 
+  <a href='https://uthscsa.box.com/s/529qtbh94z1zqs8rqtwb3gxabalzaya4' target='_blank'>Box folder</a> (1.4 TB).
+  
+  **Note**: You will be unable to download the entire contents in bulk without a paid Box account. If you need to 
+  access these `*.bam` files in bulk, please simply follow the protocol outlined in
+  the RLBase-data repository
+  (<a href='https://github.com/Bishop-Laboratory/RLBase-data#run-rlpipes-on-all-public-samples' target='_blank'>link</a>). 
+  If you are unable to do so, please contact the *RLBase* maintainer 
+  (<a href='mailto:millerh1@uthscsa.edu' target='_blank'>Henry Miller</a>) and he will assist you in accessing the data.
+  
+  ### Other data
+  
+  Miscellaneous data which provide support to *RLBase* and the other software in *RLSuite* are also 
+  available for download if desired. 
+  
+  * R-loop forming sequences (RLFS)
+    - R-loop forming sequenes were discovered for each genome that has gene annotations
+      (48 in total; see <a href='https://rlbase-data.s3.amazonaws.com/misc/available_genomes.tsv' target='_blank'>available genomes</a>) using the 
+      <a href='https://github.com/piroonj/QmRLFS-finder' target='_blank'>*QmRLFS-finder*</a> program
+      and converted to <a href='https://genome.ucsc.edu/FAQ/FAQformat.html#format1' target='_blank'>BED format</a>. 
+    - They can be accessed in two main ways:
+      * Bulk download: `aws s3 sync --no-sign-request s3://rlbase-data/rlfs-beds/ .`
+      * Direct download of individual files (`https://rlbase-data.s3.amazonaws.com/rlfs-beds/<UCSC_GENOME>.rlfs.bed`). Where `UCSC_GENOME` is replaced by 
+        the genome of interest. For example, 'hg38' would be `https://rlbase-data.s3.amazonaws.com/rlfs-beds/hg38.rlfs.bed`.
+  * Quality ML Models
+    - These models are used by <a href='https://github.com/Bishop-Laboratory/RLSeq' target='_blank'>*RLSeq*</a>
+      to predict whether a sample robustly ('POS') or poorly ('NEG') maps R-loops. The full workflow by which 
+      they are generated is found in the 
+      <a href='https://github.com/Bishop-Laboratory/RLBase-data#build-discriminator-model' target='_blank'>RLBase-data repo</a>.
+    - Download all files in builk via `aws s3 sync --no-sign-request s3://rlbase-data/misc/model/ .`
+    - Download RData models via <a href='https://github.com/Bishop-Laboratory/RLHub' target='_blank'>*RLHub*</a> (does not include HTML report). See `?RLHub:::models`.
+    - Model-building summary HTML report is available from direct download (<a href='https://rlbase-data.s3.amazonaws.com/misc/model/FFT-classifier.html' target='_blank'>link</a>).
+  * Cohesin peaks
+    - Manually-curated STAG2 and STAG1 ChIP-Seq data reprocessed by the RLHub authors. 
+      They are the same STAG1 and STAG2 peaks described in <a href='https://academic.oup.com/nar/article/48/10/5639/5827199' taret='_blank'>*Pan et al., 2020*</a>.
+    - The file format is uncompressed broadPeak (`*.broadPeak`). 
+    - The processed form of these data is provided within <a href='https://github.com/Bishop-Laboratory/RLHub' target='_blank'>*RLHub*</a>. See `?RLHub::annotations`.
+    - The steps used for processing are provided in the 
+      <a href='https://github.com/Bishop-Laboratory/RLBase-data/blob/main/scripts/getGenomicFeatures.R#L559-L581' target='_blank'>RLBase-data repo</a>.
+    - BroadPeak files can be downloaded in bulk `aws s3 sync --no-sign-request s3://rlbase-data/misc/cohesin_peaks/`.
+    
+  **Note**: Any other desired data will be provided upon reasonable request to the RLBase maintainer (<a href='mailto:millerh1@uthscsa.edu' target='_blank'>Henry Miller</a>).
+  "
+  
+  tagList(
+    fluidRow(
+      column(
+        width = 12,
+        shiny::markdown(md)
       )
     )
   )

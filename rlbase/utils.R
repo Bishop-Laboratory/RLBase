@@ -40,9 +40,39 @@ makeRLConsensusGB <- function(x) {
   ))
 }
 
+#' Make SRA links
+makeSRALinks <- function(x) {
+  SRA_BASE <- "https://www.ncbi.nlm.nih.gov/sra/"
+  as.character(a(
+    href=paste0(SRA_BASE, x),
+    target="_blank",
+    x
+  ))
+}
+
+#' Make pubmed links
+makePubMedLinks <- function(x) {
+  PUBMED_BASE <- "https://pubmed.ncbi.nlm.nih.gov/"
+  as.character(a(
+    href=paste0(PUBMED_BASE, x),
+    target="_blank",
+    x
+  ))
+}
+
+
 #' Makes the global data for the app
 makeGlobalData <- function(APP_DATA) {
-    
+  
+  rlsamples <- RLHub::rlbase_samples()
+  rlfsres <- RLHub::rlfs_res()
+  rlbaseRes <- RLHub::feat_enrich_samples()
+  gss <- RLHub::gs_signal()
+  rlregions <- RLHub::rlregions_meta()
+  tmp <- tempfile()
+  download.file(file.path(RLSeq:::RLBASE_URL, "RLHub/tpm_rl_exp.rda"), destfile = tmp)
+  load(tmp)
+  
   # Get membership matrix
   memMat <- parallel::mclapply(
     rlsamples$rlsample,
@@ -83,12 +113,27 @@ makeGlobalData <- function(APP_DATA) {
     returnData = TRUE
   )
   
+  # Get bucket sizes
+  bucketsize <- function(name) {
+    res <- system(paste0("aws s3 ls --summarize --human-readable --recursive s3://rlbase-data/", name), intern = TRUE)
+    gsub(res[length(res)], pattern = "   Total Size: ([0-9\\.]+ [a-zA-Z]+)", replacement = "\\1")
+  }
+  bucks <- list(
+    bam_stats="bam_stats",
+    fastq_stats="fastq_stats",
+    coverage="coverage",
+    peaks="peaks",
+    quant="quant",
+    reports="reports",
+    rlranges="rlranges",
+    RLHub="RLHub"
+  )
+  bucket_sizes <- pblapply(bucks, bucketsize)
   save(rlsamples, rlfsres, rlbaseRes, gss,
-       rlregions, 
+       rlregions, tpm_rl_exp, bucket_sizes,
        featPlotData, heatData, rlMembershipMatrix,
        file = APP_DATA, compress = "gzip")
 }
-
 
 
 

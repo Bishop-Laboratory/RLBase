@@ -3,6 +3,7 @@ library(shiny)
 library(RLSeq)
 library(RLHub)
 library(DT)
+library(pbapply)
 library(tidyverse)
 library(kableExtra)
 library(plotly)
@@ -16,89 +17,47 @@ source("utils.R")
 APP_DATA <- "misc/app_data.rda"
 if (! file.exists(APP_DATA)) {
   makeGlobalData(APP_DATA)
-  load(APP_DATA)
-} else {
-  load(APP_DATA)
-  rlMemMat <- as.matrix(rlMembershipMatrix)  # Decompress
-}
+} 
+load(APP_DATA)
+rlMemMat <- as.matrix(rlMembershipMatrix)  # Decompress
+rlsamples <- rlsamples %>%
+  mutate(rlsampleLink = map_chr(rlsample, makeSRALinks),
+         study = map_chr(study, makeSRALinks),
+         PMID= map_chr(PMID, makePubMedLinks))
 source("const.R")
-print(ls())
 source("ui_globals.R")
 source("plots.R")
 rltabShow <- rlregions %>%
   arrange(desc(nStudies), desc(nModes), desc(pct_case)) %>%
-  select(`RL Region` = rlregion, Location = location, 
-         `# of Studies` = nStudies, 
-         `# of Modes` = nModes,
-         `Mean Signal` = avgSignalVal,
-         `Mean FDR` = avgQVal,
-         `# of Samples` = nSamples,
-         `# of Tissues` = nTissues, 
-         `Source type`=source,
-         contains("corr"), 
-         allGenes, mainGenes, is_repeat, samples) %>%
+  select(`RL Region` = rlregion, Location = location, `# of Studies` = nStudies,
+         `# of Modes` = nModes, `Mean Signal` = avgSignalVal, `Mean FDR` = avgQVal,
+         `# of Samples` = nSamples, `# of Tissues` = nTissues, `Source type`=source,
+         contains("corr"), allGenes, mainGenes, is_repeat, samples) %>%
   mutate(allGenes = gsub(allGenes, pattern = ",", replacement = " ", perl = TRUE),
          mainGenes = gsub(mainGenes, pattern = ",", replacement = " ", perl = TRUE),
          Location = gsub(Location, pattern = ":\\.$", replacement = ""))
 
-
 # Define UI for application that draws a histogram
 ui <- function(request) {
   tagList(
-    # For stick footer    
-    tags$head(
-      tags$style(
-        HTML(headerHTML())
-      )
-    ),
+    tags$head(tags$style(HTML(headerHTML()))), # For sticky footer    
     navbarPage(
       title = "RLBase",
       id = "rlbase",
       theme = bslib::bs_theme(bootswatch = "flatly"),
-      
-      # Pages
-      tabPanel(
-        title = "Home", 
-        id = "home-tab",
-        value = "aboutTab",
-        icon = icon("home"),
-        fluidPage(
-          br(),
-          includeHTML("www/home.html")
-        )
-      ),
-      tabPanel(
-        title = "Samples",
-        id = "samples-tab",
-        icon = icon('vials'),
-        SamplesPageContents(rlsamples)
-      ),
-      tabPanel(
-        title = "R-Loop DB",
-        id = "rloops-tab",
-        icon = icon('database'),
-        RLoopsPageContents()
-      ),
-      tabPanel(
-        title = "Download",
-        id = "download-tab",
-        icon = icon('download'),
-        DownloadPageContents()
-      ),
-      tabPanel(
-        title = "Documentation",
-        id = "docs-tab",
-        icon = icon('file-alt'),
-        # From https://stackoverflow.com/questions/43393310/include-markdown-with-options-in-shiny
-        tags$iframe(src = './documentation.html', # put myMarkdown.html to /www
-                    width = '100%', height = '800px',
-                    frameborder = 0, scrolling = 'auto'
-        )
-      )
-    ),
-    tags$footer(
-      HTML(footerHTML())
-    )
+      tabPanel(title = "Home", id = "home-tab", value = "aboutTab", icon = icon("home"),
+               fluidPage(br(), includeHTML("www/home.html"))),
+      tabPanel(title = "Samples", id = "samples-tab", icon = icon('vials'),
+               SamplesPageContents(rlsamples)),
+      tabPanel(title = "R-Loop DB", id = "rloops-tab", icon = icon('database'),
+               RLoopsPageContents()),
+      tabPanel(title = "Download", id = "download-tab", icon = icon('download'),
+               DownloadPageContents(bucket_sizes, rlsamples)),
+      tabPanel(title = "Documentation", id = "docs-tab", icon = icon('file-alt'),
+               tags$iframe(src = './documentation.html', width = '100%', height = '800px',
+                           frameborder = 0, scrolling = 'auto'))
+    ), 
+    tags$footer(HTML(footerHTML()))
   )
 }
 
@@ -106,12 +65,7 @@ ui <- function(request) {
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
   
-  # ### Sample Page ###
-  
-  # # TODO: Should be sorted
-  # # TODO: Should contain link that will open the details modal
-  # # TODO: Should include UI to add hyperlink for clicking SRX
-  # # TODO: Should have better color for the selection of rows
+  ### Sample Page ###
   rmapSampsRV <- reactive({
     rlsamples %>%
       filter(.data$genome == input$selectGenome,
@@ -120,39 +74,29 @@ server <- function(input, output, session) {
              .data$mode %in% input$selectMode) %>%
       pull(rlsample)
   })
-  observe({
-    print(input$select_label_NEG)
-  })
 
   current_samp <- reactive({
     # Get selected row from datatable
     selectedRow <- ifelse(is.null(input$rmapSamples_rows_selected),
                           1,
                           input$rmapSamples_rows_selected)
-
-    # Get current sample ID
     current_samp <- rlsamples %>%
       filter(rlsample %in% rmapSampsRV()) %>%
       filter(row_number() == selectedRow) %>%
       pull(rlsample)
-
     current_samp
   })
   
-  current_gen <- reactive({
-    rlsamples$genome[rlsamples$rlsample == current_samp()]
-  })
-  
+  current_gen <- reactive(rlsamples$genome[rlsamples$rlsample == current_samp()])
   output$rmapSamples <- renderDT(server = FALSE, {
       rlsamples %>%
         filter(rlsample %in% rmapSampsRV()) %>%
-        select(Sample=rlsample, Study=study, Mode = mode, Tissue=tissue, Condition = condition,
-               prediction = prediction, Genome = genome, Genotype = genotype, Other = other) %>%
-        datatable(selection = list(mode = "single", selected = 1), rownames = FALSE,
+        select(Sample=rlsampleLink, Study=study, Mode = mode, Tissue=tissue, Condition = condition,
+               PMID, prediction = prediction, Genome = genome, Genotype = genotype, Other = other) %>%
+        datatable(selection = list(mode = "single", selected = 1), rownames = FALSE, escape = FALSE,
                   options = list(pageLength = 10, scrollX = TRUE))
     }) %>% bindCache(rmapSampsRV())
 
-  
   ## Panel for RLFS analysis ##
   
   # Z-score plot
@@ -304,7 +248,7 @@ server <- function(input, output, session) {
   output$rloops <- renderDT({
     relocate(rloops(), Genes, .after = Location) %>% select(-samples)
   }, rownames = FALSE, escape = FALSE, selection = list(mode = "single", selected = 1),
-  options = list(pageLength = 5, scrollX = TRUE))
+  options = list(pageLength = 8, scrollX = TRUE))
 
   # Current selected RL from DT
   current_rl <- reactive({
@@ -328,20 +272,48 @@ server <- function(input, output, session) {
   output$RLvsExpbySample <- renderPlot({
     rloopsNow <- filter(rloops(), `RL Region` == current_rl())
     # Get the corr and pval
-    corr <- pull(rloopsNow, "corr") %>% round(4)
-    corrPAdj <- pull(rloopsNow, "corrPAdj") %>% round(4)
+    corrR <- pull(rloopsNow, "corrR") %>% signif(4)
+    corrPAdj <- pull(rloopsNow, "corrPAdj") %>% signif(4)
     # Get the color
-    filter(rlExpCondLvlByRL, rloop_id == current_rl()) %>%
-      dplyr::rename(Treatment = treatment, Mode = mode, Tissue = tissue,
-        Study = study_id, Condition = condition) %>%
-      ggplot(aes_string(x = "vst", y = "qVal", color = "Mode")) +
+    dplyr::filter(tpm_rl_exp, rlregion == current_rl()) %>%
+      inner_join(dplyr::filter(rlsamples, prediction == "POS"), by = "exp_matchCond") %>%
+      dplyr::rename(Other = other, Mode = mode, Tissue = tissue,
+        Study = study, Condition = condition) %>%
+      ggplot(aes_string(x = "exp", y = "rl", color = "Mode")) +
       geom_point() +
       ggtitle(current_rl(), subtitle = "Expression vs. R-Loop Intensity") +
       theme_bw(base_size = 14) +
       annotate(geom = 'text',
-               label = paste0("Rho: ", corr, "; Padj: ", corrPAdj),
+               label = paste0("Rho: ", corrR, "; Padj: ", corrPAdj),
                x = -Inf, y = Inf, hjust = -.20, vjust = 3)
   }) %>% bindCache(current_rl(), rloops())
+  
+  ### Downloads ###
+  output$rlsamplesDownloadFiles <- renderDT({
+    rlsamples %>% 
+      select(Sample=rlsampleLink, Study=study, Mode = mode, Tissue=tissue, Condition = condition,
+             PMID, prediction = prediction, Genome = genome, Genotype = genotype, Other = other,
+             peaks_s3, coverage_s3, rlranges_rds_s3,
+             report_html_s3, fastq_stats_s3, bam_stats_s3) %>%
+      dplyr::rename(
+        "Peaks (.broadPeak)"=peaks_s3,
+        "Coverage (.bw)"=coverage_s3,
+        "RLRanges (.rds)"=rlranges_rds_s3,
+        "RLSeq report (.html)"=report_html_s3,
+        "FASTQ stats (.json)"=fastq_stats_s3,
+        "BAM stats (.txt)"=bam_stats_s3
+      ) %>%
+      mutate(across(contains("("), function(x) {
+        paste0("<a href='", file.path(RLSeq:::RLBASE_URL, x),
+               "' target='_blank' download><i class='fa fa-download'></i>  ",
+               toupper(gsub(basename(x), pattern = "^.+\\.([a-zA-Z0-9]+)$",
+                    replacement = "\\1", perl = TRUE)), "</a>")
+      })) %>%
+      DT::datatable(rownames = FALSE, escape = FALSE,
+                    options = list(pageLength = 10, scrollX = TRUE),
+                    selection = "none")
+  })
+  
 }
 
 # TODO: Need URL cleaner
