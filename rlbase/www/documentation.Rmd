@@ -10,6 +10,7 @@ output:
       collapsed: false
       smooth_scroll: false 
     toc_depth: 2
+    self_contained: false
 params:
   object: "placeholder"
 bibliography: references.bib
