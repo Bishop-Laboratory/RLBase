@@ -72,7 +72,6 @@ makeGlobalData <- function(APP_DATA) {
   tmp <- tempfile()
   download.file(file.path(RLSeq:::RLBASE_URL, "RLHub/tpm_rl_exp.rda"), destfile = tmp)
   load(tmp)
-  
   # Get membership matrix
   memMat <- parallel::mclapply(
     rlsamples$rlsample,

@@ -38,7 +38,7 @@ RMapSamplesTable_panel <- function(rlsamples) {
           inputId = "selectMode", 
           label = "Mode",
           multiple = TRUE,
-          selected = c("DRIP", "DRIPc", "sDRIP", "qDRIP"),
+          selected = c("DRIP", "DRIPc", "sDRIP", "qDRIP", "ssDRIP"),
           choices = unique(rlsamples$mode)
         ),
       )
@@ -48,15 +48,15 @@ RMapSamplesTable_panel <- function(rlsamples) {
         width = 6,
         checkboxInput(
           inputId = "select_label_NEG", 
-          label = "Show labeled controls (e.g., 'RNaseH1-treated')",
-          value = FALSE
+          label = "Show labeled controls",
+          value = TRUE
         )
       ),
       column(
         width = 6,
         checkboxInput(
           inputId = "select_prediction_NEG", 
-          label = "Show predicted controls (i.g., predicted 'CTRL')",
+          label = "Show predicted controls",
           value = TRUE
         )
       )
@@ -79,10 +79,15 @@ RMapSamplesOutput_tabset <- function() {
       id = "rmapSampsTabset",
       tabPanel(
         title = "Summary",
-        # TODO: Need icon for QC
-        icon = icon('list'),
+        icon=icon('list'),
         br(),
         Summary_panel()
+      ),
+      tabPanel(
+        title = "Sample-sample comparison",
+        icon = icon('check-double'),
+        br(),
+        Sample_Sample_panel()
       ),
       tabPanel(
         title = "Annotation",
@@ -91,24 +96,21 @@ RMapSamplesOutput_tabset <- function() {
       ),
       tabPanel(
         title = "RLFS",
-        # TODO: Need icon for QC
         icon = icon('laptop-code'),
         RLFS_panel()
       ),
       tabPanel(
-        title = "R-loops",
-        # TODO: Need icon
+        title = "RL Regions",
         icon = icon('table'),
         RLoops_Panel()
       ),
       tabPanel(
         title = "Downloads",
-        # TODO: Need icon
         icon = icon('download'),
         fluidRow(
           column(
             width = 6, offset = 3,
-            br(),br(),br(),br(),br(),br(),
+            br(),br(),br(),
             h4("Downloads"),
             br(),
             Downloads_panel()
@@ -156,8 +158,8 @@ Annotation_panel <- function() {
         selectInput(
           inputId = "splitby",
           label = "Split",
-          choices = c("none", "prediction", "label"),
-          selected = "none"
+          choices = c("prediction", "label", "none"),
+          selected = "prediction"
         )
       )
     ),
@@ -170,8 +172,33 @@ Annotation_panel <- function() {
   )
 }
 
-
 Summary_panel <- function() {
+  list(
+    fluidRow(
+      column(
+        width = 6,
+        uiOutput("sampleSummary")
+      ),
+      column(
+        width = 6,
+        plotlyOutput("modeDonut")
+      )
+    ),
+    fluidRow(
+      column(
+        width = 6,
+        plotlyOutput("labelDonut")
+      ),
+      column(
+        width = 6,
+        plotlyOutput("predictionDonut")
+      )
+    )
+  )
+}
+
+
+Sample_Sample_panel <- function() {
   tabsetPanel(
     id = "RMapSamplesSummary",
     type = "pills",
@@ -254,7 +281,7 @@ Downloads_panel <- function() {
 
 RLoopsPageContents <- function() {
   fluidPage(
-    title = "R-Loops",
+    title = "RL Regions",
     fluidRow(
       column(
         width = 2,
@@ -312,6 +339,25 @@ HelpPageContents <- function() {
   )
 }
 
+AnalyzePageContents <- function(rlsamples) {
+  list(
+    h3("Upload data"),
+    hr(),
+    textInput(inputId = "userTitle", label = "Title"),
+    selectInput(inputId = "userGenome", label = "Genome", choices = available_genomes$UCSC_orgID),
+    selectInput(inputId = "userMode", label = "Mode", choices = unique(rlsamples$mode)),
+    selectInput(inputId = "userLabel", label = "Label", choices = c("POS", "NEG")),
+    fileInput("userPeaks", label = "Peaks (broadPeak format)",
+              accept = c(".broadPeak", ".narrowPeak", ".bed")),
+    textInput(inputId = "userEmail", label = "Email address"),
+    span(strong("Privacy statement"),"I understand that my RLSeq report and submitted data",
+      " will be posted on a publicly-accessible AWS S3 bucket and will NOT be kept private."),
+    checkboxInput(inputId = "privacyStatement", 
+                  label = "I have read and understood the privacy statement.", 
+                  value = FALSE),
+    actionButton(inputId = "userUpload", label = "Submit")
+  )
+}
 
 DownloadPageContents <- function(bucket_sizes, rlsamples) {
   md <- "

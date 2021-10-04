@@ -3,6 +3,9 @@ library(shiny)
 library(RLSeq)
 library(RLHub)
 library(DT)
+library(shinyvalidate)
+library(aws.s3)
+library(future)
 library(pbapply)
 library(tidyverse)
 library(kableExtra)
@@ -29,6 +32,8 @@ source("ui_globals.R")
 source("plots.R")
 rltabShow <- rlregions %>%
   arrange(desc(nStudies), desc(nModes), desc(pct_case)) %>%
+  mutate(avgSignalVal = signif(avgSignalVal, 4),
+         avgQVal = signif(10^(-1*avgQVal), 4)) %>%
   select(`RL Region` = rlregion, Location = location, `# of Studies` = nStudies,
          `# of Modes` = nModes, `Mean Signal` = avgSignalVal, `Mean FDR` = avgQVal,
          `# of Samples` = nSamples, `# of Tissues` = nTissues, `Source type`=source,
@@ -46,11 +51,16 @@ ui <- function(request) {
       id = "rlbase",
       theme = bslib::bs_theme(bootswatch = "flatly"),
       tabPanel(title = "Home", id = "home-tab", value = "aboutTab", icon = icon("home"),
-               fluidPage(br(), includeHTML("www/home.html"))),
+               fluidPage(
+                 br(), 
+                 includeHTML("www/home.html"),
+               )),
       tabPanel(title = "Samples", id = "samples-tab", icon = icon('vials'),
                SamplesPageContents(rlsamples)),
-      tabPanel(title = "R-Loop DB", id = "rloops-tab", icon = icon('database'),
+      tabPanel(title = "R-Loop Regions", id = "rloops-tab", icon = icon('map'),
                RLoopsPageContents()),
+      tabPanel(title = "Analyze", id = "analyze-tab", icon = icon('server'),
+               AnalyzePageContents(rlsamples)),
       tabPanel(title = "Download", id = "download-tab", icon = icon('download'),
                DownloadPageContents(bucket_sizes, rlsamples)),
       tabPanel(title = "Documentation", id = "docs-tab", icon = icon('file-alt'),
@@ -96,7 +106,68 @@ server <- function(input, output, session) {
         datatable(selection = list(mode = "single", selected = 1), rownames = FALSE, escape = FALSE,
                   options = list(pageLength = 10, scrollX = TRUE))
     }) %>% bindCache(rmapSampsRV())
-
+  
+  ## Summary panel ##
+  
+  # Sample summary
+  output$sampleSummary <- renderUI({
+    currentrlsample <- rlsamples[rlsamples$rlsample == current_samp(),] 
+    currentrlsample <- mutate(currentrlsample, across(contains("_S3"), function(x) {
+      paste0("<a href='", file.path(RLSeq:::RLBASE_URL, x), "' target='_blank' >",
+             gsub(x, pattern = ".+/", replacement = ""), "</a>")
+    }))
+    fluidRow(
+      column(
+        width = 8, offset = 2,
+        tribble(
+          ~Feature, ~Value, ~message,
+          "Mode", currentrlsample$mode, "The type of R-loop mapping used in this sample. See the documentation for more info.",
+          "Condition", currentrlsample$condition, "The condition of the sample. See the documentation for more info.",
+          "Label", paste0("<strong style='color: ",
+                          ifelse(currentrlsample$label == "POS", "#165566", "#8a2c2c"),"'>", 
+                          currentrlsample$label, "</strong>"), "The label 'POS' or 'NEG' referencing whether the sample was expected to map R-loops.",
+          "Prediction", paste0("<strong style='color: ",ifelse(currentrlsample$prediction == "POS", "#165566", "#8a2c2c"), "'>",
+                               currentrlsample$label, "</strong>"), "The prediction ('POS' or 'NEG') made by the quality model (see details).",
+          "RLSeq report", currentrlsample$report_html_s3, "The HTML analysis report for this sample, provided by the RLSeq R package."
+        ) %>%
+          mutate(Details = cell_spec('<i class="fa fa-question-circle"></i>', tooltip = spec_tooltip(title = message), escape = FALSE)) %>%
+          dplyr::select(-message) %>%
+          knitr::kable("html", escape = FALSE) %>%
+          kable_styling("hover", full_width = F) %>%
+          add_header_above(set_names(3, nm = currentrlsample$rlsample), align = "left") %>%
+          HTML()
+      )
+    )
+  })
+  
+  # Update the plot_ly plots
+  donuts <- reactive({
+    agsmall <- RLSeq:::available_genomes %>% select(genome=UCSC_orgID, Organism=organism)
+    rlsamplesNow <- rlsamples %>% filter(rlsample %in% rmapSampsRV())
+    modeDat <-  dplyr::mutate(rlsamplesNow, Mode = ifelse(mode %in% RLSeq:::auxdata$mode_cols$mode, mode, "misc")) %>%
+      group_by(Mode) %>% tally()
+    labelDat <- dplyr::rename(rlsamplesNow, Label = label) %>% group_by(Label) %>% tally()
+    predDat <- dplyr::rename(rlsamplesNow, Prediction = prediction) %>% group_by(Prediction) %>% tally()
+    datList <- list("Mode"=modeDat, "Label"=labelDat, "Prediction"=predDat)
+    pltLst <- lapply(names(datList), function(dat) {
+      dataNow <- datList[[dat]]
+      plot_ly(type = "pie") %>%
+        add_pie(data=dataNow, labels = dataNow[,dat,drop=T], values = ~n, textinfo='label+value',
+                marker = list(colors = heatData$cat_cols[[tolower(dat)]][dataNow[,dat,drop=T]]), 
+                insidetextorientation='horizontal', hole=.6, rotation=250) %>%
+        layout(showlegend = FALSE, title=list(text = dat, x=0.15), margin = list(l = 50, r = 50),
+               xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+               yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+    })
+    names(pltLst) <- names(datList)
+    pltLst
+  }) %>% bindCache(rmapSampsRV())
+  
+  # Donuts
+  output$modeDonut <- renderPlotly(donuts()$Mode) %>% bindCache(donuts())
+  output$labelDonut <- renderPlotly(donuts()$Label) %>% bindCache(donuts())
+  output$predictionDonut <- renderPlotly(donuts()$Prediction) %>% bindCache(donuts())
+  
   ## Panel for RLFS analysis ##
   
   # Z-score plot
@@ -125,6 +196,12 @@ server <- function(input, output, session) {
   })
   
   ## Annotation plots ##
+  featPlotDataNow <- reactive({
+    featPlotData[[input$selectGenome]]$prediction <- lapply(featPlotData[[input$selectGenome]]$prediction, function(x) {
+      x[x$experiment %in% rmapSampsRV(),]
+    })
+    featPlotData
+  })
   annodbs <- reactive({
     names(featPlotData[[input$selectGenome]]$none)
   })
@@ -138,7 +215,7 @@ server <- function(input, output, session) {
     lapply(annodbs(), function(plt) {
       output[[plt]] <- renderPlot({
         RLSeq:::feature_ggplot(
-          x = featPlotData[[current_gen()]][[input$splitby]][[plt]],
+          x = featPlotDataNow()[[current_gen()]]$prediction[[plt]],
           limits = c(-10, 15), 
           splitby = input$splitby,
           usamp = current_samp()
@@ -248,7 +325,7 @@ server <- function(input, output, session) {
   output$rloops <- renderDT({
     relocate(rloops(), Genes, .after = Location) %>% select(-samples)
   }, rownames = FALSE, escape = FALSE, selection = list(mode = "single", selected = 1),
-  options = list(pageLength = 8, scrollX = TRUE))
+  options = list(pageLength = 6, scrollX = TRUE))
 
   # Current selected RL from DT
   current_rl <- reactive({
@@ -262,9 +339,9 @@ server <- function(input, output, session) {
     rloopsNow <- filter(rloops(), `RL Region` == current_rl()) %>%
       mutate(Genes = map_chr(Genes, function(x) {paste0(sapply(unique(unlist(strsplit(Genes, split = " "))), makeGeneCards), collapse = "\n")})) %>%
       mutate(Genes = ifelse(Genes == NA_LINK, NA, Genes)) %>%
-      select(-is_repeat, -contains("corr"))
-    mutate(rloopsNow, Location = makeRLConsensusGB(Location)) %>%
-      mutate(samples = paste0(unique(unlist(samples)), collapse = "\n")) %>% t() %>%
+      mutate(Samples = map_chr(Genes, function(x) {paste0(sapply(unique(unlist(strsplit(samples, split = ","))), makeSRALinks), collapse = "\n")})) %>%
+      select(-is_repeat, -samples, -contains("corr"))
+    mutate(rloopsNow, Location = makeRLConsensusGB(Location)) %>% t() %>%
       kableExtra::kbl(format = "html", escape = FALSE) %>%
       kableExtra::kable_styling() %>% HTML()
   })
@@ -287,6 +364,38 @@ server <- function(input, output, session) {
                label = paste0("Rho: ", corrR, "; Padj: ", corrPAdj),
                x = -Inf, y = Inf, hjust = -.20, vjust = 3)
   }) %>% bindCache(current_rl(), rloops())
+  
+  ### User-submit sample ###
+  
+  # Form validation
+  iv <- InputValidator$new()
+  iv$add_rule("userGenome", sv_required())
+  iv$add_rule("userPeaks", sv_required())
+  iv$add_rule("privacyStatement", sv_equal(TRUE))
+  iv$enable()
+  
+  # Form check
+  observeEvent(input$userUpload, {
+    
+    print(input$privacyStatement)
+    print(input$userTitle)
+    print(input$userGenome)
+    print(input$userMode)
+    print(input$userLabel)
+    print(input$userPeaks)
+    print(input$userEmail)
+    print(input$privacyStatement)
+    
+    validate(
+      need(input$userGenome, message = "No  entered."),
+      need(input$userPeaks, message = "No peaks provided."),
+      need(input$privacyStatement, message = "Privacy Agreement not acknowledged.")
+    )
+    shinyWidgets::sendSweetAlert(session = session, title = "Running.", html = TRUE,  type = "info",
+                                 text = "You report will be available here when ready: www.google.com")
+    
+    
+  })
   
   ### Downloads ###
   output$rlsamplesDownloadFiles <- renderDT({
