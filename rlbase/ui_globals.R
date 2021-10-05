@@ -343,19 +343,23 @@ AnalyzePageContents <- function(rlsamples) {
   list(
     h3("Upload data"),
     hr(),
-    textInput(inputId = "userTitle", label = "Title"),
-    selectInput(inputId = "userGenome", label = "Genome", choices = available_genomes$UCSC_orgID),
-    selectInput(inputId = "userMode", label = "Mode", choices = unique(rlsamples$mode)),
-    selectInput(inputId = "userLabel", label = "Label", choices = c("POS", "NEG")),
+    textInput(inputId = "userSample", label = "Sample name"),
+    selectInput(inputId = "userGenome", label = "Genome", selected = "hg38",
+                choices = RLSeq:::available_genomes$UCSC_orgID),
+    selectInput(inputId = "userMode", label = "Mode", selected = "DRIP",
+                choices = unique(rlsamples$mode)),
+    selectInput(inputId = "userLabel", label = "Label", 
+                choices = c("POS", "NEG")),
     fileInput("userPeaks", label = "Peaks (broadPeak format)",
               accept = c(".broadPeak", ".narrowPeak", ".bed")),
-    textInput(inputId = "userEmail", label = "Email address"),
     span(strong("Privacy statement"),"I understand that my RLSeq report and submitted data",
       " will be posted on a publicly-accessible AWS S3 bucket and will NOT be kept private."),
     checkboxInput(inputId = "privacyStatement", 
                   label = "I have read and understood the privacy statement.", 
                   value = FALSE),
-    actionButton(inputId = "userUpload", label = "Submit")
+    actionButton(inputId = "userUpload", label = "Start", icon = icon("plane-departure")),
+    br(), br(),
+    uiOutput("analysisResults")
   )
 }
 

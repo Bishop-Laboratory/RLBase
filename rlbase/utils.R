@@ -79,7 +79,7 @@ makeGlobalData <- function(APP_DATA) {
       tibble(
         membership = grepl(rlregions$samples, pattern = rlsample, perl = TRUE)
       ) %>%
-        rename(!!quo_name(rlsample) := membership)
+        dplyr::rename(!!quo_name(rlsample) := membership)
     }, mc.cores = 20
   )
   rlMembershipMatrix <- bind_cols(rlregions$rlregion, memMat) %>%
@@ -170,3 +170,49 @@ sampleDownloads <- function(sample, rlsamples) {
     )
   )
 } 
+
+
+#' Helper function for running RLSeq
+runrlseq <- function(inputs) {
+  message("Beginning analysis...")
+  timestamp()
+  a_ <- lapply(names(inputs), function(x){message(x, ": ", inputs[[x]])})
+  message("[[1]] Building RLRanges")
+  current_step <- "Building RLRanges [1/3]"
+  a_ <- knitr::knit(input = "www/rlseq_html/rlseq_inprogress.Rhtml", output = inputs$tmpHTML1, quiet = TRUE)
+  aws.s3::put_object(file = inputs$tmpHTML1, object = file.path(inputs$runID, "res_index.html"), bucket = inputs$USERDATA_S3, acl = "public-read")
+  rlr <- RLSeq::RLRanges(
+    peaks = inputs$userPeaks$datapath,
+    genome = inputs$userGenome,
+    mode = inputs$userMode,
+    label = inputs$userLabel,
+    sampleName = inputs$userSample,
+    quiet = FALSE
+  )
+  message("[[2]] Running RLSeq")
+  current_step <- "Running RLSeq [2/3]"
+  a_ <- knitr::knit(input = "www/rlseq_html/rlseq_inprogress.Rhtml", output = inputs$tmpHTML1, quiet = TRUE)
+  aws.s3::put_object(file = inputs$tmpHTML1, object = file.path(inputs$runID, "res_index.html"), bucket = inputs$USERDATA_S3, acl = "public-read")
+  rlr <- RLSeq::RLSeq(rlr, quiet = FALSE)
+  message("[[3]] Building Report")
+  current_step <- "Knitting Report [3/3]"
+  a_ <- knitr::knit(input = "www/rlseq_html/rlseq_inprogress.Rhtml", output = inputs$tmpHTML1, quiet = TRUE)
+  aws.s3::put_object(file = inputs$tmpHTML1, object = file.path(inputs$runID, "res_index.html"), bucket = inputs$USERDATA_S3, acl = "public-read")
+  RLSeq:::report(rlr, reportPath = inputs$report)
+  message("[[4]] Uploading to AWS")
+  Sys.sleep(3)
+  a_ <- knitr::knit(input = "www/rlseq_html/rlseq_upload.Rhtml", output = inputs$tmpHTML1, quiet = TRUE)
+  aws.s3::put_object(file = inputs$tmpHTML1, object = file.path(inputs$runID, "res_index.html"), bucket = inputs$USERDATA_S3, acl = "public-read")
+  Sys.sleep(5)
+  message("Saving RDS to AWS...")
+  aws.s3::s3saveRDS(x = rlr, compress = "xz", verbose=TRUE, show_progress = TRUE,
+                    object = file.path(inputs$runID, "rlranges.rds"),
+                    bucket = inputs$USERDATA_S3, acl = "public-read")
+  Sys.sleep(3)
+  message("Saving report to AWS...")
+  aws.s3::put_object(file = inputs$report, verbose=TRUE, show_progress = TRUE,
+                     object = file.path(inputs$runID, "report.html"),
+                     bucket = inputs$USERDATA_S3, acl = "public-read")
+  message("Done!")
+  timestamp()
+}

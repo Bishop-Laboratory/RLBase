@@ -32,7 +32,7 @@ qualCol <-  list(
   )
 ) %>% 
   bind_rows() %>%
-  select(-descript) %>%
+  dplyr::select(-descript) %>%
   group_by(name, type) %>%
   summarise(vals = list(vals)) %>%
   pivot_wider(id_cols = name, names_from = type, values_from = vals)

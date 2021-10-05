@@ -1,0 +1,109 @@
+<html>
+
+<head>
+<title>Uploading results 🚀</title>
+
+<meta http-equiv="refresh" content="3">
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<link rel="shortcut icon" type="image/jpg" href="https://rlbase-data.s3.amazonaws.com/misc/assets/favicon-32x32.png">
+
+</head>
+
+<body>
+
+<div class="container">
+  <br>
+  <h2>Uploading results 🚀</h2>
+  <hr>
+  <div class="row d-flex justify-content-center align-items-center">
+    <div class="col-6">
+      <p>
+      Running <a href="https://github.com/Bishop-Laboratory/RLSeq" target="_blank">RLSeq</a>
+      on user-supplied data. <em>Please be patient</em> as RLSeq may take 
+      several minutes to finish calculations. If you find that this
+      takes > 5 minutes to complete, please notify the maintainer 
+      (<a href="mailto:millerh1@uthscsa.edu">Henry Miller</a>). 
+      </p>
+      <p>
+      <em>NOTE</em>: Due to size limitations, we are unable to provide the ability to analyze correlations 
+      as this requires submitting bigWig files. To learn more, check out the
+      <a href="https://github.com/Bishop-Laboratory/RLSeq" target="_blank">RLSeq</a>
+      R package.
+      </p>
+      <p>
+      <strong>This page will automatically redirect when results are available.</strong>
+      </p>
+    </div>
+    <div class="col-6">
+<!--begin.rcode getTable, echo=FALSE
+kb <- knitr::kable(
+    tibble::tribble(
+        ~Item, ~Value,
+        "Run ID", inputs$runID,
+        "Sample Name", inputs$userSample,
+        "Peaks", inputs$userPeaks$name[1],
+        "Label", inputs$userLabel,
+        "Mode", inputs$userMode,
+        "Genome", inputs$userGenome
+    )
+)
+kableExtra::kable_styling(kb, bootstrap_options = c("hover", "striped"), full_width = FALSE)
+end.rcode-->
+    </div>
+  </div>
+  <br>
+  <hr>
+  <div class="row d-flex justify-content-center align-items-center">
+    <div class="col-3">
+      <h4>User data upload</h4>
+      <span>Status: <strong style="color: #009127; font-size: 1.2em;">Done</strong></span>
+    </div>
+    <div class="col-1">
+    </div>
+    <div class="col-3">
+      <h4>Run <a href="https://github.com/Bishop-Laboratory/RLSeq" target="_blank">RLSeq</a></h4>
+      <span>Status: <strong style="color: #009127; font-size: 1.2em;">Done</strong></span>
+    </div>
+    <div class="col-1">
+    </div>
+    <div class="col-4">
+      <h4>Upload results</h4>
+      <span>Status: <strong style="color: #9e7554; font-size: 1.2em;">Running</strong></span>
+    </div>
+  </div>
+  <div class="row d-flex justify-content-center align-items-center">
+    <div class="col-3">
+      <img src="https://rlbase-data.s3.amazonaws.com/misc/assets/whitebgRLBase+logo.png" width="75%">
+    </div>
+    <div class="col-1">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Eo_circle_green_arrow-right.svg/512px-Eo_circle_green_arrow-right.svg.png" width="75%">
+    </div>
+    <div class="col-3">
+      <img src="https://rlbase-data.s3.amazonaws.com/misc/assets/whitebgRLSeq+Logo.png" width="75%">
+    </div>
+    <div class="col-1">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Eo_circle_green_arrow-right.svg/512px-Eo_circle_green_arrow-right.svg.png" width="75%">
+    </div>
+    <div class="col-4">
+      <img src="https://rlbase-data.s3.amazonaws.com/misc/assets/whitebgaws_logo.png" width="75%">
+    </div>
+  </div>
+  <br>
+  <hr>
+  <div style="padding: 10px; padding-bottom: 0px;">
+        <p>
+        Please acknowledge <i>RLBase</i> in your publications by citing the following reference:<br>
+        Miller et al., RLBase, (2021), GitHub repository, https://github.com/Bishop-Laboratory/RLBase
+      <a href="https://github.com/Bishop-Laboratory/RLBase" target="_blank"> <span class="glyphicon glyphicon-share-alt" aria-hidden="true"></span> <img src="https://rlbase-data.s3.amazonaws.com/misc/assets/GitHub-Mark-64px.png" height="20"></a>
+        </p>
+    </div>
+</div>
+</div>
+
+
+</body>
+</html>

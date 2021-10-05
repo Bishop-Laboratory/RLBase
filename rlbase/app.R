@@ -5,8 +5,9 @@ library(RLHub)
 library(DT)
 library(shinyvalidate)
 library(aws.s3)
-library(future)
 library(pbapply)
+library(callr)
+library(uuid)
 library(tidyverse)
 library(kableExtra)
 library(plotly)
@@ -14,6 +15,9 @@ library(pheatmap)
 library(ggprism)
 library(bslib)
 library(RColorBrewer)
+
+# Increase upload size to 300MB
+options(shiny.maxRequestSize=300*1024^2)
 
 # Get constants
 source("utils.R")
@@ -34,7 +38,7 @@ rltabShow <- rlregions %>%
   arrange(desc(nStudies), desc(nModes), desc(pct_case)) %>%
   mutate(avgSignalVal = signif(avgSignalVal, 4),
          avgQVal = signif(10^(-1*avgQVal), 4)) %>%
-  select(`RL Region` = rlregion, Location = location, `# of Studies` = nStudies,
+  dplyr::select(`RL Region` = rlregion, Location = location, `# of Studies` = nStudies,
          `# of Modes` = nModes, `Mean Signal` = avgSignalVal, `Mean FDR` = avgQVal,
          `# of Samples` = nSamples, `# of Tissues` = nTissues, `Source type`=source,
          contains("corr"), allGenes, mainGenes, is_repeat, samples) %>%
@@ -78,7 +82,7 @@ server <- function(input, output, session) {
   ### Sample Page ###
   rmapSampsRV <- reactive({
     rlsamples %>%
-      filter(.data$genome == input$selectGenome,
+      dplyr::filter(.data$genome == input$selectGenome,
              .data$label != "NEG" | input$select_label_NEG,
              .data$prediction != "NEG" | input$select_prediction_NEG,
              .data$mode %in% input$selectMode) %>%
@@ -91,8 +95,8 @@ server <- function(input, output, session) {
                           1,
                           input$rmapSamples_rows_selected)
     current_samp <- rlsamples %>%
-      filter(rlsample %in% rmapSampsRV()) %>%
-      filter(row_number() == selectedRow) %>%
+      dplyr::filter(rlsample %in% rmapSampsRV()) %>%
+      dplyr::filter(row_number() == selectedRow) %>%
       pull(rlsample)
     current_samp
   })
@@ -100,8 +104,8 @@ server <- function(input, output, session) {
   current_gen <- reactive(rlsamples$genome[rlsamples$rlsample == current_samp()])
   output$rmapSamples <- renderDT(server = FALSE, {
       rlsamples %>%
-        filter(rlsample %in% rmapSampsRV()) %>%
-        select(Sample=rlsampleLink, Study=study, Mode = mode, Tissue=tissue, Condition = condition,
+        dplyr::filter(rlsample %in% rmapSampsRV()) %>%
+        dplyr::select(Sample=rlsampleLink, Study=study, Mode = mode, Tissue=tissue, Condition = condition,
                PMID, prediction = prediction, Genome = genome, Genotype = genotype, Other = other) %>%
         datatable(selection = list(mode = "single", selected = 1), rownames = FALSE, escape = FALSE,
                   options = list(pageLength = 10, scrollX = TRUE))
@@ -142,8 +146,8 @@ server <- function(input, output, session) {
   
   # Update the plot_ly plots
   donuts <- reactive({
-    agsmall <- RLSeq:::available_genomes %>% select(genome=UCSC_orgID, Organism=organism)
-    rlsamplesNow <- rlsamples %>% filter(rlsample %in% rmapSampsRV())
+    agsmall <- RLSeq:::available_genomes %>% dplyr::select(genome=UCSC_orgID, Organism=organism)
+    rlsamplesNow <- rlsamples %>% dplyr::filter(rlsample %in% rmapSampsRV())
     modeDat <-  dplyr::mutate(rlsamplesNow, Mode = ifelse(mode %in% RLSeq:::auxdata$mode_cols$mode, mode, "misc")) %>%
       group_by(Mode) %>% tally()
     labelDat <- dplyr::rename(rlsamplesNow, Label = label) %>% group_by(Label) %>% tally()
@@ -279,10 +283,10 @@ server <- function(input, output, session) {
 
     # Show the R-loops within that sample
     if (! input$showRepSamp) rltabNow <- dplyr::filter(rltabNow, ! is_repeat)
-    if (input$showCorrSamp) rltabNow <- filter(rltabNow, ! is.na(corrR) & corrPVal < .05) %>% arrange(corrPAdj)
+    if (input$showCorrSamp) rltabNow <- dplyr::filter(rltabNow, ! is.na(corrR) & corrPVal < .05) %>% arrange(corrPAdj)
     rltabNow$Genes <- rltabNow$mainGenes
     if (input$showAllGenesRLSamp) rltabNow$Genes <- rltabNow$allGenes
-    rltabNow %>% select(-samples) %>%
+    rltabNow %>% dplyr::select(-samples) %>%
       DT::datatable(extensions = 'Buttons', selection = list(mode = "none"), rownames = FALSE,
                     options = list(scrollX = TRUE, server=FALSE, pageLength = 6))
   })
@@ -314,40 +318,40 @@ server <- function(input, output, session) {
   # Get RLoops dataset
   rloops <- reactive({
     rltabShowNow <- mutate(rltabShow, across(contains("corr"), ~ signif(.x, digits = 4)))
-    rltabNow <- select(rltabShowNow, -allGenes) %>% rename(Genes = mainGenes)
-    if (input$showAllGenesRL) rltabNow <- select(rltabShowNow, -mainGenes) %>% rename(Genes = allGenes)
-    if (! input$showRep) rltabNow <- filter(rltabNow, ! is_repeat)
-    if (input$showCorr) rltabNow <- filter(rltabNow, ! is.na(corrR) & corrPVal < .05) %>% arrange(corrPAdj)
+    rltabNow <- dplyr::select(rltabShowNow, -allGenes) %>% dplyr::rename(Genes = mainGenes)
+    if (input$showAllGenesRL) rltabNow <- dplyr::select(rltabShowNow, -mainGenes) %>% dplyr::rename(Genes = allGenes)
+    if (! input$showRep) rltabNow <- dplyr::filter(rltabNow, ! is_repeat)
+    if (input$showCorr) rltabNow <- dplyr::filter(rltabNow, ! is.na(corrR) & corrPVal < .05) %>% arrange(corrPAdj)
     rltabNow
   }) %>% bindCache(input$showAllGenesRL, input$showRep, input$showCorr)
 
   # Make DataTable
   output$rloops <- renderDT({
-    relocate(rloops(), Genes, .after = Location) %>% select(-samples)
+    relocate(rloops(), Genes, .after = Location) %>% dplyr::select(-samples)
   }, rownames = FALSE, escape = FALSE, selection = list(mode = "single", selected = 1),
   options = list(pageLength = 6, scrollX = TRUE))
 
   # Current selected RL from DT
   current_rl <- reactive({
     selectedRow <- ifelse(is.null(input$rloops_rows_selected), 1, input$rloops_rows_selected)
-    filter(rloops(), row_number() == selectedRow) %>% pull(`RL Region`)
+    dplyr::filter(rloops(), row_number() == selectedRow) %>% pull(`RL Region`)
   }) %>% bindCache(rloops(), input$rloops_rows_selected)
 
   # Make summary page
   NA_LINK <- "<a href=\"https://www.genecards.org/cgi-bin/carddisp.pl?gene=NA\" target=\"_blank\">NA</a>"
   output$RLoopsSummary <- renderUI({
-    rloopsNow <- filter(rloops(), `RL Region` == current_rl()) %>%
+    rloopsNow <- dplyr::filter(rloops(), `RL Region` == current_rl()) %>%
       mutate(Genes = map_chr(Genes, function(x) {paste0(sapply(unique(unlist(strsplit(Genes, split = " "))), makeGeneCards), collapse = "\n")})) %>%
       mutate(Genes = ifelse(Genes == NA_LINK, NA, Genes)) %>%
       mutate(Samples = map_chr(Genes, function(x) {paste0(sapply(unique(unlist(strsplit(samples, split = ","))), makeSRALinks), collapse = "\n")})) %>%
-      select(-is_repeat, -samples, -contains("corr"))
+      dplyr::select(-is_repeat, -samples, -contains("corr"))
     mutate(rloopsNow, Location = makeRLConsensusGB(Location)) %>% t() %>%
       kableExtra::kbl(format = "html", escape = FALSE) %>%
       kableExtra::kable_styling() %>% HTML()
   })
 
   output$RLvsExpbySample <- renderPlot({
-    rloopsNow <- filter(rloops(), `RL Region` == current_rl())
+    rloopsNow <- dplyr::filter(rloops(), `RL Region` == current_rl())
     # Get the corr and pval
     corrR <- pull(rloopsNow, "corrR") %>% signif(4)
     corrPAdj <- pull(rloopsNow, "corrPAdj") %>% signif(4)
@@ -375,32 +379,154 @@ server <- function(input, output, session) {
   iv$enable()
   
   # Form check
+  rprocessX <- reactiveVal(NULL)
+  reportlink <- reactiveVal(NULL)
   observeEvent(input$userUpload, {
-    
-    print(input$privacyStatement)
-    print(input$userTitle)
-    print(input$userGenome)
-    print(input$userMode)
-    print(input$userLabel)
-    print(input$userPeaks)
-    print(input$userEmail)
-    print(input$privacyStatement)
-    
+    print(input$userUpload)
     validate(
       need(input$userGenome, message = "No  entered."),
       need(input$userPeaks, message = "No peaks provided."),
-      need(input$privacyStatement, message = "Privacy Agreement not acknowledged.")
+      need(input$privacyStatement, message = "Privacy Agreement not acknowledged."),
+      need(is.null(rprocessX()), message = "RLSeq is currently running.")
     )
-    shinyWidgets::sendSweetAlert(session = session, title = "Running.", html = TRUE,  type = "info",
-                                 text = "You report will be available here when ready: www.google.com")
+    print("Hello world")
     
+    # If everything passed, generate path and upload dummy
+    inputs <- list()
+    USERDATA_S3_HTTPS <- "https://rlbase-userdata.s3.amazonaws.com"
+    USERDATA_S3 <- "s3://rlbase-userdata"
+    hash <- uuid::UUIDgenerate()
+    fls <- setNames(as.list(file.path("/tmp", hash, c("report.html", "index.html", "log.txt", "rlranges.rds", "log.debug.txt"))), 
+                    nm = c("report", "index", "log", "rlranges", "logdebug"))
+    # inputs <- c(fls, setNames(list(hash, "test", "hg38", "DRIP", "POS", list(name="www/SRX3581345_hg38.broadPeak",
+    #                                                                          datapath="www/SRX3581345_hg38.broadPeak"), USERDATA_S3),
+    #                           nm = c("runID", "userSample", "userGenome", "userMode", "userLabel", "userPeaks", "USERDATA_S3")))
+    inputs <- c(fls, setNames(list(hash, input$userSample, input$userGenome, 
+                                   input$userMode, input$userLabel, input$userPeaks, USERDATA_S3),
+                              nm = c("runID", "userSample", "userGenome", "userMode", "userLabel", "userPeaks", "USERDATA_S3")))
+    tmpHTML1 <- tempfile(fileext = ".html")
+    inputs$tmpHTML1 <- tmpHTML1
+    current_step <- " "
+    a_ <- knitr::knit(input = "www/rlseq_html/rlseq_inprogress.Rhtml", output = tmpHTML1, quiet = TRUE)
+    aws.s3::put_object(file = tmpHTML1, object = file.path(hash, "res_index.html"), 
+                       bucket = USERDATA_S3, acl = "public-read")
+    shinyWidgets::sendSweetAlert(
+      session = session, title = "Running.", html = TRUE,  type = "info",
+      text = tags$span("You results will be available here when ready:",
+                       tags$a("Link", href=file.path(USERDATA_S3_HTTPS, hash, "res_index.html"), target="_blank"))
+    )
+    reportlink(file.path(USERDATA_S3_HTTPS, hash, "res_index.html"))
+    dir.create(dirname(inputs$log), showWarnings = FALSE)
+    dir.create(dirname(inputs$logdebug), showWarnings = FALSE)
+    message("Starting run... ", file.path(USERDATA_S3_HTTPS, hash, "res_index.html"))
+    message(inputs$logdebug)
+    rprocess <- callr::r_bg(
+      user_profile = FALSE,
+      poll_connection = FALSE,
+      args = list(inputs=inputs, runrlseq=runrlseq),
+      stdout = inputs$logdebug, stderr = inputs$logdebug,
+      func = function(inputs, runrlseq) {
+        message("STARTING")
+        failed <- TRUE
+        attempts <- 3
+        while(failed & attempts > 0) {
+          message("attempt left: ", attempts)
+          fail <- try({
+            callr::r(func = runrlseq, args=list(inputs=inputs),
+                     user_profile = FALSE, timeout = 300,
+                     stdout = inputs$log, stderr = inputs$log,
+                     poll_connection = FALSE, show = TRUE)
+            failed <- FALSE
+          },
+          silent = TRUE
+          )
+          timeoutfail <- c("Error in get_result(output = out, options) : callr timed out\n",
+                           "Error in get_result(output = out, options) : \n  callr subprocess failed: could not start R, exited with non-zero status, has crashed or was killed\n")
+          message(fail)
+          attempts <- attempts - 1
+          if ("try-error" %in% class(fail) & ! fail %in% timeoutfail) {
+            failed <- FALSE
+          } else if (fail %in% timeoutfail & attempts > 0) {
+            a_ <- knitr::knit(input = "www/rlseq_html/rlseq_error_timeout.Rhtml", output = inputs$tmpHTML1, quiet = TRUE)
+            aws.s3::put_object(file = inputs$tmpHTML1,
+                               object = file.path(inputs$runID, "res_index.html"),
+                               bucket = inputs$USERDATA_S3, acl = "public-read")
+            Sys.sleep(5)
+          }
+        }
+        message(fail)
+        message("OUT OF TRY")
+        if ("try-error" %in% class(fail)) readr::write_lines(c(readr::read_lines(inputs$log), fail), file = inputs$log)
+        aws.s3::put_object(file = inputs$log, object = file.path(inputs$runID, "log.txt"), bucket = inputs$USERDATA_S3, acl = "public-read")
+        if ("try-error" %in% class(fail)) {
+          a_ <- knitr::knit(input = "www/rlseq_html/rlseq_error.Rhtml", output = inputs$tmpHTML1, quiet = TRUE)
+          aws.s3::put_object(file = inputs$tmpHTML1,
+                             object = file.path(inputs$runID, "res_index.html"),
+                             bucket = inputs$USERDATA_S3, acl = "public-read")
+        } else {
+          a_ <- knitr::knit(input = "www/rlseq_html/rlseq_done.Rhtml", output = inputs$tmpHTML1, quiet = TRUE)
+          aws.s3::put_object(file = inputs$tmpHTML1, object = file.path(inputs$runID, "res_index.html"),
+                             bucket = inputs$USERDATA_S3, acl = "public-read")
+        }
+      }
+    )
+    rprocessX(rprocess)
+    updateActionButton(session, inputId = "userUpload", label = "Running...",
+                       icon = icon("hourglass-half"))
+  })
+  
+  output$analysisResults <- renderUI({
+    req(reportlink())
+    if (! is.null(rprocessX())) {
+      span("In progress ⌛️: ", a(href=reportlink(), target="_blank", "Link"), style="font-size: 1.3em;")
+    } else {
+      span("Results ready 🔥: ", a(href=reportlink(), target="_blank", "Link"),  style="font-size: 1.3em;")
+    }
     
+  })
+  
+  observe({
+    invalidateLater(3000)
+    print(rprocessX())
+    rp <- rprocessX()
+    req(! is.null(rp))
+    dt <- difftime(rp$get_start_time(), Sys.time(), units = "s")
+    print(dt)
+    if (dt[[1]] < -300 & rp$format() != "PROCESS 'R', finished.\n") {
+      # Kill the R process if hanging
+      # TODO: Figure out a robust way to accomplish this
+      rp$interrupt()
+      rprocessX(NULL)
+      shinyWidgets::sendSweetAlert(
+        session = session, title = "Error in RLSeq.", html = TRUE,  type = "error",
+        text = tags$span(
+          "Your RLSeq run has timed out. This is an error which can occur intermittently due to connectivity problems.",
+          tags$em("Please try again."),
+          tags$strong("If you have recieved this error already, notify the ", tags$a(href='mailto:millerh1@uthscsa.edu', "package maintainer")),
+          " and consider using the ",
+          tags$a("R package implementation",
+          href='https://github.com/Bishop-Laboratory/RLSeq',
+          target='_blank'), "of RLSeq.")
+      )
+      updateActionButton(session, inputId = "userUpload", label = "Start",
+                         icon = icon("plane-departure"))
+    } else if (rp$format() == "PROCESS 'R', finished.\n") {
+      rprocessX(NULL)
+      shinyWidgets::sendSweetAlert(
+        session = session, title = "RLSeq finished.", html = TRUE,  type = "success",
+        text = tags$span(
+          "Your RLSeq run has successfully completed! View results here: ",
+          tags$a("Link", href=reportlink(), target="_blank")
+      ))
+      updateActionButton(session, inputId = "userUpload", label = "Start",
+                         icon = icon("plane-departure"))
+    }
   })
   
   ### Downloads ###
   output$rlsamplesDownloadFiles <- renderDT({
     rlsamples %>% 
-      select(Sample=rlsampleLink, Study=study, Mode = mode, Tissue=tissue, Condition = condition,
+      dplyr::select(Sample=rlsampleLink, Study=study, Mode = mode, Tissue=tissue, Condition = condition,
              PMID, prediction = prediction, Genome = genome, Genotype = genotype, Other = other,
              peaks_s3, coverage_s3, rlranges_rds_s3,
              report_html_s3, fastq_stats_s3, bam_stats_s3) %>%
