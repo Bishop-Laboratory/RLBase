@@ -3,8 +3,10 @@ library(shiny)
 library(RLSeq)
 library(RLHub)
 library(DT)
+library(shinyBS)
 library(shinyvalidate)
 library(aws.s3)
+library(tippy)
 library(pbapply)
 library(callr)
 library(uuid)
@@ -49,7 +51,9 @@ rltabShow <- rlregions %>%
 # Define UI for application that draws a histogram
 ui <- function(request) {
   tagList(
-    tags$head(tags$style(HTML(headerHTML()))), # For sticky footer    
+    tags$head(tags$style(HTML(headerHTML())),
+              tags$link(rel="shortcut icon", href="https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_icon.png"),
+              tags$script(src="https://kit.fontawesome.com/5071e31d65.js", crossorigin="anonymous")),
     navbarPage(
       title = "RLBase",
       id = "rlbase",
@@ -78,6 +82,11 @@ ui <- function(request) {
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
+  
+  
+  addTooltip(id = "helpasd", placement = "right", session = session, 
+    title = paste0("Shows the representation of R-loop mapping modalities in the",
+                   " selected samples (use the table controls to adjust this). See Documentation for details."))
   
   ### Sample Page ###
   rmapSampsRV <- reactive({
@@ -382,15 +391,13 @@ server <- function(input, output, session) {
   rprocessX <- reactiveVal(NULL)
   reportlink <- reactiveVal(NULL)
   observeEvent(input$userUpload, {
-    print(input$userUpload)
+    # Validate inputs
     validate(
       need(input$userGenome, message = "No  entered."),
       need(input$userPeaks, message = "No peaks provided."),
       need(input$privacyStatement, message = "Privacy Agreement not acknowledged."),
       need(is.null(rprocessX()), message = "RLSeq is currently running.")
     )
-    print("Hello world")
-    
     # If everything passed, generate path and upload dummy
     inputs <- list()
     USERDATA_S3_HTTPS <- "https://rlbase-userdata.s3.amazonaws.com"
@@ -418,63 +425,20 @@ server <- function(input, output, session) {
     reportlink(file.path(USERDATA_S3_HTTPS, hash, "res_index.html"))
     dir.create(dirname(inputs$log), showWarnings = FALSE)
     dir.create(dirname(inputs$logdebug), showWarnings = FALSE)
-    message("Starting run... ", file.path(USERDATA_S3_HTTPS, hash, "res_index.html"))
     message(inputs$logdebug)
     rprocess <- callr::r_bg(
       user_profile = FALSE,
       poll_connection = FALSE,
       args = list(inputs=inputs, runrlseq=runrlseq),
       stdout = inputs$logdebug, stderr = inputs$logdebug,
-      func = function(inputs, runrlseq) {
-        message("STARTING")
-        failed <- TRUE
-        attempts <- 3
-        while(failed & attempts > 0) {
-          message("attempt left: ", attempts)
-          fail <- try({
-            callr::r(func = runrlseq, args=list(inputs=inputs),
-                     user_profile = FALSE, timeout = 300,
-                     stdout = inputs$log, stderr = inputs$log,
-                     poll_connection = FALSE, show = TRUE)
-            failed <- FALSE
-          },
-          silent = TRUE
-          )
-          timeoutfail <- c("Error in get_result(output = out, options) : callr timed out\n",
-                           "Error in get_result(output = out, options) : \n  callr subprocess failed: could not start R, exited with non-zero status, has crashed or was killed\n")
-          message(fail)
-          attempts <- attempts - 1
-          if ("try-error" %in% class(fail) & ! fail %in% timeoutfail) {
-            failed <- FALSE
-          } else if (fail %in% timeoutfail & attempts > 0) {
-            a_ <- knitr::knit(input = "www/rlseq_html/rlseq_error_timeout.Rhtml", output = inputs$tmpHTML1, quiet = TRUE)
-            aws.s3::put_object(file = inputs$tmpHTML1,
-                               object = file.path(inputs$runID, "res_index.html"),
-                               bucket = inputs$USERDATA_S3, acl = "public-read")
-            Sys.sleep(5)
-          }
-        }
-        message(fail)
-        message("OUT OF TRY")
-        if ("try-error" %in% class(fail)) readr::write_lines(c(readr::read_lines(inputs$log), fail), file = inputs$log)
-        aws.s3::put_object(file = inputs$log, object = file.path(inputs$runID, "log.txt"), bucket = inputs$USERDATA_S3, acl = "public-read")
-        if ("try-error" %in% class(fail)) {
-          a_ <- knitr::knit(input = "www/rlseq_html/rlseq_error.Rhtml", output = inputs$tmpHTML1, quiet = TRUE)
-          aws.s3::put_object(file = inputs$tmpHTML1,
-                             object = file.path(inputs$runID, "res_index.html"),
-                             bucket = inputs$USERDATA_S3, acl = "public-read")
-        } else {
-          a_ <- knitr::knit(input = "www/rlseq_html/rlseq_done.Rhtml", output = inputs$tmpHTML1, quiet = TRUE)
-          aws.s3::put_object(file = inputs$tmpHTML1, object = file.path(inputs$runID, "res_index.html"),
-                             bucket = inputs$USERDATA_S3, acl = "public-read")
-        }
-      }
+      func = rlseqbg
     )
     rprocessX(rprocess)
     updateActionButton(session, inputId = "userUpload", label = "Running...",
                        icon = icon("hourglass-half"))
   })
   
+  # Updates report link
   output$analysisResults <- renderUI({
     req(reportlink())
     if (! is.null(rprocessX())) {
@@ -482,16 +446,14 @@ server <- function(input, output, session) {
     } else {
       span("Results ready 🔥: ", a(href=reportlink(), target="_blank", "Link"),  style="font-size: 1.3em;")
     }
-    
   })
   
+  # Checks if the results are done -- and kills and hanging processes
   observe({
     invalidateLater(3000)
-    print(rprocessX())
     rp <- rprocessX()
     req(! is.null(rp))
     dt <- difftime(rp$get_start_time(), Sys.time(), units = "s")
-    print(dt)
     if (dt[[1]] < -300 & rp$format() != "PROCESS 'R', finished.\n") {
       # Kill the R process if hanging
       # TODO: Figure out a robust way to accomplish this

@@ -19,6 +19,25 @@ pcaPlotDataFromCorr <- function(corr_data) {
   
 }
 
+# UI function to make ? button
+helpButton <- function(message) {
+  return(
+    with_tippy(
+      element = span(
+        HTML('<i class="fa fa-question-circle"></i>')), 
+      tooltip = message, placement = "right"
+    )
+  )
+  
+}
+
+#' Make headers
+makeHeaders <- function(title, message, fs=1.3) {
+  tagList(
+    span(span(title, style=paste0("font-size: ", fs, "em;")), helpButton(message))
+  )
+}
+
 
 #' Makes a gene cards link for an official gene symbol
 makeGeneCards <- function(x) {
@@ -216,3 +235,49 @@ runrlseq <- function(inputs) {
   message("Done!")
   timestamp()
 }
+
+rlseqbg <- function(inputs, runrlseq) {
+  message("STARTING")
+  failed <- TRUE
+  attempts <- 3
+  while(failed & attempts > 0) {
+    message("attempt left: ", attempts)
+    fail <- try({
+      callr::r(func = runrlseq, args=list(inputs=inputs),
+               user_profile = FALSE, timeout = 300,
+               stdout = inputs$log, stderr = inputs$log,
+               poll_connection = FALSE, show = TRUE)
+      failed <- FALSE
+    },
+    silent = TRUE
+    )
+    timeoutfail <- c("Error in get_result(output = out, options) : callr timed out\n",
+                     "Error in get_result(output = out, options) : \n  callr subprocess failed: could not start R, exited with non-zero status, has crashed or was killed\n")
+    message(fail)
+    attempts <- attempts - 1
+    if ("try-error" %in% class(fail) & ! fail %in% timeoutfail) {
+      failed <- FALSE
+    } else if (fail %in% timeoutfail & attempts > 0) {
+      a_ <- knitr::knit(input = "www/rlseq_html/rlseq_error_timeout.Rhtml", output = inputs$tmpHTML1, quiet = TRUE)
+      aws.s3::put_object(file = inputs$tmpHTML1,
+                         object = file.path(inputs$runID, "res_index.html"),
+                         bucket = inputs$USERDATA_S3, acl = "public-read")
+      Sys.sleep(5)
+    }
+  }
+  message(fail)
+  message("OUT OF TRY")
+  if ("try-error" %in% class(fail)) readr::write_lines(c(readr::read_lines(inputs$log), fail), file = inputs$log)
+  aws.s3::put_object(file = inputs$log, object = file.path(inputs$runID, "log.txt"), bucket = inputs$USERDATA_S3, acl = "public-read")
+  if ("try-error" %in% class(fail)) {
+    a_ <- knitr::knit(input = "www/rlseq_html/rlseq_error.Rhtml", output = inputs$tmpHTML1, quiet = TRUE)
+    aws.s3::put_object(file = inputs$tmpHTML1,
+                       object = file.path(inputs$runID, "res_index.html"),
+                       bucket = inputs$USERDATA_S3, acl = "public-read")
+  } else {
+    a_ <- knitr::knit(input = "www/rlseq_html/rlseq_done.Rhtml", output = inputs$tmpHTML1, quiet = TRUE)
+    aws.s3::put_object(file = inputs$tmpHTML1, object = file.path(inputs$runID, "res_index.html"),
+                       bucket = inputs$USERDATA_S3, acl = "public-read")
+  }
+}
+
