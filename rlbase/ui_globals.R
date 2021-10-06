@@ -101,8 +101,7 @@ RMapSamplesOutput_tabset <- function() {
       id = "rmapSampsTabset",
       tabPanel(
         title = "Summary",
-        icon=icon('list'),
-        br(),
+        icon=icon('chart-pie'),
         Summary_panel()
       ),
       tabPanel(
@@ -118,20 +117,23 @@ RMapSamplesOutput_tabset <- function() {
       ),
       tabPanel(
         title = "RLFS",
-        icon = icon('laptop-code'),
+        icon = icon('wave-square'),
         RLFS_panel()
       ),
       tabPanel(
         title = "RL Regions",
-        icon = icon('table'),
+        icon = icon('map'),
+        br(),
         RLoops_Panel()
       ),
       tabPanel(
         title = "Downloads",
         icon = icon('download'),
+        br(),
         fluidRow(
           column(
             width = 6, offset = 3,
+            hr(),
             makeHeaders(
               title = "Sample downloads ",
               message = paste0("Sample downloads list. Hover over help icons for information about each.", 
@@ -149,10 +151,10 @@ RMapSamplesOutput_tabset <- function() {
 
 RLFS_panel <- function() {
   tagList(
-    br(),
     fluidRow(
       column(
         width = 6,
+        hr(),
         makeHeaders(
           title = "R-loop forming sequences (RLFS) analysis results ",
           message = paste0("R-loop forming sequences (RLFS) analysis summary.",
@@ -164,6 +166,7 @@ RLFS_panel <- function() {
       ),
       column(
         width = 6,
+        hr(),
         makeHeaders(
           title = "Z-score distribution plot ",
           message = paste0("Plot showing the enrichment of sample peaks within RLFS. See Documentation for details.")
@@ -175,6 +178,7 @@ RLFS_panel <- function() {
     fluidRow(
       column(
         width = 6,
+        hr(),
         makeHeaders(
           title = "Permutation test plot ",
           message = paste0("Plot showing the enrichment of permutation testing as part of RLSeq. ",
@@ -186,6 +190,7 @@ RLFS_panel <- function() {
       ),
       column(
         width = 6,
+        hr(),
         makeHeaders(
           title = "Fourier transform plot ",
           message = paste0("Plot of the Fourier transform of the Z-score distribution.",
@@ -239,6 +244,7 @@ Summary_panel <- function() {
     fluidRow(
       column(
         width = 6,
+        hr(),
         makeHeaders(
           title = "Sample summary ",
           message=paste0("A high-level summary for the sample that is selected in the 'Sample Table'.",
@@ -249,6 +255,7 @@ Summary_panel <- function() {
       ),
       column(
         width = 6,
+        hr(),
         makeHeaders(
           title = "R-loop mapping modalities ",
           message=paste0("Representation of R-loop mapping modalities in",
@@ -262,6 +269,7 @@ Summary_panel <- function() {
     fluidRow(
       column(
         width = 6,
+        hr(),
         makeHeaders(
           title = "Sample labels ",
           message=paste0("Representation of sample labels among the",
@@ -276,6 +284,7 @@ Summary_panel <- function() {
       ),
       column(
         width = 6,
+        hr(),
         makeHeaders(
           title = "Sample quality prediction ",
           message=paste0("Representation of sample quality predictions among the",
@@ -297,7 +306,7 @@ Sample_Sample_panel <- function() {
     id = "RMapSamplesSummary",
     type = "pills",
     tabPanel(
-      title = "Heatmap",
+      title = "Heatmap", icon = icon("fire-alt"),
       hr(),
       makeHeaders(
         title = "Sample Heatmap ",
@@ -312,7 +321,7 @@ Sample_Sample_panel <- function() {
                  width = PAGE_PLOT_WIDTH)
     ),
     tabPanel(
-      title = "PCA",
+      title = "PCA", icon = icon("ruler-combined"),
       fluidRow(
         column(
           width = 12,
@@ -359,50 +368,82 @@ Sample_Sample_panel <- function() {
 
 RLoops_Panel <- function() {
   tagList(
-    fluidRow(
-      column(
-        width = 12,
-        makeHeaders(
-          title = "R-loop regions in selected sample ",
-          message = paste0("The R-loop regions (RL Regions) found in the sample selected in ",
-                           "'RLBase Samples Table'. Controls filter the RL Regions table. ",
-                           "Select 'All genes' to show every gene symbol. Select 'Repetitive' to",
-                           " show RL Regions overlapping with repetitive elements. Select ",
-                           "'Correlated with Expression' to show only the RL Regions with are",
-                           " significantly correlated with gene expression.",
-                           " See Documentation for details.")
+    tabsetPanel(
+      id = "rlsampleRLRegions",
+      type = "pills",
+      tabPanel(
+        title = "Enrichment",
+        icon = icon("adjust"),
+        fluidRow(
+          column(
+            width = 8, offset = 2,
+            hr(),
+            makeHeaders(
+              title = "Overlap of sample peaks and RL Regions ",
+              message = paste0("The R-loop regions (RL Regions) set was overlapped",
+                               "with the peaks derived from the selected sample. The ",
+                               "plot shows the degree of overlap and significance (Fisher's exact test).",
+                               " See Documentation for details.")
+            ),
+            hr()
+          )
         ),
-        hr()
-      )
-    ),
-    fluidRow(
-      column(
-        width = 2,
-        checkboxInput(inputId = "showAllGenesRLSamp",
-                      label = "All genes", 
-                      value = FALSE)  
+        fluidRow(
+          column(
+            width = 8, offset = 2,
+            plotOutput("rlVenn")
+          )
+        )
       ),
-      column(
-        width = 2,
-        checkboxInput(inputId = "showRepSamp",
-                      label = "Repetitive", 
-                      value = FALSE)  
-      ),
-      column(
-        width = 3,
-        checkboxInput(inputId = "showCorrSamp",
-                      label = "Correlated with expression", 
-                      value = FALSE)  
-      )
-    ),
-    fluidRow(
-      column(
-        12, 
-        DTOutput("RLoopsPerSample")
+      tabPanel(
+        title = "Table",
+        icon = icon("table"),
+        fluidRow(
+          column(
+            width = 12,
+            hr(),
+            makeHeaders(
+              title = "R-loop regions in selected sample ",
+              message = paste0("The R-loop regions (RL Regions) found in the sample selected in ",
+                               "'RLBase Samples Table'. Controls filter the RL Regions table. ",
+                               "Select 'All genes' to show every gene symbol. Select 'Repetitive' to",
+                               " show RL Regions overlapping with repetitive elements. Select ",
+                               "'Correlated with Expression' to show only the RL Regions with are",
+                               " significantly correlated with gene expression.",
+                               " See Documentation for details.")
+            ),
+            hr()
+          )
+        ),
+        fluidRow(
+          column(
+            width = 2,
+            checkboxInput(inputId = "showAllGenesRLSamp",
+                          label = "All genes", 
+                          value = FALSE)  
+          ),
+          column(
+            width = 2,
+            checkboxInput(inputId = "showRepSamp",
+                          label = "Repetitive", 
+                          value = FALSE)  
+          ),
+          column(
+            width = 3,
+            checkboxInput(inputId = "showCorrSamp",
+                          label = "Correlated with expression", 
+                          value = FALSE)  
+          )
+        ),
+        fluidRow(
+          column(
+            12, 
+            DTOutput("RLoopsPerSample")
+          )
+        )
       )
     )
   )
-  
 }
 
 
@@ -485,6 +526,7 @@ RLoopsPageContents <- function() {
             fluidRow(
               column(
                 width = 12,
+                hr(),
                 makeHeaders(
                   title = "RL Region Summary ",
                   message = paste0("Summary information about the selected RL Region. ",
@@ -506,6 +548,7 @@ RLoopsPageContents <- function() {
             fluidRow(
               column(
                 width = 12,
+                hr(),
                 makeHeaders(
                   title = "RL Region expression correlation plot ",
                   message = paste0("Plots showing the relationship between normalized ",
@@ -575,7 +618,7 @@ AnalyzePageContents <- function(rlsamples) {
             checkboxInput(inputId = "privacyStatement", 
                           label = "I have read and understood the privacy statement.", 
                           value = FALSE),
-            actionButton(inputId = "userUpload", label = "Start", icon = icon("plane-departure")),
+            actionButton(inputId = "userUpload", label = "Start", icon = icon("rocket")),
           )
         ),
         hr(),

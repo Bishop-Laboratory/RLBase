@@ -125,6 +125,20 @@ makeGlobalData <- function(APP_DATA) {
       )
     )
   })
+  
+  # Get the rlregion plot data
+  dir.create("misc/rlranges/")
+  if (! file.exists("misc/rlranges/ERX2277510_hg38.rds")) {
+    system("aws s3 sync s3://rlbase-data/rlranges/ misc/rlranges/")
+  }
+  hg38samps <- rlsamples$rlsample[rlsamples$genome == "hg38"]
+  hg38sampsfls <- setNames(lapply(hg38samps, function(x) {file.path("misc", "rlranges", paste0(x, "_hg38.rds"))}), nm = hg38samps)
+  hg38sampsfls <- hg38sampsfls[sapply(hg38sampsfls, file.exists)]
+  rlregionPltData <- parallel::mclapply(hg38sampsfls, function(fl) {
+    rlr <- readRDS(file = fl)
+    RLSeq::plotRLRegionOverlap(rlr, returnData = TRUE, rlregions_table = rlregions)
+  }, mc.cores = 44)
+  
   # Get the correlation data
   heatData <- corrHeatmap(
     aws.s3::s3readRDS(bucket = RLSeq:::RLBASE_S3, object = rlsamples$rlranges_rds_s3[rlsamples$genome == "hg38"][1]),
@@ -148,9 +162,10 @@ makeGlobalData <- function(APP_DATA) {
   )
   bucket_sizes <- pblapply(bucks, bucketsize)
   save(rlsamples, rlfsres, rlbaseRes, gss,
+       rlregionPltData,
        rlregions, tpm_rl_exp, bucket_sizes,
        featPlotData, heatData, rlMembershipMatrix,
-       file = APP_DATA, compress = "gzip")
+       file = APP_DATA, compress = "xz")
 }
 
 

@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2021-10-03" />
+<meta name="date" content="2021-10-05" />
 
 <title>RLBase</title>
 
@@ -270,44 +270,45 @@ div.tocify {
 
 <h1 class="title toc-ignore"><em>RLBase</em></h1>
 <h3 class="subtitle">Documentation and FAQs</h3>
-<h4 class="date">2021-10-03</h4>
+<h4 class="date">2021-10-05</h4>
 
 </div>
 
 
-<div id="introduction" class="section level1">
-<h1>Introduction</h1>
-<p>R-loops are three-stranded nucleic acid structures formed from the hybridization of RNA and DNA. With the advent of DNA-RNA immunoprecipitation sequencing (DRIP-Seq) in 2012, it become possible to map R-loop locations throughout the genome <span class="citation">(Ginno et al. 2012)</span>. To date, over 40 such studies have been performed, yielding hundreds of R-loop maps across a variety of species. <strong>However, inconsistent data quality has thus far thwarted every attempt to use meta-analysis to draw deeper insights about R-loop biology from this trove of data.</strong></p>
 <div class="figure">
-<img src="R-loop_promoting_factors.jpg" alt="Depiction of an R-loop and the factors which may promote them (Hegazy et al., 2020; PMID: [31843970](https://pubmed.ncbi.nlm.nih.gov/31843970/))." width="640" />
-<p class="caption">
-Depiction of an R-loop and the factors which may promote them (Hegazy et al., 2020; PMID: <a href="https://pubmed.ncbi.nlm.nih.gov/31843970/">31843970</a>).
-</p>
+<img src="RLBase_logo.png" align="right" style="border: none; float: right;" width="256" alt="" />
+<p class="caption">RLBase</p>
 </div>
-<p><strong>To overcome this limitation, we developed <a href="link_to_rlsuite.com">RLSuite</a>, a suite of tools for R-loop analysis with built-in quality control</strong>. RLSuite includes <a href="https://github.com/Bishop-Laboratory/RLPipes">RLPipes</a> (a CLI pipeline for upstream R-loop data processing), <a href="https://github.com/Bishop-Laboratory/RLSeq">RLSeq</a> (R package for downstream R-loop data analysis), and <a href="https://github.com/Bishop-Laboratory/RLBase">RLBase</a> (a web server and database to explore the results).</p>
-<p><img src="RLBase_logo.png" align="right" style="border: none; float: right;" width="256" /></p>
-<p><em>RLBase</em> is the first web server and database that provides un-restricted access to <strong>standardized and quality-controlled R-loop mapping data from hundreds of publicly-available samples</strong>. Moreover, process of curating these data has allowed us to confidently identify <strong>R-loop regions (RL Regions), sites of consensus R-loop formation</strong>. The RLBase web server is designed to enable access to all datasets along with the tools necessary to analyze them and evaluate user-supplied data.</p>
-<p>Our goal in this document is to <strong>(1) showcase the intended usage of RLBase and (2) address FAQs which may arise when using RLBase</strong>.</p>
-<details>
-<summary>
-<strong>Terminology explained</strong>
-</summary>
-<p>In this subsection, we describe the terminology used in <em>RLBase</em> to help aid in its usage.</p>
-<h3>
-Modes
-</h3>
-<p>RLBase contains R-loop mapping data from high-throughput sequencing experiments. There are, to date, over 20 different methods of R-loop mapping included in <em>RLBase</em>. To help summarize them, we have provided the following visualization:</p>
+<p><strong>RLBase</strong> is a web database for <strong>accessing and exploring standardized R-loop mapping data from &gt; 600 publicly-available samples</strong>. Key features:</p>
+<ol style="list-style-type: decimal">
+<li>Explore hundreds of R-loop mapping datasets</li>
+<li>Explore R-loop regions (sites of consensus R-loop formation)</li>
+<li>Analyze your own R-loop mapping data</li>
+<li>Download processed and standardized data sets.</li>
+</ol>
+<p><em>RLBase</em> is a core component of <a href="https://gccri.bishop-lab.uthscsa.edu/rlsuite/" target="_blank"><strong>RLSuite</strong></a>, an R-loop analysis software toolchain. <strong>RLSuite</strong> also includes <a href="https://github.com/Bishop-Laboratory/RLPipes" target="_blank">RLPipes</a> (a CLI pipeline for upstream R-loop data processing), <a href="https://bishop-laboratory.github.io/RLSeq/" target="_blank">RLSeq</a> (R package for downstream R-loop data analysis), and <a href="https://bishop-laboratory.github.io/RLHub/" target="_blank">RLHub</a> (R package interface to the RLBase data store).</p>
+<p>Our goal in this document is to <strong>(1) Describe the backround and motivation of RLBase, (2) showcase the intended usage of RLBase, and (3) address FAQs which may arise when using RLBase</strong>.</p>
+<div id="background-and-motivation" class="section level1">
+<h1>Background and Motivation</h1>
+<div id="r-loops-and-r-loop-mapping" class="section level2">
+<h2>R-Loops and R-loop mapping</h2>
+<p>R-loops are three-stranded nucleic acid structures formed from the hybridization of RNA and DNA, typically during transcription. R-loops have long been studied in the context of pathology, but recent evidence indicates that play a crucial (albeit poorly understood) role in normal cell physiology <span class="citation">(Niehrs and Luke 2020)</span>.</p>
 <div class="figure">
-<img src="R-loop%20mapping%20methods%20(primary%20div)@2x.png" alt="Diagram showing the different R-loop mapping methods which exist. All of these are found in RLBase (except computational methods, SMRF-Seq, and bisDRIP-Seq)." width="1641" />
-<p class="caption">
-Diagram showing the different R-loop mapping methods which exist. All of these are found in RLBase (except computational methods, SMRF-Seq, and bisDRIP-Seq).
-</p>
+<img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/R-loop_promoting_factors.jpg" align="right" style="border: none; float: none;" width="560" alt="" />
+<p class="caption">Depiction of an R-loop and the factors which may promote them (Hegazy et al., 2020; PMID: <a href="https://pubmed.ncbi.nlm.nih.gov/31843970/" target="_blank">31843970</a>)</p>
 </div>
-</details>
+<p>With the advent of DNA-RNA immunoprecipitation sequencing (DRIP-Seq) in 2012, it become possible to map R-loop locations throughout the genome <span class="citation">(Ginno et al. 2012)</span>. In the years since, dozens of studies have implemented R-loop mapping approaches and submitted their data to public repositories like the Sequence Read Archive (SRA).</p>
+</div>
+<div id="the-rlbase-project-est.-2019" class="section level2">
+<h2>The RLBase project (est. 2019)</h2>
+<p>We began the <em>RLBase</em> project in 2019 with the aim of standardizing public R-loop mapping samples and making the resulting data accessible for R-loop biologists to explore and analysis. Our first publication from this project used over 100 DRIP-Seq data-sets to reveal an unexpected role for physiological R-loops in chromatin architecture <span class="citation">(Pan et al. 2020)</span>. Building on this pilot study, we began in 2020 to manually catalog <strong>all</strong> public R-loop mapping samples, finding &gt; 40 studies and &gt; 600 data sets. We developed and implemented a light-weight CLI pipeline, <a href="https://github.com/Bishop-Laboratory/RLPipes" target="_blank">RLPipes</a>, to standardize the re-processing of these data from raw reads.</p>
+<p>Unexpectedly, <strong>we found drastic inconsistency in sample data quality, posing a major hurdle to meta-analysis and exploration of these data</strong>, echoing the findings of <em>Chedin et al., 2021</em> <span class="citation">(Chédin et al. 2021)</span> found in their meta-analysis.</p>
+<p>To overcome this limitation, we developed new methods for assessing sample quality (implemented in the <a href="https://bishop-laboratory.github.io/RLSeq/">RLSeq</a> R package). We implemented an online-learning scheme and developed an ensemble ML model which accurately categorizes R-loop data sets as “POS” (robustly maps R-loops) or “NEG” (poorly maps R-loops) (see <a href="https://bishop-laboratory.github.io/RLHub/reference/models.html#details">model documentation</a>). By excluding the “NEG” samples, we derived a high-confidence sample set for meta-analysis. In our first meta-analysis, we identified R-loop regions (RL Regions), sites of consensus R-loop formation. We also analyzed the correlation between R-loop signal and expression within RL Regions. These data can be explored in the “RL Regions” panel of “RLBase.”</p>
+</div>
 </div>
 <div id="usage" class="section level1">
 <h1>Usage</h1>
-<p>The core features we intend <em>RLBase</em> to be used for are:</p>
+<p><em>RLBase</em> can be used for all of the following:</p>
 <ul>
 <li>Exploration of R-loop mapping samples (<a href="#rlsamples">view</a>)
 <ul>
@@ -322,34 +323,116 @@ Diagram showing the different R-loop mapping methods which exist. All of these a
 </ul></li>
 <li>User-supplied samples (<a href="#userdata">view</a>)
 <ul>
-<li>Analysis of user-supplied data</li>
+<li>Analysis of user-supplied data to generate an HTML report.</li>
 </ul></li>
 </ul>
 <div id="rlsamples" class="section level2">
 <h2>Analysis of RLBase samples</h2>
-<p>To view samples in the RLBase database, navigate to the “Samples” tab.</p>
-<details>
-<summary>
-<strong>Sample-page components explained</strong>
-</summary>
-<p>In this subsection, we detail the elements of the sample page to help elucidate its usage.</p>
+<p>The samples in RLBase were standardized and reprocessed using the <a href="https://github.com/Bishop-Laboratory/RLPipes" target="_blank"><em>RLPipes</em></a> CLI tool. They were then analyzed with <a href="https://bishop-laboratory.github.io/RLSeq/" target="_blank"><em>RLSeq</em></a> which performed R-loop forming sequences analysis, predict sample quality, analyze genomic feature enrichment, and to calculate their overlap with R-loop regions (RL Regions). The metadata from these analyses along with other sample information are provided in the sample data table and can be explored interactively.</p>
 <div class="figure">
-<img src="R-loop_promoting_factors.jpg" alt="Sample page with " width="640" />
-<p class="caption">
-Sample page with
-</p>
+<img src="https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_interface/samples_page_small.png" align="right" style="border: none; float: none;" width="1000" alt="" />
+<p class="caption"><strong>Fig 1.</strong>. The ‘Samples’ page interface. (1) Controls for the ‘RLBase Samples Table’ that change the data which is displayed. (2) The RLBase Samples Table which shows data about the R-loop mapping samples in RLBase. Selecting an individual row will change the output in (3). (3) Output pane showing the data and plots relevant to the selected sample(s) in the table.</p>
 </div>
-</details>
 </div>
 <div id="rlregions" class="section level2">
 <h2>Exploration of R-loop regions</h2>
 </div>
 </div>
+<div id="faqs" class="section level1">
+<h1>FAQs</h1>
+<p>This section attempts to answer some of the questions which may arise during the usage of <em>RLBase</em>. The types of questions are divided based on the general category which they fill into:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Terminology</strong>: Terms and concepts used within <em>RLBase</em>.</li>
+<li><strong>Methods</strong>: Methods used within <em>RLBase</em> and their description.</li>
+<li><strong>Limitations</strong>: Limitations on the usage of <em>RLBase</em> and suggested workarounds.</li>
+<li><strong>Bugs</strong>: Describes handling of erros and bugs.</li>
+</ol>
+<div id="terminology" class="section level2">
+<h2>Terminology</h2>
+<p>In this subsection, we describe the terminology used in <em>RLBase</em> to help aid in its usage.</p>
+<div id="modes" class="section level3">
+<h3>Modes</h3>
+<p>RLBase contains R-loop mapping data from high-throughput sequencing experiments. There are, to date, over 20 different methods of R-loop mapping included in <em>RLBase</em>. To help summarize them, we have provided the following visualization:</p>
+<div class="figure">
+<img src="R-loop%20mapping%20methods%20(primary%20div)@2x.png" alt="Diagram showing the different R-loop mapping methods which exist. All of these are found in RLBase (except computational methods, SMRF-Seq, and bisDRIP-Seq)." width="1641" />
+<p class="caption">
+Diagram showing the different R-loop mapping methods which exist. All of these are found in RLBase (except computational methods, SMRF-Seq, and bisDRIP-Seq).
+</p>
+</div>
+</div>
+<div id="sample-condition" class="section level3">
+<h3>Sample Condition</h3>
+<div id="condition" class="section level4">
+<h4>Condition</h4>
+</div>
+<div id="label" class="section level4">
+<h4>Label</h4>
+</div>
+<div id="prediction" class="section level4">
+<h4>Prediction</h4>
+</div>
+</div>
+</div>
+<div id="methods" class="section level2">
+<h2>Methods</h2>
+<div id="sample-level" class="section level3">
+<h3>Sample-level</h3>
+<div id="summary" class="section level4">
+<h4>Summary</h4>
+</div>
+<div id="heatmappca" class="section level4">
+<h4>Heatmap/PCA</h4>
+</div>
+<div id="annotation" class="section level4">
+<h4>Annotation</h4>
+</div>
+<div id="rlfs-analysis" class="section level4">
+<h4>RLFS analysis</h4>
+</div>
+<div id="rl-regions" class="section level4">
+<h4>RL Regions</h4>
+</div>
+<div id="downloads" class="section level4">
+<h4>Downloads</h4>
+</div>
+</div>
+<div id="rl-regions-1" class="section level3">
+<h3>RL Regions</h3>
+<div id="summary-1" class="section level4">
+<h4>Summary</h4>
+</div>
+<div id="expression" class="section level4">
+<h4>Expression</h4>
+</div>
+</div>
+<div id="analyze" class="section level3">
+<h3>Analyze</h3>
+</div>
+<div id="downloads-1" class="section level3">
+<h3>Downloads</h3>
+</div>
+</div>
+<div id="limitations" class="section level2">
+<h2>Limitations</h2>
+<div id="section" class="section level3">
+<h3></h3>
+</div>
+</div>
+</div>
 <div id="references" class="section level1 unnumbered">
 <h1 class="unnumbered">References</h1>
 <div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-Chédin2021" class="csl-entry">
+Chédin, Frédéric, Stella R Hartono, Lionel A Sanz, and Vincent Vanoosthuyse. 2021. <span>“Best Practices for the Visualization, Mapping, and Manipulation of R<span>-</span>Loops.”</span> <em>The EMBO Journal</em> 40 (4). <a href="https://doi.org/10.15252/embj.2020106394">https://doi.org/10.15252/embj.2020106394</a>.
+</div>
 <div id="ref-Ginno2012" class="csl-entry">
 Ginno, Paul A., Paul L. Lott, Holly C. Christensen, Ian Korf, and Frédéric Chédin. 2012. <span>“R-Loop Formation Is a Distinctive Characteristic of Unmethylated Human CpG Island Promoters.”</span> <em>Molecular Cell</em> 45 (6): 814–25. <a href="https://doi.org/10.1016/j.molcel.2012.01.017">https://doi.org/10.1016/j.molcel.2012.01.017</a>.
+</div>
+<div id="ref-Niehrs2020" class="csl-entry">
+Niehrs, Christof, and Brian Luke. 2020. <span>“Regulatory R-Loops as Facilitators of Gene Expression and Genome Stability.”</span> <em>Nature Reviews Molecular Cell Biology</em> 21 (3): 167–78. <a href="https://doi.org/10.1038/s41580-019-0206-3">https://doi.org/10.1038/s41580-019-0206-3</a>.
+</div>
+<div id="ref-Pan2020" class="csl-entry">
+Pan, Hai, Miao Jin, Ashwin Ghadiyaram, Parminder Kaur, Henry E Miller, Hai Minh Ta, Ming Liu, et al. 2020. <span>“Cohesin Sa1 and Sa2 Are RNA Binding Proteins That Localize to RNA Containing Regions on DNA.”</span> <em>Nucleic Acids Research</em> 48 (10): 5639–55. <a href="https://doi.org/10.1093/nar/gkaa284">https://doi.org/10.1093/nar/gkaa284</a>.
 </div>
 </div>
 </div>
