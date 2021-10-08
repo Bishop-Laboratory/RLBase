@@ -5,17 +5,55 @@ channels:
   - defaults
   - r
 dependencies:
+  - awscli
   - r-shiny
   - r-dt
   - r-plotly
+  - r-aws.s3
+  - r-shinycssloaders
   - r-tidyverse
   - r-shinytest
   - r-bslib
   - r-rcolorbrewer
   - r-pheatmap
   - r-ggplotify
+  - r-callr
+  - r-venndiagram
   - r-kableextra
+  - r-covr
+  - r-lintr
+  - r-caret
+  - r-rcmdcheck
   - r-tidyverse
+  - r-r.utils
+  - r-pbapply
+  - r-jsonlite
+  - r-httr
+  - r-kernlab
+  - r-rmarkdown
+  - r-magick
+  - r-gridextra
+  - r-recipes
+  - r-proc
+  - r-e1071
+  - r-timedate
+  - r-gower
+  - r-ipred
+  - r-proxy
+  - r-future.apply
+  - r-knitr
+  - r-mass
+  - r-randomforest
+  - r-rpart
+  - r-testthat
+  - r-shinywidgets
+  - bioconductor-txdb.hsapiens.ucsc.hg19.knowngene
+  - bioconductor-annotationdbi
+  - bioconductor-biocstyle
   - bioconductor-regioner
   - bioconductor-genomeinfodb
   - bioconductor-genomicranges
+  - bioconductor-experimenthub
+  - bioconductor-complexheatmap
+  - bioconductor-annotationhub
+  - bioconductor-org.hs.eg.db

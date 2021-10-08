@@ -1,1 +1,3 @@
-shiny::runApp("rlbase/", port = 5647, launch.browser = T, host = "0.0.0.0")
+args <- commandArgs(trailingOnly = TRUE)
+
+shiny::runApp("rlbase/", port = as.numeric(args[1]), launch.browser = FALSE, host = "0.0.0.0")
