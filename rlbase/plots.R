@@ -2,8 +2,9 @@
 #' @param cols A named vector supplied to \code{scale_color_manual()}
 #' @param sizes A named vector supplied to \code{scale_size_manual()}
 #' @param shapes A named vector supplied to \code{scale_shape_manual()}
+#' @param alphas A named vector supplied to \code{scale_alpha_manual()}
 #' @param ... additional arguments to geom_point()
-rlbase_scatter <- function(cols=NULL, sizes=NULL, shapes=NULL, ...) {
+rlbase_scatter <- function(cols=NULL, sizes=NULL, shapes=NULL, alphas=NULL, ...) {
   pltLst <- list(
     geom_point(...),
     theme_prism(base_size = 18),
@@ -15,6 +16,7 @@ rlbase_scatter <- function(cols=NULL, sizes=NULL, shapes=NULL, ...) {
   if (! is.null(cols)) pltLst <- c(pltLst, list(scale_color_manual(values = cols, drop=TRUE)))
   if (! is.null(sizes)) pltLst <- c(pltLst, list(scale_size_manual(values = sizes, drop=TRUE)))
   if (! is.null(shapes)) pltLst <- c(pltLst, list(scale_shape_manual(values = shapes, drop=TRUE)))
+  if (! is.null(alphas)) pltLst <- c(pltLst, list(scale_alpha_manual(values = alphas, drop=TRUE)))
   pltLst
 }
 

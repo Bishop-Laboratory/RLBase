@@ -51,12 +51,8 @@ makeGeneCards <- function(x) {
 
 #' Make RLoop consensus view in genome browser
 makeRLConsensusGB <- function(x) {
-  BASE_URL1 <- "http://genome.ucsc.edu/s/millerh1%40livemail.uthscsa.edu/RLoop_consensus?position="
-  as.character(a(
-    href=paste0(BASE_URL1, x),
-    target="_blank",
-    x
-  ))
+  BASE_URL1 <- "http://genome.ucsc.edu/s/millerh1%40livemail.uthscsa.edu/RLBase?position="
+  paste0("<a href=\"", BASE_URL1, x, "\" target=\"_blank\">", x, "</a>")
 }
 
 #' Make SRA links
@@ -207,7 +203,7 @@ sampleDownloads <- function(sample, rlsamples) {
 
 
 #' Helper function for running RLSeq
-runrlseq <- function(inputs) {
+runrlseq <- function(inputs, awstry_put, awstry_saverds) {
   message("Beginning analysis...")
   timestamp()
   a_ <- lapply(names(inputs), function(x){message(x, ": ", inputs[[x]])})
@@ -220,8 +216,7 @@ runrlseq <- function(inputs) {
     genome = inputs$userGenome,
     mode = inputs$userMode,
     label = inputs$userLabel,
-    sampleName = inputs$userSample,
-    quiet = FALSE
+    sampleName = inputs$userSample
   )
   message("[[2]] Running RLSeq")
   current_step <- "Running RLSeq [2/3]"
@@ -236,29 +231,77 @@ runrlseq <- function(inputs) {
   message("[[4]] Uploading to AWS")
   Sys.sleep(3)
   a_ <- knitr::knit(input = "www/rlseq_html/rlseq_upload.Rhtml", output = inputs$tmpHTML1, quiet = TRUE)
-  aws.s3::put_object(file = inputs$tmpHTML1, object = file.path(inputs$runID, "res_index.html"), bucket = inputs$USERDATA_S3, acl = "public-read")
+  awstry_put(file = inputs$tmpHTML1, object = file.path(inputs$runID, "res_index.html"), bucket = inputs$USERDATA_S3, acl = "public-read")
   Sys.sleep(5)
   message("Saving RDS to AWS...")
-  aws.s3::s3saveRDS(x = rlr, compress = "xz", verbose=TRUE, show_progress = TRUE,
-                    object = file.path(inputs$runID, "rlranges.rds"),
-                    bucket = inputs$USERDATA_S3, acl = "public-read")
+  awstry_saverds(x = rlr, compress = "xz",
+                 object = file.path(inputs$runID, "rlranges.rds"),
+                 bucket = inputs$USERDATA_S3, acl = "public-read")
   Sys.sleep(3)
   message("Saving report to AWS...")
-  aws.s3::put_object(file = inputs$report, verbose=TRUE, show_progress = TRUE,
-                     object = file.path(inputs$runID, "report.html"),
-                     bucket = inputs$USERDATA_S3, acl = "public-read")
+  awstry_put(file = inputs$report,
+             object = file.path(inputs$runID, "report.html"),
+             bucket = inputs$USERDATA_S3, acl = "public-read")
   message("Done!")
   timestamp()
 }
 
-rlseqbg <- function(inputs, runrlseq) {
+
+# Using try as a way of allowing multiple attempts
+# Sometimes it will randomly error, so we need to allow for multiple attempts
+awstry_put <- function(file, object, bucket, acl) {
+  attempt <- 5
+  success <- FALSE
+  while (attempt > 0 & ! success) {
+    message("Attempt: ", attempt)
+    res <- try(aws.s3::put_object(file = file, object = object, verbose = TRUE,
+                                  show_progress = TRUE, bucket = bucket, acl = acl), silent = TRUE)
+    if ("try-error" %in% class(res)) {
+      attempt <- attempt - 1
+      Sys.sleep(3)
+    } else {
+      success <- TRUE      
+    }
+  }
+  if (success) {
+    return(success)
+  }
+  stop("Upload failed. Please notify RLBase maintainer.")
+}
+
+# Using try as a way of allowing multiple attempts
+# Sometimes it will randomly error, so we need to allow for multiple attempts
+awstry_saverds <- function(x, compress, object, bucket, acl) {
+  attempt <- 5
+  success <- FALSE
+  while (attempt > 0 & ! success) {
+    message("Attempt: ", attempt)
+    res <- try(aws.s3::s3saveRDS(x=x, compress = compress, object = object, verbose = TRUE,
+                                  show_progress = TRUE, bucket = bucket, acl=acl), silent = TRUE)
+    if ("try-error" %in% class(res)) {
+      attempt <- attempt - 1
+      Sys.sleep(3)
+    } else {
+      success <- TRUE      
+    }
+  }
+  if (success) {
+    return(success)
+  }
+  stop("Upload failed. Please notify RLBase maintainer.")
+}
+
+rlseqbg <- function(inputs, runrlseq, awstry_put=awstry_put, 
+                    awstry_saverds=awstry_saverds) {
   message("STARTING")
   failed <- TRUE
   attempts <- 3
   while(failed & attempts > 0) {
     message("attempt left: ", attempts)
     fail <- try({
-      callr::r(func = runrlseq, args=list(inputs=inputs),
+      callr::r(func = runrlseq, args=list(inputs=inputs,
+                                          awstry_put=awstry_put, 
+                                          awstry_saverds=awstry_saverds),
                user_profile = FALSE, timeout = 300,
                stdout = inputs$log, stderr = inputs$log,
                poll_connection = FALSE, show = TRUE)

@@ -10,9 +10,9 @@
 
 
 
-<meta name="date" content="2021-10-05" />
+<meta name="date" content="2021-10-07" />
 
-<title>RLBase</title>
+<title>RLBase Documentation</title>
 
 <script src="documentation_files/header-attrs-2.11/header-attrs.js"></script>
 <script src="documentation_files/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -36,6 +36,8 @@
 <script src="documentation_files/navigation-1.1/tabsets.js"></script>
 <link href="documentation_files/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="documentation_files/highlightjs-9.12.0/highlight.js"></script>
+<script src="documentation_files/kePrint-0.0.1/kePrint.js"></script>
+<link href="documentation_files/lightable-0.0.1/lightable.css" rel="stylesheet" />
 
 <style type="text/css">
   code{white-space: pre-wrap;}
@@ -268,9 +270,9 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore"><em>RLBase</em></h1>
-<h3 class="subtitle">Documentation and FAQs</h3>
-<h4 class="date">2021-10-05</h4>
+<h1 class="title toc-ignore"><em>RLBase</em> Documentation</h1>
+<h3 class="subtitle">v1.0.0</h3>
+<h4 class="date">2021-10-07</h4>
 
 </div>
 
@@ -279,35 +281,36 @@ div.tocify {
 <img src="RLBase_logo.png" align="right" style="border: none; float: right;" width="256" alt="" />
 <p class="caption">RLBase</p>
 </div>
-<p><strong>RLBase</strong> is a web database for <strong>accessing and exploring standardized R-loop mapping data from &gt; 600 publicly-available samples</strong>. Key features:</p>
+<p><strong>RLBase</strong> is a web database for <strong>accessing, exploring, and analyzing R-loop mapping data.</strong>. Key features:</p>
 <ol style="list-style-type: decimal">
 <li>Explore hundreds of R-loop mapping datasets</li>
 <li>Explore R-loop regions (sites of consensus R-loop formation)</li>
 <li>Analyze your own R-loop mapping data</li>
 <li>Download processed and standardized data sets.</li>
 </ol>
-<p><em>RLBase</em> is a core component of <a href="https://gccri.bishop-lab.uthscsa.edu/rlsuite/" target="_blank"><strong>RLSuite</strong></a>, an R-loop analysis software toolchain. <strong>RLSuite</strong> also includes <a href="https://github.com/Bishop-Laboratory/RLPipes" target="_blank">RLPipes</a> (a CLI pipeline for upstream R-loop data processing), <a href="https://bishop-laboratory.github.io/RLSeq/" target="_blank">RLSeq</a> (R package for downstream R-loop data analysis), and <a href="https://bishop-laboratory.github.io/RLHub/" target="_blank">RLHub</a> (R package interface to the RLBase data store).</p>
-<p>Our goal in this document is to <strong>(1) Describe the backround and motivation of RLBase, (2) showcase the intended usage of RLBase, and (3) address FAQs which may arise when using RLBase</strong>.</p>
+<p><em>RLBase</em> is a core component of <a href="https://gccri.bishop-lab.uthscsa.edu/rlsuite/" target="_blank"><strong>RLSuite</strong></a>, an R-loop analysis software toolchain. <strong>RLSuite</strong> also includes <a href="https://github.com/Bishop-Laboratory/RLPipes" target="_blank">RLPipes</a> (a CLI pipeline for upstream R-loop data processing), <a href="https://bishop-laboratory.github.io/RLSeq/" target="_blank">RLSeq</a> (an R package for downstream R-loop data analysis), and <a href="https://bishop-laboratory.github.io/RLHub/" target="_blank">RLHub</a> (an R package interface to the RLBase datastore).</p>
+<p>Our goal in this document is to <strong>(1) Describe the backround and motivation of RLBase, (2) describe the RLBase components in detail, and (3) address other questions which may arise when using RLBase</strong>.</p>
 <div id="background-and-motivation" class="section level1">
 <h1>Background and Motivation</h1>
 <div id="r-loops-and-r-loop-mapping" class="section level2">
 <h2>R-Loops and R-loop mapping</h2>
-<p>R-loops are three-stranded nucleic acid structures formed from the hybridization of RNA and DNA, typically during transcription. R-loops have long been studied in the context of pathology, but recent evidence indicates that play a crucial (albeit poorly understood) role in normal cell physiology <span class="citation">(Niehrs and Luke 2020)</span>.</p>
+<p>R-loops are three-stranded nucleic acid structures formed from the hybridization of RNA and DNA, typically during transcription <span class="citation">(Niehrs and Luke 2020)</span>. R-loops have long been studied in the context of pathology, but recent evidence indicates they may play a critical role in normal cell physiology <span class="citation">(Niehrs and Luke 2020)</span>.</p>
 <div class="figure">
 <img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/R-loop_promoting_factors.jpg" align="right" style="border: none; float: none;" width="560" alt="" />
-<p class="caption">Depiction of an R-loop and the factors which may promote them (Hegazy et al., 2020; PMID: <a href="https://pubmed.ncbi.nlm.nih.gov/31843970/" target="_blank">31843970</a>)</p>
+<p class="caption">R-loops and the factors which may promote them (Hegazy et al., 2020; PMID: <a href="https://pubmed.ncbi.nlm.nih.gov/31843970/" target="_blank">31843970</a>)</p>
 </div>
-<p>With the advent of DNA-RNA immunoprecipitation sequencing (DRIP-Seq) in 2012, it become possible to map R-loop locations throughout the genome <span class="citation">(Ginno et al. 2012)</span>. In the years since, dozens of studies have implemented R-loop mapping approaches and submitted their data to public repositories like the Sequence Read Archive (SRA).</p>
+<p>With the advent of DNA-RNA immunoprecipitation sequencing (DRIP-Seq) in 2012, it became possible to map R-loop locations throughout the genome <span class="citation">(Ginno et al. 2012)</span>. In the years since, dozens of studies have implemented R-loop mapping approaches and submitted their data to public repositories like the Sequence Read Archive (SRA). In 2021, there are over 43 studies with public data in SRA.</p>
 </div>
-<div id="the-rlbase-project-est.-2019" class="section level2">
-<h2>The RLBase project (est. 2019)</h2>
-<p>We began the <em>RLBase</em> project in 2019 with the aim of standardizing public R-loop mapping samples and making the resulting data accessible for R-loop biologists to explore and analysis. Our first publication from this project used over 100 DRIP-Seq data-sets to reveal an unexpected role for physiological R-loops in chromatin architecture <span class="citation">(Pan et al. 2020)</span>. Building on this pilot study, we began in 2020 to manually catalog <strong>all</strong> public R-loop mapping samples, finding &gt; 40 studies and &gt; 600 data sets. We developed and implemented a light-weight CLI pipeline, <a href="https://github.com/Bishop-Laboratory/RLPipes" target="_blank">RLPipes</a>, to standardize the re-processing of these data from raw reads.</p>
-<p>Unexpectedly, <strong>we found drastic inconsistency in sample data quality, posing a major hurdle to meta-analysis and exploration of these data</strong>, echoing the findings of <em>Chedin et al., 2021</em> <span class="citation">(Chédin et al. 2021)</span> found in their meta-analysis.</p>
-<p>To overcome this limitation, we developed new methods for assessing sample quality (implemented in the <a href="https://bishop-laboratory.github.io/RLSeq/">RLSeq</a> R package). We implemented an online-learning scheme and developed an ensemble ML model which accurately categorizes R-loop data sets as “POS” (robustly maps R-loops) or “NEG” (poorly maps R-loops) (see <a href="https://bishop-laboratory.github.io/RLHub/reference/models.html#details">model documentation</a>). By excluding the “NEG” samples, we derived a high-confidence sample set for meta-analysis. In our first meta-analysis, we identified R-loop regions (RL Regions), sites of consensus R-loop formation. We also analyzed the correlation between R-loop signal and expression within RL Regions. These data can be explored in the “RL Regions” panel of “RLBase.”</p>
+<div id="the-rlbase-project" class="section level2">
+<h2>The RLBase project</h2>
+<p>We began the <em>RLBase</em> project in 2019 with the aim of standardizing public R-loop mapping samples and making the resulting data accessible for R-loop biologists to explore and analyze. Our first publication from this project used over 100 DRIP-Seq data-sets to reveal an unexpected role for physiological R-loops in chromatin architecture <span class="citation">(Pan et al. 2020)</span>. Building on this pilot study, we began in 2020 to manually catalog <strong>all</strong> public R-loop mapping samples, finding &gt; 40 studies and &gt; 600 data sets. We developed and implemented a light-weight CLI pipeline, <a href="https://github.com/Bishop-Laboratory/RLPipes" target="_blank">RLPipes</a>, to automate and standardize the re-processing of these data from raw reads.</p>
+<p>Unexpectedly, <strong>we found drastic inconsistency between samples, posing a major hurdle to meta-analysis and exploration of these data</strong>. These findings were recently echoed by <em>Chedin et al., 2021</em> in their recent commentary <span class="citation">(Chédin et al. 2021)</span>.</p>
+<p>To overcome this limitation, we developed new methods for assessing sample quality (implemented in the <a href="https://bishop-laboratory.github.io/RLSeq/" target="_blank">RLSeq</a> R package). We then used these methods to find high-confidence R-loop samples and used them for meta-analysis of R-loop locations (termed “RL regions” here). The processed data generated from these analyses can be accessed via the <a href="https://bishop-laboratory.github.io/RLHub/" target="_blank">RLHub</a> R package.</p>
+<p>Finally, we built the RLBase web server to facilitate access to these data along with the unique analysis approaches we have developed. In the following section on “RLBase Usage and Interface,” we discuss these capabilities further.</p>
 </div>
 </div>
-<div id="usage" class="section level1">
-<h1>Usage</h1>
+<div id="rlbase-usage-and-interface" class="section level1">
+<h1>RLBase Usage and Interface</h1>
 <p><em>RLBase</em> can be used for all of the following:</p>
 <ul>
 <li>Exploration of R-loop mapping samples (<a href="#rlsamples">view</a>)
@@ -323,29 +326,91 @@ div.tocify {
 </ul></li>
 <li>User-supplied samples (<a href="#userdata">view</a>)
 <ul>
-<li>Analysis of user-supplied data to generate an HTML report.</li>
+<li>Analysis of user-supplied data and HTML report with <a href="https://bishop-laboratory.github.io/RLSeq/" target="_blank">RLSeq</a>.</li>
 </ul></li>
 </ul>
 <div id="rlsamples" class="section level2">
 <h2>Analysis of RLBase samples</h2>
-<p>The samples in RLBase were standardized and reprocessed using the <a href="https://github.com/Bishop-Laboratory/RLPipes" target="_blank"><em>RLPipes</em></a> CLI tool. They were then analyzed with <a href="https://bishop-laboratory.github.io/RLSeq/" target="_blank"><em>RLSeq</em></a> which performed R-loop forming sequences analysis, predict sample quality, analyze genomic feature enrichment, and to calculate their overlap with R-loop regions (RL Regions). The metadata from these analyses along with other sample information are provided in the sample data table and can be explored interactively.</p>
+<p>The samples in RLBase were standardized and reprocessed using the <a href="https://github.com/Bishop-Laboratory/RLPipes" target="_blank"><em>RLPipes</em></a> CLI tool. They were then analyzed with <a href="https://bishop-laboratory.github.io/RLSeq/" target="_blank"><em>RLSeq</em></a> which performed (1) R-loop forming sequences analysis, (2) sample quality prediction, (3) genomic feature enrichment analysis, (4) sample-to-sample correlation analysis, (5) gene annotation, and (6) R-loop regions (RL Regions) overlap analysis. See also the <code>RLSeq::RLSeq()</code> function <a href="https://bishop-laboratory.github.io/RLSeq/reference/RLSeq.html" target="_blank">documentation</a>.</p>
+<p>The metadata from these analyses along with other sample information are provided in the sample data table and can be explored interactively (<strong>Figure 1</strong>).</p>
 <div class="figure">
-<img src="https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_interface/samples_page_small.png" align="right" style="border: none; float: none;" width="1000" alt="" />
-<p class="caption"><strong>Fig 1.</strong>. The ‘Samples’ page interface. (1) Controls for the ‘RLBase Samples Table’ that change the data which is displayed. (2) The RLBase Samples Table which shows data about the R-loop mapping samples in RLBase. Selecting an individual row will change the output in (3). (3) Output pane showing the data and plots relevant to the selected sample(s) in the table.</p>
+<img src="https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_interface/samples_page.png" align="right" style="border: none; float: none;" width="1000" alt="" />
+<p class="caption"><strong>Figure 1</strong>. The ‘Samples’ page interface. (<strong>A</strong>) Controls for the ‘RLBase Samples Table’ that change the data which is displayed. (<strong>B</strong>) The RLBase Samples Table which shows data about the R-loop mapping samples in RLBase. Selecting an individual row will change the output in (<strong>C</strong>). (<strong>C</strong>) Output pane showing the data and plots relevant to the selected sample(s) in the table.</p>
+</div>
+<p>The right-hand side of the Sample page (<strong>Fig. 1C</strong>) displays the plots and data relevant to the samples shown in the table (controlled by “Table Controls” (<strong>Fig. 1A</strong>)) and also by the row selected in the “RLBase Samples Table” (<strong>Fig. 1B</strong>). In the following subsections, we will detail each panel.</p>
+<div id="summary-panel" class="section level3">
+<h3>Summary panel</h3>
+<p>The summary panel provides a high-level overview of all samples in the “RLBase Samples Table” (<strong>Fig. 2B-D</strong>) and also of the specific sample selected in that table (<strong>Fig. 2A</strong>).</p>
+<div class="figure">
+<img src="https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_interface/samples_page__Summary.png" align="right" style="border: none; float: none;" alt="" />
+<p class="caption"><strong>Figure 2</strong>. The “Summary” panel. (<strong>A</strong>) Summary characteristics of the selected sample. (<strong>B</strong>) The representation of R-loop mapping modalities within the selected data sets (determined by the “Table Controls”). (<strong>C</strong>) Similar to (<strong>B</strong>) showing the representation of sample labels (“POS” meaning expected to map R-loops, “NEG” meaning not expected to map R-loops). (<strong>D</strong>) Similar to (<strong>C</strong>) except that “POS” and “NEG” are predicted by the ML quality model (See <a href="https://bishop-laboratory.github.io/RLHub/reference/models.html#details" target="_blank">model details</a>).</p>
+</div>
+</div>
+<div id="sample-sample-comparison" class="section level3">
+<h3>Sample-sample comparison</h3>
+<p>The “Sample-sample comparison” panel (<strong>Figure 3</strong>) summarizes sample-level similarity based on correlation as was previously described <span class="citation">(Chédin et al. 2021)</span>. The method finds the Pearson correlation of R-loop signal around “gold standard” R-loop sites, sites which were profiled with ultra-long-read R-loop mapping (SMRF-Seq) <span class="citation">(Malig et al. 2020)</span>. The plots include a heatmap showing the correlation (<strong>Fig 3. A</strong>) along with a PCA plot which shows the first two principal components of the correlation matrix (<strong>Fig. 3B</strong>).</p>
+<div class="figure">
+<img src="https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_interface/samples_page__SampleSample.png" align="right" style="border: none; float: none;" alt="" />
+<p class="caption"><strong>Figure 3</strong>. The “Sample-sample comparison” panel. (<strong>A</strong>) A heatmap showing sample-sample pearson correlation of coverage (bigWig) tracks around gold-standard R-loops (See <a href="https://bishop-laboratory.github.io/RLHub/reference/gs_signal.html#details" target="_blank">here</a> for additional detail). (<strong>B</strong>) Similar to (<strong>A</strong>) but with a scatter plot showing PC1 and PC2 from principal component analysis (PCA) of the correlation matrix. Controls allow for customization of the plot.</p>
+</div>
+</div>
+<div id="annotations" class="section level3">
+<h3>Annotations</h3>
+<p>Genomic features relevant to R-loops were curated from public data sources or from computational prediction. For a full description of these data, view the relevant section of the <a href="https://bishop-laboratory.github.io/RLHub/reference/annotations.html" target="_blank">RLHub documentation</a>. For each sample in RLBase, the called peaks were overlapped with each genomic feature annotation and overlap statistics were calculated using Fisher’s exact test. The plots in (<strong>Figure 4</strong>) show the distribution of Fisher’s exact test odds ratios for each sample present in the “RLBase Samples Table.”</p>
+<div class="figure">
+<img src="https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_interface/samples_page__Annotation.png" align="right" style="border: none; float: none;" alt="" />
+<p class="caption"><strong>Figure 4</strong>. The “Annotation” panel. (<strong>A</strong>) A “Split” control that determines plotting in (<strong>C</strong>). (<strong>B</strong>) The databases for which plots are available. See the documentation of annotation databases <a href="https://bishop-laboratory.github.io/RLHub/reference/annotations.html#details" target="_blank">here</a> for more detail. (<strong>C</strong>) A plot showing the distribution of enrichment results (represented by the log2 Fisher’s exact test odds ratio). The sample selected in the table is shown as a diamond (if results are available). Additional information can be found in the <a href="https://bishop-laboratory.github.io/RLSeq/articles/analyzing-rloop-data-with-rlseq.html#feature-enrichment-1" target="_blank">RLSeq Vignette</a></p>
+</div>
+</div>
+<div id="rlfs-analysis-results" class="section level3">
+<h3>RLFS analysis results</h3>
+<p>R-loop forming sequences (RLFS) are regions of the genome which are favorable for the formation of R-loops. These regions are predicted using <code>QmRLFS-Finder</code> (<a href="https://github.com/piroonj/QmRLFS-finder" target="_blank">GitHub repo</a>) based on the presence of motifs like high G or C-Skew <span class="citation">(Jenjaroenpun et al. 2015)</span>. Because they are computationally predicted from sequence alone, we decided to use them as an unbiased test of whether samples mapped R-loops or not via a permutation testing approach. This approach is implemented in the <a href="https://bishop-laboratory.github.io/RLSeq/reference/analyzeRLFS.html" target="_blank"><code>RLSeq::analyzeRLFS()</code></a> function in RLSeq. The plots in (<strong>Fig. 5B-D</strong>) demonstrate the results of this permutation testing. The results from the analysis are then further analyzed by <a href="https://bishop-laboratory.github.io/RLSeq/reference/predictCondition.html" target="_blank"><code>RLSeq::predictCondition()</code></a> which uses a pre-trained classifier (described <a href="https://bishop-laboratory.github.io/RLHub/reference/models.html" target="_blank">here</a>) to assess whether the RLFS analysis results indicate a sample which maps R-loops robustly (“POS” prediction) or which maps R-loops poorly (“NEG” prediction). This prediction is reported in <strong>Figure 5A</strong>.</p>
+<div class="figure">
+<img src="https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_interface/samples_page__RLFS.png" align="right" style="border: none; float: none;" alt="" />
+<p class="caption"><strong>Figure 5</strong>. The “RLFS” panel. Additional details regarding the R-loop forming sequences (RLFS) analysis approach are described in the <a href="https://bishop-laboratory.github.io/RLSeq/articles/analyzing-rloop-data-with-rlseq.html#sample-quality-1" target="_blank">RLSeq vignette</a>. (<strong>A</strong>) A summary of the results from the R-loop forming sequences (RLFS) analysis. (<strong>B</strong>) The empirical distribution plot from permutation testing. The distribution represents the overlap of RLFS with randomized ranges, whereas the green line represents the actual number of overlaps. (<strong>C</strong>) The Z-score distribution plot shows the Z-score of the non-random overlaps compared to random ranges within 5kb upstream and downstream from RLFS. This distribution is what the ML model uses to predict quality (along with the P Value). (<strong>D</strong>) The Fourier transform of (<strong>C</strong>).</p>
+</div>
+</div>
+<div id="rl-regions" class="section level3">
+<h3>RL-Regions</h3>
+<p>R-loop regions (RL regions) are genomic regions which show consistent R-loop formation from our meta-analysis of the high-confidence samples in <strong>RLBase</strong>. For more information about these regions, please see the relevant <a href="https://bishop-laboratory.github.io/RLHub/reference/rlregions.html" target="_blank">RLHub documentation</a>. In the RLBase interface, we show the results of overlapping the peaks for the selected sample with the RL regions (see <a href="https://bishop-laboratory.github.io/RLSeq/reference/rlRegionTest.html" target="_blank"><code>RLSeq::rlRegionTest()</code></a> for more detail). In these results, we show both the significance of the overlap (<strong>Fig. 6A</strong>) and the specific RL regions in the overlap (<strong>Fig. 6B</strong>).</p>
+<div class="figure">
+<img src="https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_interface/samples_page__RLRegions.png" align="right" style="border: none; float: none;" alt="" />
+<p class="caption"><strong>Figure 6</strong>. The “RL Regions” panel. R-loop regions (“RL Regions”; consensus sites of R-loop formation) are described in greater detail in the <a href="https://bishop-laboratory.github.io/RLHub/reference/rlregions.html#source" target="_blank">RLHub documentation</a>. (<strong>A</strong>) The overlap of RL Regions and the peaks within the selected samples. The p value and odds ratio from Fisher’s exact test are also shown. See also the relevant section of the <a href="https://bishop-laboratory.github.io/RLSeq/articles/analyzing-rloop-data-with-rlseq.html#r-loop-region-test-1" target="_blank">RLSeq vignette</a>. (<strong>B</strong>) The table of RL Regions overlapping with the select sample’s peaks. See the <a href="#rlregions">RL Regions section</a> for a detailed explanation of this interface.</p>
+</div>
 </div>
 </div>
 <div id="rlregions" class="section level2">
 <h2>Exploration of R-loop regions</h2>
+<p>R-loop regions (RL regions) are sites of consensus R-loop formation as determined through a meta-analysis of all high-confidence RLBase samples. For greater detail on how RL Regions were derived, please see the relevant section of the <a href="https://bishop-laboratory.github.io/RLHub/reference/rlregions.html#source" target="_blank">RLHub documentation</a>. The RLBase “RL Regions” page provides a simple interface for exploring these data (<strong>Figure 7</strong>). RL regions have a variety of metadata associated with them, such as the number of samples in which they are found and the genes which they overlap with (<strong>Figure 8</strong>). Finally, the Spearman correlation between RL Region signal (as determined from high-confidence RLBase samples) and expression (as determined by paired-RNA-Seq data) is also shown (<strong>Figure 8</strong>). We also provide links to the <a href="https://genome.ucsc.edu/s/millerh1%40livemail.uthscsa.edu/RLBase" target="_blank">RLBase UCSC genome browser session</a> (<strong>Fig. 7C</strong>) which can be used to explore these results and compare them with other data stored in the UCSC database.</p>
+<div class="figure">
+<img src="https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_interface/rlregions_page.png" align="right" style="border: none; float: none;" alt="" />
+<p class="caption"><strong>Figure 7</strong>. The “R-loop Regions” page. R-loop regions (“RL Regions”; consensus sites of R-loop formation) are described in greater detail in the <a href="https://bishop-laboratory.github.io/RLHub/reference/rlregions.html#source" target="_blank">RLHub documentation</a>. This page provides an interface for exploring these data. (<strong>A</strong>) Controls for altering the data shown in (<strong>B</strong>). “All genes,” if selected, forces (<strong>B</strong>) to also show pseudogenes, RNA genes, and predicted genes. If “Repetitive” is selected, RL Regions that overlap with repetitive elements will be displayed. If “Correlated with expression” is selected, only the RL Regions with significant correlation between R-loop signal and expression will be shown. (<strong>B</strong>) The table of RL Regions along with metadata. The RL Regions in this table are controlled by (<strong>A</strong>) and selecting rows will impact the output in (<strong>D</strong>). For a full description of columns, please see the relevant <a href="https://bishop-laboratory.github.io/RLHub/reference/rlregions.html#structure" target="_blank">RLHub documentation</a>. (<strong>C</strong>) A link to the <a href="https://genome.ucsc.edu/s/millerh1%40livemail.uthscsa.edu/RLBase" target="_blank">UCSC genome browser session for RLBase</a>. This session contains all the coverage files for every human R-loop mapping sample, along with the consensus R-loop regions. (<strong>D</strong>) The output panel impacted by the selection in (<strong>B</strong>). See (<strong>Figure 8</strong>) for a full description.</p>
+</div>
+<div class="figure">
+<img src="https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_interface/rlregions_page__righthand.png" align="right" style="border: none; float: none;" alt="" />
+<p class="caption"><strong>Figure 8</strong>. The “R-loop Regions” page output panels. (<strong>A</strong>) Summary of the RL Region selected in “RL Region Table.” See also the relevant <a href="https://bishop-laboratory.github.io/RLHub/reference/rlregions.html#structure" target="_blank">RLHub documentation</a> for further detail. (<strong>B</strong>) A scatter plot showing the correlation of R-loop signal and expression (both log2TPM-transformed counts) within the RL Region selected. Points are colored by the R-loop mapping mode which the R-loop signal corresponds to (expression is just RNA-Seq). See also the relevant RLHub documentation for <a href="https://bishop-laboratory.github.io/RLHub/reference/rlregions.html#source" target="_blank"><code>rlregions_counts</code></a> and <a href="https://bishop-laboratory.github.io/RLHub/reference/gene_exp.html#details" target="_blank"><code>gene_exp</code></a> for further detail on the data sources.</p>
 </div>
 </div>
-<div id="faqs" class="section level1">
-<h1>FAQs</h1>
-<p>This section attempts to answer some of the questions which may arise during the usage of <em>RLBase</em>. The types of questions are divided based on the general category which they fill into:</p>
+<div id="userdata" class="section level2">
+<h2>Analysis of user-supplied data</h2>
+<p>The analysis methods developed in <a href="https://bishop-laboratory.github.io/RLSeq/index.html" target="_blank">RLSeq</a> allow for the analysis of R-loop mapping samples within the context of the publicly-available data stored in RLBase. However, an R-package implementation may not be suitable for all users. To help increase access to these methods, RLBase provides an in-browser option for running RLSeq in the “Analyze” tab (<strong>Figure 9</strong>). In this interface, users can enter details about their sample and upload their peaks. After starting the analysis, they will be given the results link which they can open to see the analysis progress and, once complete, their analysis report (<strong>Figure 10</strong>). An example of a complete analysis can be found <a href="https://rlbase-userdata.s3.amazonaws.com/efe676b1-2a6f-4535-826f-acf2c1f4a210/res_index.html" target="_blank">here</a>.</p>
+<div class="figure">
+<img src="https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_interface/analyze_page.png" align="right" style="border: none; float: none;" alt="" />
+<p class="caption"><strong>Figure 9</strong>. The “Analyze” page allows users to analyze an R-loop mapping sample in the browser. (<strong>A</strong>) Inputs describing the R-loop mapping sample. It is recommended to lift-over your data to “hg38” or “mm10” if possible, as RLSeq is most compatible with these genomes. For an explanation of the “Mode” and “Label,” please see the <a href="#terminology">terminology section</a>. (<strong>B</strong>) An upload input for the peaks to analyze (should be in <a href="https://genome.ucsc.edu/FAQ/FAQformat.html#format13" target="_blank">broadPeak format</a> if possible (narrowPeak and BED can also be used, but may produce unexpected results). (<strong>C</strong>) The user must also acknowledge the privacy statement, which specifies that uploaded data will be made publicly available in the analysis results link.</p>
+</div>
+<div class="figure">
+<img src="https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_interface/analyze_page__done.png" align="right" style="border: none; float: none;" alt="" />
+<p class="caption"><strong>Figure 10</strong>. The “RLSeq Results” page displays the analysis description and results (it also displays progress during the analysis). (<strong>A</strong>) A verbose description of the analysis, recommended for citing RLSeq. See the <a href="https://bishop-laboratory.github.io/RLSeq/articles/analyzing-rloop-data-with-rlseq.html" target="_blank">RLSeq vignette</a> for additional detail. (<strong>B</strong>) The progress indicators that display the current stage of the analysis. (<strong>C</strong>) Metadata about the uploaded sample and links to the RLSeq report, <code>RLRanges</code> R data object for the sample, and the log files.</p>
+</div>
+</div>
+</div>
+<div id="other" class="section level1">
+<h1>Other</h1>
+<p>This section attempts to answer some of the other questions which may arise during the usage of <em>RLBase</em>. The types of questions are divided based on the general category which they fill into:</p>
 <ol style="list-style-type: decimal">
 <li><strong>Terminology</strong>: Terms and concepts used within <em>RLBase</em>.</li>
-<li><strong>Methods</strong>: Methods used within <em>RLBase</em> and their description.</li>
-<li><strong>Limitations</strong>: Limitations on the usage of <em>RLBase</em> and suggested workarounds.</li>
 <li><strong>Bugs</strong>: Describes handling of erros and bugs.</li>
+<li><strong>License and citation</strong>: Describes attribution and license.</li>
 </ol>
 <div id="terminology" class="section level2">
 <h2>Terminology</h2>
@@ -359,64 +424,1066 @@ div.tocify {
 Diagram showing the different R-loop mapping methods which exist. All of these are found in RLBase (except computational methods, SMRF-Seq, and bisDRIP-Seq).
 </p>
 </div>
+<p>For additional detail, please refer to the following summary table:</p>
+<table class="table table-hover" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+R-loop mapping modes and associated metadata.
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+mode
+</th>
+<th style="text-align:left;">
+family
+</th>
+<th style="text-align:left;">
+ip_type
+</th>
+<th style="text-align:left;">
+strand_specific
+</th>
+<th style="text-align:left;">
+moeity
+</th>
+<th style="text-align:left;">
+bisulfite_seq
+</th>
+<th style="text-align:left;">
+PMID
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+bisDRIP
+</td>
+<td style="text-align:left;">
+DRIP
+</td>
+<td style="text-align:left;">
+S9.6
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+DNA
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+<a href="https://pubmed.ncbi.nlm.nih.gov/29072160" target="_blank">29072160</a>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+BisMapR
+</td>
+<td style="text-align:left;">
+MapR
+</td>
+<td style="text-align:left;">
+dRNH
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+DNA
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+<a href="https://pubmed.ncbi.nlm.nih.gov/33620319" target="_blank">33620319</a>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+DRNA
+</td>
+<td style="text-align:left;">
+Other
+</td>
+<td style="text-align:left;">
+None
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+RNA
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+<a href="https://pubmed.ncbi.nlm.nih.gov/34205454" target="_blank">34205454</a>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+dDRIP
+</td>
+<td style="text-align:left;">
+DRIP
+</td>
+<td style="text-align:left;">
+S9.6
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+DNA
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+<a href="https://pubmed.ncbi.nlm.nih.gov/31262943" target="_blank">31262943</a>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+DREAM
+</td>
+<td style="text-align:left;">
+Other
+</td>
+<td style="text-align:left;">
+None
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+RNA
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+<a href="https://pubmed.ncbi.nlm.nih.gov/" target="_blank"></a>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+DRIP
+</td>
+<td style="text-align:left;">
+DRIP
+</td>
+<td style="text-align:left;">
+S9.6
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+DNA
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+<a href="https://pubmed.ncbi.nlm.nih.gov/22387027" target="_blank">22387027</a>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+DRIPc
+</td>
+<td style="text-align:left;">
+DRIP
+</td>
+<td style="text-align:left;">
+S9.6
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+RNA
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+<a href="https://pubmed.ncbi.nlm.nih.gov/27373332" target="_blank">27373332</a>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+DRIVE
+</td>
+<td style="text-align:left;">
+Other
+</td>
+<td style="text-align:left;">
+dRNH
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+RNA
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+<a href="https://pubmed.ncbi.nlm.nih.gov/22387027" target="_blank">22387027</a>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+qDRIP
+</td>
+<td style="text-align:left;">
+DRIP
+</td>
+<td style="text-align:left;">
+S9.6
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+DNA
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+<a href="https://pubmed.ncbi.nlm.nih.gov/32544226" target="_blank">32544226</a>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+R-ChIP
+</td>
+<td style="text-align:left;">
+R-ChIP
+</td>
+<td style="text-align:left;">
+dRNH
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+DNA
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+<a href="https://pubmed.ncbi.nlm.nih.gov/29104020" target="_blank">29104020</a>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RDIP
+</td>
+<td style="text-align:left;">
+RDIP
+</td>
+<td style="text-align:left;">
+S9.6
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+RNA
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+<a href="https://pubmed.ncbi.nlm.nih.gov/26579211" target="_blank">26579211</a>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RLCnT-S96
+</td>
+<td style="text-align:left;">
+RLCnT
+</td>
+<td style="text-align:left;">
+S9.6
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+DNA
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+<a href="https://pubmed.ncbi.nlm.nih.gov/33597247" target="_blank">33597247</a>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RLCnT-HBD
+</td>
+<td style="text-align:left;">
+RLCnT
+</td>
+<td style="text-align:left;">
+dRNH
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+DNA
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+<a href="https://pubmed.ncbi.nlm.nih.gov/33597247" target="_blank">33597247</a>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+DRIPc-HBD
+</td>
+<td style="text-align:left;">
+DRIP
+</td>
+<td style="text-align:left;">
+dRNH
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+RNA
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+<a href="https://pubmed.ncbi.nlm.nih.gov/33597247" target="_blank">33597247</a>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+MapR
+</td>
+<td style="text-align:left;">
+MapR
+</td>
+<td style="text-align:left;">
+dRNH
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+DNA
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+<a href="https://pubmed.ncbi.nlm.nih.gov/31665646" target="_blank">31665646</a>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RNH-CnR
+</td>
+<td style="text-align:left;">
+MapR
+</td>
+<td style="text-align:left;">
+dRNH
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+DNA
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+<a href="https://pubmed.ncbi.nlm.nih.gov/31665646" target="_blank">31665646</a>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RR-ChIP
+</td>
+<td style="text-align:left;">
+R-ChIP
+</td>
+<td style="text-align:left;">
+dRNH
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+RNA
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+<a href="https://pubmed.ncbi.nlm.nih.gov/31679819" target="_blank">31679819</a>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+S1-DRIP
+</td>
+<td style="text-align:left;">
+DRIP
+</td>
+<td style="text-align:left;">
+S9.6
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+DNA
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+<a href="https://pubmed.ncbi.nlm.nih.gov/27298336" target="_blank">27298336</a>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sDRIP
+</td>
+<td style="text-align:left;">
+DRIP
+</td>
+<td style="text-align:left;">
+S9.6
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+DNA
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+<a href="https://pubmed.ncbi.nlm.nih.gov/33830170" target="_blank">33830170</a>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+SMRF
+</td>
+<td style="text-align:left;">
+Other
+</td>
+<td style="text-align:left;">
+S9.6
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+DNA
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+<a href="https://pubmed.ncbi.nlm.nih.gov/32105733" target="_blank">32105733</a>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ssDRIP
+</td>
+<td style="text-align:left;">
+DRIP
+</td>
+<td style="text-align:left;">
+S9.6
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+DNA
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+<a href="https://pubmed.ncbi.nlm.nih.gov/28848233" target="_blank">28848233</a>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+DRIP-RNA-Seq
+</td>
+<td style="text-align:left;">
+DRIP
+</td>
+<td style="text-align:left;">
+S9.6
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+RNA
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+<a href="https://pubmed.ncbi.nlm.nih.gov/26551076" target="_blank">26551076</a>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+m6A-DIP
+</td>
+<td style="text-align:left;">
+RDIP
+</td>
+<td style="text-align:left;">
+RNA-m6A
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+DNA
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+<a href="https://pubmed.ncbi.nlm.nih.gov/31844323" target="_blank">31844323</a>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Column description:</p>
+<ul>
+<li><strong>mode</strong>: The R-loop mapping modality.</li>
+<li><strong>family</strong>: The broad classification of that mode.</li>
+<li><strong>ip_type</strong>: The type of immunoprecipitation (IP) used in the mapping protocol. ‘S9.6’ for S9.6 antibody-based IP. ‘dRNH’ for ‘catalytically dead RNaseH1’ IP. ‘None’ if no IP was used.</li>
+<li><strong>strand_specific</strong>: A boolean indicating whether the mode is strand-specific or not.</li>
+<li><strong>moeity</strong>: Indicates the moeity that was sequenced.</li>
+<li><strong>bisulfite_seq</strong>: A boolean indicating whether the mode uses bisulfite conversion sequencing.</li>
+<li><strong>PMID</strong>: The pubmed ID for the study in which this method was first described.</li>
+</ul>
 </div>
 <div id="sample-condition" class="section level3">
 <h3>Sample Condition</h3>
-<div id="condition" class="section level4">
-<h4>Condition</h4>
-</div>
+<p>Sample condition was added manually during initial data curation based on the metadata in <a href="https://www.ncbi.nlm.nih.gov/gds" target="_blank">GEO</a> and/or <a href="https://www.ncbi.nlm.nih.gov/sra" target="_blank">SRA</a>. The condition refers to the R-loop mapping condition of the sample. For example, a condition of “Input” represents a genomic input sample that would be a negative control in R-loop mapping.</p>
 <div id="label" class="section level4">
 <h4>Label</h4>
+<p>The label is the categorization of “Sample Condition” as “POS” or “NEG.” “POS” indicates a sample condition which is expected to map R-loops. “NEG” indicates a negative control which is not expected to map R-loops. In DNA-RNA immunoprecipitation sequencing (DRIP), for example, “S9.6” indicates a “POS” condition which should map R-loops, where as “RNH1” (RNaseH1-treated) indicates a “NEG” condition which should not as RNaseH1 is an enzyme that degrades R-loops. The label was automatically assigned to each sample using a custom REGEX dictionary applied to the sample condition:</p>
+<table class="table table-hover" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+REGEX dictionary for assigning R-loop sample conditions to ‘POS’ or ‘NEG’ labels.
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Mode
+</th>
+<th style="text-align:left;">
+Condition
+</th>
+<th style="text-align:left;">
+POS
+</th>
+<th style="text-align:left;">
+NEG
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+MapR
+</td>
+<td style="text-align:left;">
+ActD
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+R-ChIP
+</td>
+<td style="text-align:left;">
+delta-HC
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+.*
+</td>
+<td style="text-align:left;">
+Input
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+.*
+</td>
+<td style="text-align:left;">
+FLAG
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+R-ChIP
+</td>
+<td style="text-align:left;">
+WKKD
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+.*MapR
+</td>
+<td style="text-align:left;">
+pAMNase
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+.*MapR
+</td>
+<td style="text-align:left;">
+RNHMNase
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+.*MapR
+</td>
+<td style="text-align:left;">
+RNHdMNase
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+.*
+</td>
+<td style="text-align:left;">
+RNH
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RLCnT
+</td>
+<td style="text-align:left;">
+S96-t1
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RLCnT
+</td>
+<td style="text-align:left;">
+S96-t2
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RLCnT
+</td>
+<td style="text-align:left;">
+S96-t3
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RLCnT
+</td>
+<td style="text-align:left;">
+S96-t4
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RLCnT
+</td>
+<td style="text-align:left;">
+S96-t5
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RLCnT
+</td>
+<td style="text-align:left;">
+S96-t6
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RLCnT
+</td>
+<td style="text-align:left;">
+S96-t7
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RLCnT
+</td>
+<td style="text-align:left;">
+S96-t8
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<ul>
+<li></td>
+<td style="text-align:left;">
+IgG
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RLCnT
+</td>
+<td style="text-align:left;">
+HBD
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RLCnT-.*
+</td>
+<td style="text-align:left;">
+RNaseA
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+.<em>DRIP.</em>
+</td>
+<td style="text-align:left;">
+RNaseA
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+DRIPc-HBD
+</td>
+<td style="text-align:left;">
+HBD
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+.*
+</td>
+<td style="text-align:left;">
+Pos
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+DRNA
+</td>
+<td style="text-align:left;">
+DRNA
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+.*
+</td>
+<td style="text-align:left;">
+S96
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+.*
+</td>
+<td style="text-align:left;">
+D209N
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+.*
+</td>
+<td style="text-align:left;">
+D210N
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+SMRF
+</td>
+<td style="text-align:left;">
+bisFoot
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sDRIP
+</td>
+<td style="text-align:left;">
+RNaseT1
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sDRIP
+</td>
+<td style="text-align:left;">
+RNaseIII
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sDRIP
+</td>
+<td style="text-align:left;">
+RNaseT1-III
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+</tr>
+</tbody>
+</table></li>
+</ul>
 </div>
 <div id="prediction" class="section level4">
 <h4>Prediction</h4>
+<p>While a sample may have a “POS” label, that does not mean it mapped R-loops. Likewise sampels with “NEG” label sometimes robustly mapped R-loops, as may be the case when RNaseH1 treatment fails during DRIP sequencing. This finding motivated us to develop the quality model used in RLSeq (see documentation about this model <a href="https://bishop-laboratory.github.io/RLHub/reference/models.html#details" target="_blank">here</a>). The model predicts either “POS” or “NEG,” which indicates robust R-loop mapping and poor R-loop mapping, respectively.</p>
 </div>
 </div>
 </div>
-<div id="methods" class="section level2">
-<h2>Methods</h2>
-<div id="sample-level" class="section level3">
-<h3>Sample-level</h3>
-<div id="summary" class="section level4">
-<h4>Summary</h4>
+<div id="bugs" class="section level2">
+<h2>Bugs</h2>
+<p>RLBase is still early in the development cycle, which means bugs may occasionally occur. If you encounter any bugs or unexpected behavior, please <a href="https://github.com/Bishop-Laboratory/RLBase/issues/">open an issue</a> on the RLBase GitHub repo and describe, in as much detail as possible, the following:</p>
+<ol style="list-style-type: decimal">
+<li>What you expected RLBase to do.</li>
+<li>What RLBase did and why it was unexpected.</li>
+<li>Any error messages you recieved (along with screenshots).</li>
+<li>If analyzing your own data, please also include a link to the dataset (if it can be shared).</li>
+</ol>
 </div>
-<div id="heatmappca" class="section level4">
-<h4>Heatmap/PCA</h4>
-</div>
-<div id="annotation" class="section level4">
-<h4>Annotation</h4>
-</div>
-<div id="rlfs-analysis" class="section level4">
-<h4>RLFS analysis</h4>
-</div>
-<div id="rl-regions" class="section level4">
-<h4>RL Regions</h4>
-</div>
-<div id="downloads" class="section level4">
-<h4>Downloads</h4>
-</div>
-</div>
-<div id="rl-regions-1" class="section level3">
-<h3>RL Regions</h3>
-<div id="summary-1" class="section level4">
-<h4>Summary</h4>
-</div>
-<div id="expression" class="section level4">
-<h4>Expression</h4>
-</div>
-</div>
-<div id="analyze" class="section level3">
-<h3>Analyze</h3>
-</div>
-<div id="downloads-1" class="section level3">
-<h3>Downloads</h3>
-</div>
-</div>
-<div id="limitations" class="section level2">
-<h2>Limitations</h2>
-<div id="section" class="section level3">
-<h3></h3>
-</div>
+<div id="license-and-attribution" class="section level2">
+<h2>License and attribution</h2>
+<p>RLBase is licensed under an MIT license and we ask that you please cite RLBase in any published work like so:</p>
+<blockquote>
+<p>Miller et al., RLBase, (2021), GitHub repository, <a href="https://github.com/Bishop-Laboratory/RLBase" class="uri">https://github.com/Bishop-Laboratory/RLBase</a></p>
+</blockquote>
 </div>
 </div>
 <div id="references" class="section level1 unnumbered">
@@ -427,6 +1494,12 @@ Chédin, Frédéric, Stella R Hartono, Lionel A Sanz, and Vincent Vanoosthuyse. 
 </div>
 <div id="ref-Ginno2012" class="csl-entry">
 Ginno, Paul A., Paul L. Lott, Holly C. Christensen, Ian Korf, and Frédéric Chédin. 2012. <span>“R-Loop Formation Is a Distinctive Characteristic of Unmethylated Human CpG Island Promoters.”</span> <em>Molecular Cell</em> 45 (6): 814–25. <a href="https://doi.org/10.1016/j.molcel.2012.01.017">https://doi.org/10.1016/j.molcel.2012.01.017</a>.
+</div>
+<div id="ref-Jenjaroenpun2015" class="csl-entry">
+Jenjaroenpun, Piroon, Thidathip Wongsurawat, Surya Pavan Yenamandra, and Vladimir A. Kuznetsov. 2015. <span>“QmRLFS-Finder: A Model, Web Server and Stand-Alone Tool for Prediction and Analysis of R-Loop Forming Sequences.”</span> <em>Nucleic Acids Research</em> 43 (W1): W527–34. <a href="https://doi.org/10.1093/nar/gkv344">https://doi.org/10.1093/nar/gkv344</a>.
+</div>
+<div id="ref-Malig2020" class="csl-entry">
+Malig, Maika, Stella R. Hartono, Jenna M. Giafaglione, Lionel A. Sanz, and Frederic Chedin. 2020. <span>“Ultra-Deep Coverage Single-Molecule R-Loop Footprinting Reveals Principles of R-Loop Formation.”</span> <em>Journal of Molecular Biology</em> 432 (7): 2271–88. <a href="https://doi.org/10.1016/j.jmb.2020.02.014">https://doi.org/10.1016/j.jmb.2020.02.014</a>.
 </div>
 <div id="ref-Niehrs2020" class="csl-entry">
 Niehrs, Christof, and Brian Luke. 2020. <span>“Regulatory R-Loops as Facilitators of Gene Expression and Genome Stability.”</span> <em>Nature Reviews Molecular Cell Biology</em> 21 (3): 167–78. <a href="https://doi.org/10.1038/s41580-019-0206-3">https://doi.org/10.1038/s41580-019-0206-3</a>.

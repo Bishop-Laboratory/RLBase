@@ -3,9 +3,9 @@ library(shiny)
 library(RLSeq)
 library(RLHub)
 library(DT)
-library(shinyBS)
 library(shinyvalidate)
 library(aws.s3)
+library(shinycssloaders)
 library(tippy)
 library(pbapply)
 library(callr)
@@ -27,7 +27,9 @@ APP_DATA <- "misc/app_data.rda"
 if (! file.exists(APP_DATA)) {
   makeGlobalData(APP_DATA)
 } 
-load(APP_DATA)
+if (! "rlregions" %in% ls()) {
+  load(APP_DATA)
+}
 rlMemMat <- as.matrix(rlMembershipMatrix)  # Decompress
 rlsamples <- rlsamples %>%
   mutate(rlsampleLink = map_chr(rlsample, makeSRALinks),
@@ -36,17 +38,22 @@ rlsamples <- rlsamples %>%
 source("const.R")
 source("ui_globals.R")
 source("plots.R")
+BASE_URL1 <- "http://genome.ucsc.edu/s/millerh1%40livemail.uthscsa.edu/RLBase?position="
 rltabShow <- rlregions %>%
-  arrange(desc(nStudies), desc(nModes), desc(pct_case)) %>%
+  arrange(desc(confidence_score)) %>%
   mutate(avgSignalVal = signif(avgSignalVal, 4),
-         avgQVal = signif(10^(-1*avgQVal), 4)) %>%
-  dplyr::select(`RL Region` = rlregion, Location = location, `# of Studies` = nStudies,
+         avgQVal = 10^(-1*avgQVal),
+         confidence_score = signif(confidence_score, 4)) %>%
+  dplyr::select(`RL Region` = rlregion, Location = location,
+                `Confidence Score` = confidence_score,
+                `# of Studies` = nStudies,
          `# of Modes` = nModes, `Mean Signal` = avgSignalVal, `Mean FDR` = avgQVal,
          `# of Samples` = nSamples, `# of Tissues` = nTissues, `Source type`=source,
          contains("corr"), allGenes, mainGenes, is_repeat, samples) %>%
   mutate(allGenes = gsub(allGenes, pattern = ",", replacement = " ", perl = TRUE),
          mainGenes = gsub(mainGenes, pattern = ",", replacement = " ", perl = TRUE),
-         Location = gsub(Location, pattern = ":\\.$", replacement = ""))
+         Location = gsub(Location, pattern = ":\\.$", replacement = "")) %>%
+  mutate(Location = paste0("<a href=\"", BASE_URL1, Location, "\" target=\"_blank\">", Location, "</a>"))
 
 # Define UI for application that draws a histogram
 ui <- function(request) {
@@ -83,11 +90,6 @@ ui <- function(request) {
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
   
-  
-  addTooltip(id = "helpasd", placement = "right", session = session, 
-    title = paste0("Shows the representation of R-loop mapping modalities in the",
-                   " selected samples (use the table controls to adjust this). See Documentation for details."))
-  
   ### Sample Page ###
   rmapSampsRV <- reactive({
     rlsamples %>%
@@ -99,6 +101,7 @@ server <- function(input, output, session) {
   })
 
   current_samp <- reactive({
+    req(length(rmapSampsRV()) > 0)
     # Get selected row from datatable
     selectedRow <- ifelse(is.null(input$rmapSamples_rows_selected),
                           1,
@@ -110,20 +113,26 @@ server <- function(input, output, session) {
     current_samp
   })
   
-  current_gen <- reactive(rlsamples$genome[rlsamples$rlsample == current_samp()])
   output$rmapSamples <- renderDT(server = FALSE, {
-      rlsamples %>%
-        dplyr::filter(rlsample %in% rmapSampsRV()) %>%
-        dplyr::select(Sample=rlsampleLink, Study=study, Mode = mode, Tissue=tissue, Condition = condition,
-               PMID, prediction = prediction, Genome = genome, Genotype = genotype, Other = other) %>%
-        datatable(selection = list(mode = "single", selected = 1), rownames = FALSE, escape = FALSE,
-                  options = list(pageLength = 10, scrollX = TRUE))
+    validate(
+      need(length(rmapSampsRV()) > 0, message = "No samples available within selected criteria.")
+    )
+    rlsamples %>%
+      dplyr::filter(rlsample %in% rmapSampsRV()) %>%
+      dplyr::select(Sample=rlsampleLink, Study=study, Mode = mode, Tissue=tissue, Condition = condition,
+             PMID, prediction = prediction, Genome = genome, Genotype = genotype, Other = other) %>%
+      datatable(selection = list(mode = "single", selected = 1), rownames = FALSE, escape = FALSE,
+                options = list(pageLength = 10, scrollX = TRUE))
     }) %>% bindCache(rmapSampsRV())
   
   ## Summary panel ##
   
   # Sample summary
   output$sampleSummary <- renderUI({
+    validate(
+      need(length(rmapSampsRV()) > 0, 
+           message = "No samples available within selected criteria.")
+    )
     currentrlsample <- rlsamples[rlsamples$rlsample == current_samp(),] 
     currentrlsample <- mutate(currentrlsample, across(contains("_S3"), function(x) {
       paste0("<a href='", file.path(RLSeq:::RLBASE_URL, x), "' target='_blank' >",
@@ -140,7 +149,7 @@ server <- function(input, output, session) {
                           ifelse(currentrlsample$label == "POS", "#165566", "#8a2c2c"),"'>", 
                           currentrlsample$label, "</strong>"), "The label 'POS' or 'NEG' referencing whether the sample was expected to map R-loops.",
           "Prediction", paste0("<strong style='color: ",ifelse(currentrlsample$prediction == "POS", "#165566", "#8a2c2c"), "'>",
-                               currentrlsample$label, "</strong>"), "The prediction ('POS' or 'NEG') made by the quality model (see details).",
+                               currentrlsample$prediction, "</strong>"), "The prediction ('POS' or 'NEG') made by the quality model (see details).",
           "RLSeq report", currentrlsample$report_html_s3, "The HTML analysis report for this sample, provided by the RLSeq R package."
         ) %>%
           mutate(Details = cell_spec('<i class="fa fa-question-circle"></i>', tooltip = spec_tooltip(title = message), escape = FALSE)) %>%
@@ -155,6 +164,7 @@ server <- function(input, output, session) {
   
   # Update the plot_ly plots
   donuts <- reactive({
+    req(length(rmapSampsRV()) > 0)
     agsmall <- RLSeq:::available_genomes %>% dplyr::select(genome=UCSC_orgID, Organism=organism)
     rlsamplesNow <- rlsamples %>% dplyr::filter(rlsample %in% rmapSampsRV())
     modeDat <-  dplyr::mutate(rlsamplesNow, Mode = ifelse(mode %in% RLSeq:::auxdata$mode_cols$mode, mode, "misc")) %>%
@@ -185,22 +195,26 @@ server <- function(input, output, session) {
   
   # Z-score plot
   output$zScorePlot <- renderPlot({
+    req(! is.na(rlfsres[[current_samp()]]))
     plotRLFSRes(rlfsres[[current_samp()]]$rlfsData, plotName = current_samp())
   }) %>% bindCache(current_samp())
 
   # Z-score plot (FFT)
   output$FFTPlot <- renderPlot({
+    req(! is.na(rlfsres[[current_samp()]]))
     plotRLFSRes(rlfsres[[current_samp()]]$rlfsData, plotName = current_samp(), fft = TRUE)
   }) %>% bindCache(current_samp())
 
   # P-val plot
   output$pValPlot <- renderPlot({
+    req(! is.na(rlfsres[[current_samp()]]))
     regioneR:::plot.permTestResults(rlfsres[[current_samp()]]$rlfsData$perTestResults[["regioneR::numOverlaps"]])
   }) %>%  bindCache(current_samp())
 
   # HTML summary
   output$RLFSOutHTML <- renderUI({
     rlfsRes <- rlfsres %>% pluck(current_samp(), "rlfsData")
+    validate(need(! is.na(rlfsRes), message = "RLFS results unavailable for this sample."))
     list(rlfs_pval=-log10(rlfsRes$perTestResults$`regioneR::numOverlaps`$pval),
          MACS2__total_peaks=rlsamples$numPeaks[rlsamples$rlsample == current_samp()],
          label=rlsamples$label[rlsamples$rlsample == current_samp()],
@@ -210,25 +224,32 @@ server <- function(input, output, session) {
   
   ## Annotation plots ##
   featPlotDataNow <- reactive({
+    req(input$selectGenome %in% c("hg38", "mm10"))
     featPlotData[[input$selectGenome]]$prediction <- lapply(featPlotData[[input$selectGenome]]$prediction, function(x) {
       x[x$experiment %in% rmapSampsRV(),]
     })
     featPlotData
   })
   annodbs <- reactive({
+    req(input$selectGenome %in% c("hg38", "mm10"))
     names(featPlotData[[input$selectGenome]]$none)
   })
   output$annoPlots <- renderUI({
+    validate(
+      need(input$selectGenome %in% c("hg38", "mm10"),
+           message = "This feature is only available for 'hg38' and 'mm10'")
+    )
     tabs <- lapply(annodbs(), function(plt) {
       tabPanel(title = plt, br(), plotOutput(outputId = plt))
     })
     do.call(tabsetPanel, c(tabs, id="tabAnno"))
   })
   observe({
+    req(input$selectGenome %in% c("hg38", "mm10"))
     lapply(annodbs(), function(plt) {
       output[[plt]] <- renderPlot({
         RLSeq:::feature_ggplot(
-          x = featPlotDataNow()[[current_gen()]]$prediction[[plt]],
+          x = featPlotDataNow()[[input$selectGenome]]$prediction[[plt]],
           limits = c(-10, 15), 
           splitby = input$splitby,
           usamp = current_samp()
@@ -242,6 +263,9 @@ server <- function(input, output, session) {
   
   # Heatmap
   output$heatmap <- renderPlot({
+    validate(
+      need(input$selectGenome == "hg38", message = "This feature is only available for 'hg38' samples.")
+    )
     toshow <- rmapSampsRV()[which(rmapSampsRV() %in% rownames(heatData$corrRes))]
     corrRes <- heatData$corrRes[toshow, toshow]
     annoCorr <- heatData$annoCorr[toshow,]
@@ -250,11 +274,14 @@ server <- function(input, output, session) {
     names(heatData$cat_cols$group)[2] <- "Unselected"
     pheatmap(corrRes, color = heatData$pheatmap_color, main = current_samp(), breaks = heatData$pheatmap_breaks,
              annotation_col = annoCorr[,c(4, 3, 2, 1)], annotation_colors = heatData$cat_cols,
-             show_colnames = FALSE, show_rownames = FALSE, silent = FALSE, fontsize = 15)
+             show_colnames = FALSE, show_rownames = FALSE, silent = FALSE, fontsize = 14)
   }) %>% bindCache(rmapSampsRV(), current_samp())
   
   # PCA
   output$rmapPCA <- renderPlot({
+    validate(
+      need(input$selectGenome == "hg38", message = "This feature is only available for 'hg38' samples.")
+    )
     # Filter for current samples selected
     toshow <- rmapSampsRV()[which(rmapSampsRV() %in% rownames(heatData$corrRes))]
     corrRes <- heatData$corrRes[toshow, toshow]
@@ -266,10 +293,12 @@ server <- function(input, output, session) {
       right_join(rownames_to_column(annoCorr, var = "rlsample"), by = "rlsample")
     ggplot(
       toPlt,
-      aes_string(x = "PC1", y = "PC2", color = input$PCA_colorBy,
+      aes_string(x = "PC1", y = "PC2", color = "mode",
+                 alpha = "group",
                  shape = input$PCA_shapeBy, size = "group")
     ) +
-      rlbase_scatter(sizes = c("Selected" = 10, "Unselected" = 3),
+      rlbase_scatter(sizes = c("Selected" = 10, "Unselected" = 2.5),
+                     alphas = c("Selected" = 1, "Unselected" = 0.6),
                      cols = heatData$cat_cols$mode,
                      shapes = c("POS" = 19, "NEG" = 4)) +
       guides(colour = guide_legend(override.aes = list(size=4), ncol = 1),
@@ -284,6 +313,10 @@ server <- function(input, output, session) {
   
   # R-loop venn
   output$rlVenn <- renderPlot({
+    validate(
+      need(input$selectGenome == "hg38", message = "This feature is only available for 'hg38' samples.")
+    )
+    
     futile.logger::flog.threshold(futile.logger::ERROR,
                                   name = "VennDiagramLogger")
     VennDiagram::venn.diagram(
@@ -304,6 +337,10 @@ server <- function(input, output, session) {
   
   # R-loop table
   output$RLoopsPerSample <- renderDT({
+    
+    validate(
+      need(input$selectGenome == "hg38", message = "This feature is only available for 'hg38' samples.")
+    )
 
     # Get the R-loops for the current sample
     sampRLMem <- rlMemMat[,current_samp()]
@@ -315,9 +352,10 @@ server <- function(input, output, session) {
     if (input$showCorrSamp) rltabNow <- dplyr::filter(rltabNow, ! is.na(corrR) & corrPVal < .05) %>% arrange(corrPAdj)
     rltabNow$Genes <- rltabNow$mainGenes
     if (input$showAllGenesRLSamp) rltabNow$Genes <- rltabNow$allGenes
-    rltabNow %>% dplyr::select(-samples) %>%
+    rltabNow <- dplyr::select(rltabNow, -allGenes, -mainGenes, -is_repeat)
+    rltabNow %>% dplyr::select(-samples) %>% dplyr::relocate(Genes, .after = `Confidence Score`) %>%
       DT::datatable(extensions = 'Buttons', selection = list(mode = "none"), rownames = FALSE,
-                    options = list(scrollX = TRUE, server=FALSE, pageLength = 6))
+                    options = list(scrollX = TRUE, server=FALSE, pageLength = 6), escape = FALSE)
   })
   
   ## Downloads ##
@@ -332,7 +370,7 @@ server <- function(input, output, session) {
       ~Item, ~URL, ~message,
       "Peaks (.broadPeak)", currentrlsample$peaks_s3, "Peaks called with macs3 in broadPeak format",
       "Coverage (.bw)", currentrlsample$coverage_s3, "Un-normalized read alignment coverage calculated with deepTools (10bp bins)",
-      "RLSeq RLRanges object (.rds)", currentrlsample$rlranges_rds_s3, "Sample in RLRanges format (see RLSeq) with all analysis performed.",
+      "RLSeq RLRanges object (.rds)", currentrlsample$rlranges_rds_s3, "Sample in RLRanges format with full results available. See RLSeq documentation.",
       "RLSeq report (.html)", currentrlsample$report_html_s3, "RLSeq HTML report for this sample.",
       "FASTQ stats from fastp (.json)", currentrlsample$fastq_stats_s3, "Read statistics generated by running the fastp program (see RLPipes)",
       "BAM stats from samtools (.txt)", currentrlsample$bam_stats_s3, "Alignment statistics from samtools (see RLPipes)"
@@ -341,7 +379,7 @@ server <- function(input, output, session) {
       dplyr::select(-message) %>%
       knitr::kable("html", escape = FALSE) %>%
       kable_styling("hover", full_width = F) %>%
-      add_header_above(set_names(2, nm = current_samp()), align = "left")
+      add_header_above(set_names(3, nm = current_samp()), align = "left")
   }
   
   ### RLoops Page ###
@@ -376,11 +414,16 @@ server <- function(input, output, session) {
       mutate(Genes = ifelse(Genes == NA_LINK, NA, Genes)) %>%
       mutate(Samples = map_chr(Genes, function(x) {paste0(sapply(unique(unlist(strsplit(samples, split = ","))), makeSRALinks), collapse = "\n")})) %>%
       dplyr::select(-is_repeat, -samples, -contains("corr"))
-    mutate(rloopsNow, Location = makeRLConsensusGB(Location)) %>%
+    rloopsNow %>%
       t() %>%
+      as.data.frame() %>%
+      rownames_to_column(var = "Feature") %>%
+      select(Feature, Value=V1) %>%
+      
       mutate(message = c(
         "R-loop region ID",
         "Genomic location of R-Loop region. Click link to view the Genome Browser session for RLBase.",
+        "Confidence score derived from a combination of features indicating the robustness of the region (see Documentation for more detail).",
         "Number of studies in which this RL Region was identified by at least one sample.",
         "Number of modes in which this RL Region was identified by at least one sample.",
         "Average R-loop signal (7th column of broadPeak) for RLBase samples in this RL Region",
@@ -394,13 +437,16 @@ server <- function(input, output, session) {
       )) %>%
       mutate(Details = cell_spec('<i class="fa fa-question-circle"></i>', tooltip = spec_tooltip(title = message), escape = FALSE)) %>%
       dplyr::select(-message) %>%
-      kableExtra::kbl(format = "html", escape = FALSE) %>%
+      kableExtra::kbl(format = "html", escape = FALSE, digits = 5, format.args = list(scientific = TRUE)) %>%
       kableExtra::kable_styling("hover") %>% 
       HTML()
   })
 
   output$RLvsExpbySample <- renderPlot({
     rloopsNow <- dplyr::filter(rloops(), `RL Region` == current_rl())
+    validate(
+      need(! is.na(rloopsNow$corrR), message = "No correlation available for selected R-loop.")
+    )
     # Get the corr and pval
     corrR <- pull(rloopsNow, "corrR") %>% signif(4)
     corrPAdj <- pull(rloopsNow, "corrPAdj") %>% signif(4)
@@ -471,7 +517,8 @@ server <- function(input, output, session) {
     rprocess <- callr::r_bg(
       user_profile = FALSE,
       poll_connection = FALSE,
-      args = list(inputs=inputs, runrlseq=runrlseq),
+      args = list(inputs=inputs, runrlseq=runrlseq, 
+                  awstry_put=awstry_put, awstry_saverds=awstry_saverds),
       stdout = inputs$logdebug, stderr = inputs$logdebug,
       func = rlseqbg
     )
@@ -506,10 +553,12 @@ server <- function(input, output, session) {
         text = tags$span(
           "Your RLSeq run has timed out. This is an error which can occur intermittently due to connectivity problems.",
           tags$em("Please try again."),
-          tags$strong("If you have recieved this error already, notify the ", tags$a(href='mailto:millerh1@uthscsa.edu', "package maintainer")),
+          tags$strong("If you have recieved this error previously, please submit an issue to the ",
+                      tags$a(href='https://github.com/Bishop-Laboratory/RLBase/issues', "RLBase repo"),
+                      ' and please include a link to the peaks file you are using along with a screenshot of your "Analyze" page inputs.'),
           " and consider using the ",
           tags$a("R package implementation",
-          href='https://github.com/Bishop-Laboratory/RLSeq',
+          href='https://bishop-laboratory.github.io/RLSeq/',
           target='_blank'), "of RLSeq.")
       )
       updateActionButton(session, inputId = "userUpload", label = "Start",
@@ -519,7 +568,7 @@ server <- function(input, output, session) {
       shinyWidgets::sendSweetAlert(
         session = session, title = "RLSeq finished.", html = TRUE,  type = "success",
         text = tags$span(
-          "Your RLSeq run has successfully completed! View results here: ",
+          "Your RLSeq run has completed! View results here: ",
           tags$a("Link", href=reportlink(), target="_blank")
       ))
       updateActionButton(session, inputId = "userUpload", label = "Start",
