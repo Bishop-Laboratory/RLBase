@@ -31,14 +31,15 @@ jobs:
           mamba-version: "*"
           channels: conda-forge, bioconda, r
           channel-priority: true
-          environment-file: RLBase.yml
+          environment-file: rlbase.yml
           activate-environment: RLBase
       - name: Other dependencies & run tests
         run: |
           conda activate RLBase
-          R -e "install.packages('ggprism', repos='http://cran.us.r-project.org')"
-          R -e "remotes::install_github("Bishop-Laboratory/RLHub", dependencies = TRUE, force=TRUE)"
-          R -e "remotes::install_github("Bishop-Laboratory/RLSeq", dependencies = TRUE, force=TRUE)"
+          R -e "install.packages(c('ggprism', 'shinyvalidate', 'tippy', 'valr', 'caretEnsemble'), repos='http://cran.us.r-project.org')"
+          R -e "BiocManager::install(version='devel')"
+          R -e "remotes::install_github('Bishop-Laboratory/RLHub', dependencies = TRUE, force=TRUE)"
+          R -e "remotes::install_github('Bishop-Laboratory/RLSeq', dependencies = FALSE, force=TRUE)"
           echo "Attempting to launch app for 120 seconds..."
           timeout 120 Rscript runApp.R || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
           # echo "Attempted to launch tests at seed 1234"
