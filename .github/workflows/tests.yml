@@ -37,7 +37,7 @@ jobs:
         run: |
           conda activate RLBase
           R -e "install.packages(c('ggprism', 'shinyvalidate', 'prompter', 'valr', 'caretEnsemble'), repos='http://cran.us.r-project.org')"
-          R -e "BiocManager::install(version='devel', ask=FALSE)"
+          R -e "BiocManager::install(version='3.14', ask=FALSE)"
           R -e "remotes::install_github('Bishop-Laboratory/RLHub', dependencies = TRUE, force=TRUE)"
           R -e "remotes::install_github('Bishop-Laboratory/RLSeq', dependencies = FALSE, force=TRUE)"
           echo "Attempting to launch app for 120 seconds..."

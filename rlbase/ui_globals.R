@@ -22,9 +22,17 @@ SamplesPageContents <- function(rlsamples) {
 RMapSamplesTable_panel <- function(rlsamples) {
   tagList(
     fluidRow(
-      column(width = 12,
-             h3("RLBase Samples"),
-             hr())
+      column(
+        width = 12,
+        h3("RLBase Samples"),
+        hr(),
+        span("The purpose of the 'RLBase Samples' page is the enable exploration of the 693 reprocessed and standardized",
+          " R-loop mapping datasets profiled in our 2021 recent data mining study (see ", 
+          em(
+            a("Miller et al., 2021", href="https://www.biorxiv.org/content/10.1101/2021.11.01.466823v2", target="_blank")
+          ), "). See 'Documentation' for full usage details."),
+        hr()
+      )
     ),
     fluidRow(
       column(
@@ -395,7 +403,7 @@ RLoops_Panel <- function() {
           column(
             width = 2,
             checkboxInput(inputId = "showRepSamp",
-                          label = "Repetitive", 
+                          label = "Repetitive regions", 
                           value = FALSE)  
           ),
           column(
@@ -432,12 +440,22 @@ RLoopsPageContents <- function() {
           column(
             width = 12,
             h3("R-Loop Regions"),
+            hr(),
+            span(
+              "R-loop regions (RL regions) are regions of the human genome which display",
+              " robust R-loop formation, as described in our recent work (",
+              em(
+                a("Miller et al., 2021", href="https://www.biorxiv.org/content/10.1101/2021.11.01.466823v2", target="_blank")
+              ),
+              "). The 'R-Loop Regions' page enables exploration of these sites and their association with gene expression.",
+              " See 'Documentation' for full usage details."
+            ),
             hr()
           )
         ),
         fluidRow(
           column(
-            width = 8,
+            width = 7,
             makeHeaders(
               title = "Table Controls ",
               message = paste0("Controls for filtering the 'RL Regions table'.",
@@ -445,19 +463,19 @@ RLoopsPageContents <- function() {
             ),
             fluidRow(
               column(
-                width = 2,
+                width = 3,
                 checkboxInput(inputId = "showAllGenesRL",
                               label = "All genes", 
                               value = FALSE)  
               ),
               column(
-                width = 2,
+                width = 3,
                 checkboxInput(inputId = "showRep",
                               label = "Repetitive", 
                               value = FALSE)  
               ),
               column(
-                width = 4,
+                width = 5,
                 checkboxInput(inputId = "showCorr",
                               label = "Correlated with expression", 
                               value = FALSE)  
@@ -466,7 +484,7 @@ RLoopsPageContents <- function() {
             )
           ),
           column(
-            width = 4,
+            width = 5,
             span(span(a(img(src="https://ucscgenomics.soe.ucsc.edu/wp-content/uploads/genome-browse-logo.png", height="50"),
                         href="https://genome.ucsc.edu/s/millerh1%40livemail.uthscsa.edu/RLBase", target="_blank"), 
                       style=paste0("font-size: 1.3em;")), 
@@ -570,7 +588,8 @@ AnalyzePageContents <- function(rlsamples) {
           column(
             width = 6,
             textInput(inputId = "userSample", label = "Sample name"),
-            selectInput(inputId = "userGenome", label = "Genome", selected = "hg38",
+            selectInput(inputId = "userGenome", label = tags$span(
+              "Genome", tags$br(), tags$em("If not 'hg38' or 'mm10', some anaysis steps will be skipped.")), selected = "hg38",
                         choices = RLSeq:::available_genomes$UCSC_orgID),
             selectInput(inputId = "userMode", label = "Mode", selected = "DRIP",
                         choices = unique(rlsamples$mode)),
@@ -580,7 +599,7 @@ AnalyzePageContents <- function(rlsamples) {
           column(
             width = 6,
             fileInput("userPeaks", label = tags$span(
-              tags$strong("Peaks"), " (broadPeak format)", tags$br(),
+              tags$strong("Peaks"), " (broadPeak format preferred)", tags$br(),
               tags$span(
                 "Example: ", tags$a(
                   "SRX1070676",
@@ -616,8 +635,10 @@ AnalyzePageContents <- function(rlsamples) {
       in-browser access to the <em>RLSeq</em> analysis workflow. The workflow is described below:
       <br>
       <br>
-      Peaks (<a href="https://genome.ucsc.edu/FAQ/FAQformat.html#format13" target="_blank">broadPeak format</a>; preferrably called with 
-      <a href="https://github.com/macs3-project/MACS" target="_blank">MACS2/3</a>) are uploaded to <em>RLBase</em> (see the example data).
+      Peaks are uploaded in <a href="https://genome.ucsc.edu/FAQ/FAQformat.html#format13" target="_blank">broadPeak</a> (preferred), 
+      <a href="https://genome.ucsc.edu/FAQ/FAQformat.html#format12" target="_blank">narrowPeak</a>, or
+      <a href="https://genome.ucsc.edu/FAQ/FAQformat.html#format1" target="_blank">BED</a> format; preferrably called with 
+      <a href="https://github.com/macs3-project/MACS" target="_blank">MACS2/3</a> (see the example data).
       To generate peaks that conform to these standards, please see the <a href="https://github.com/Bishop-Laboratory/RLPipes" target="_blank">RLPipes CLI tool</a>.
       RLSeq ingests the peaks and converts them to an <code>RLRanges</code> object with 
       <a href="https://bishop-laboratory.github.io/RLSeq/reference/RLRanges.html" target="_blank><code>RLSeq::RLRanges()</code></a>.

@@ -57,7 +57,7 @@ makeRLConsensusGB <- function(x) {
 
 #' Make SRA links
 makeSRALinks <- function(x) {
-  SRA_BASE <- "https://www.ncbi.nlm.nih.gov/sra/"
+  SRA_BASE <- "https://trace.ncbi.nlm.nih.gov/Traces/sra/?study="
   as.character(a(
     href=paste0(SRA_BASE, x),
     target="_blank",

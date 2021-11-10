@@ -461,7 +461,7 @@ server <- function(input, output, session) {
       geom_point() +
       ggtitle(current_rl(), subtitle = "Expression vs. R-Loop Intensity") +
       theme_bw(base_size = 14) +
-      ylab("R-loop signal (log2(TPM + 1))") +
+      ylab("R-loop signal (log2(RLRPM + 1))") +
       xlab("Expression (log2(TPM + 1))") +
       annotate(geom = 'text',
                label = paste0("Rho: ", corrR, "; Padj: ", corrPAdj),
