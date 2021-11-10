@@ -6,7 +6,7 @@ library(DT)
 library(shinyvalidate)
 library(aws.s3)
 library(shinycssloaders)
-library(tippy)
+library(prompter)
 library(shinyWidgets)
 library(pbapply)
 library(callr)
@@ -62,6 +62,7 @@ ui <- function(request) {
     tags$head(tags$style(HTML(headerHTML())),
               tags$link(rel="shortcut icon", href="https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_icon.png"),
               tags$script(src="https://kit.fontawesome.com/5071e31d65.js", crossorigin="anonymous")),
+    use_prompt(),
     navbarPage(
       title = "RLBase",
       id = "rlbase",

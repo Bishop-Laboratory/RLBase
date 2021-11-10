@@ -20,21 +20,21 @@ pcaPlotDataFromCorr <- function(corr_data) {
 }
 
 # UI function to make ? button
-helpButton <- function(message) {
+helpButton <- function(message, position="right") {
   return(
-    with_tippy(
-      element = span(
-        HTML('<i class="fa fa-question-circle"></i>')), 
-      tooltip = message, placement = "right"
+    add_prompt(
+      ui_element = span(
+        HTML('<i class="fa fa-question-circle"></i>')),
+      message = message, position = position
     )
   )
   
 }
 
 #' Make headers
-makeHeaders <- function(title, message, fs=1.3) {
+makeHeaders <- function(title, message, fs=1.3, position="right") {
   tagList(
-    span(span(title, style=paste0("font-size: ", fs, "em;")), helpButton(message))
+    span(span(title, style=paste0("font-size: ", fs, "em;")), helpButton(message, position=position))
   )
 }
 

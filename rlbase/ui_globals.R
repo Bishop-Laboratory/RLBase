@@ -31,8 +31,7 @@ RMapSamplesTable_panel <- function(rlsamples) {
         width = 12,
         makeHeaders(
           title = "Table Controls ",
-          message=paste0("These controls can be used to modify the 'RLBase Samples Table' and the ",
-                         "plots/data displayed on the right side of the screen. See Documentation for more detail.")
+          message=paste0("Controls that modify the 'RLBase Samples Table'. See Documentation for more detail.")
         )
       )
     ),
@@ -83,10 +82,7 @@ RMapSamplesTable_panel <- function(rlsamples) {
         makeHeaders(
           title = "RLBase Samples Table ",
           message=paste0("R-loop mapping samples in RLBase and their associated metadata.",
-                         " The samples in this table correspond to the plots and data",
-                         " displayed on the right side of the screen. Use the 'Table",
-                         " Controls' to change the displayed samples. Selecting a row",
-                         " will also update the right side plots/data. See Documentation for more detail.")
+                         " See Documentation for more detail.")
         ),
         DTOutput('rmapSamples')
       )
@@ -137,7 +133,7 @@ RMapSamplesOutput_tabset <- function() {
             hr(),
             makeHeaders(
               title = "Sample downloads ",
-              message = paste0("Sample downloads list. Hover over help icons for information about each.", 
+              message = paste0("Sample downloads list.", 
                                " See 'Download' for more detail.")
             ),
             hr(),
@@ -158,11 +154,7 @@ RLFS_panel <- function() {
         hr(),
         makeHeaders(
           title = "R-loop forming sequences (RLFS) analysis results ",
-          message = paste0("R-loop forming sequences (RLFS) analysis summary.",
-                           "'RLFS-PVAL': the pvalue from permutation testing.",
-                           "'Num. Peaks Available: the number of peaks in the selected sample.'",
-                           "'Labeled Condition': the labeled condition based on sample metadata in GEO/SRA.",
-                           "'Predicted Condition': the predicted condition based on the quality mode.",
+          message = paste0("R-loop forming sequences (RLFS) analysis summary. ",
                            "See Documentation for more detail.")
         ),
         hr(),
@@ -173,7 +165,8 @@ RLFS_panel <- function() {
         hr(),
         makeHeaders(
           title = "Z-score distribution plot ",
-          message = paste0("Plot showing the enrichment of sample peaks within RLFS. See Documentation for more detail.")
+          message = paste0("Plot showing the enrichment of sample peaks within RLFS. See Documentation for more detail."),
+          position = "left"
         ),
         hr(),
         plotOutput('zScorePlot')
@@ -185,9 +178,7 @@ RLFS_panel <- function() {
         hr(),
         makeHeaders(
           title = "Permutation test plot ",
-          message = paste0("Plot showing the results of permutation testing. ",
-                           "Green bar shows actual number of overlaps between",
-                           " sample peaks and RLFS in comparison with the random distribution.",
+          message = paste0("Plot showing the results of permutation testing.",
                            " See Documentation for more detail.")
         ),
         hr(),
@@ -199,7 +190,8 @@ RLFS_panel <- function() {
         makeHeaders(
           title = "Fourier transform plot ",
           message = paste0("Plot of the Fourier transform of the Z-score distribution.",
-                           " See Documentation for more detail.")
+                           " See Documentation for more detail."),
+          position = "left"
         ),
         hr(),
         plotOutput('FFTPlot')
@@ -217,8 +209,7 @@ Annotation_panel <- function() {
         hr(),
         makeHeaders(
           title = "Sample annotations ",
-          message = paste0("Sample annotation plots show the enrichment of genomic features within the RLBase samples. ",
-                           "The &#9670; shows the location of the select sample in 'RLBase Samples Table'. ",
+          message = paste0("Sample annotation plots show the enrichment of genomic features. ",
                            "See Documentation for more detail.")
         ),
         hr()
@@ -252,8 +243,7 @@ Summary_panel <- function() {
         hr(),
         makeHeaders(
           title = "Sample summary ",
-          message=paste0("A high-level summary for the sample that is selected in the 'Sample Table'.",
-                         " Hover over the help icons for each row to learn more.")
+          message=paste0("A summary for the sample that is selected in the 'Sample Table'.")
         ),
         hr(),
         uiOutput("sampleSummary")
@@ -264,8 +254,8 @@ Summary_panel <- function() {
         makeHeaders(
           title = "R-loop mapping modalities ",
           message=paste0("Representation of R-loop mapping modalities in",
-                         " selected data. Use 'Table Controls' to adjust ",
-                         " this. See Documentation for more detail.")
+                         " selected data."),
+          position = "left"
         ),
         hr(),
         withSpinner(plotlyOutput("modeDonut"))
@@ -278,11 +268,7 @@ Summary_panel <- function() {
         makeHeaders(
           title = "Sample labels ",
           message=paste0("Representation of sample labels among the",
-                         " selected data. 'POS' indicates a sample which was ",
-                         " expected to map R-loops (e.g., 'S9.6 -RNH1' in DRIP-Seq) and ",
-                         " 'NEG' indicates a sample which was not expected to map",
-                         " R-loops (e.g., 'S9.6 +RNH1' or 'Genomic Input').",
-                         " See Documentation for more detail.")
+                         " selected data. See Documentation for more detail.")
         ),
         hr(),
         withSpinner(plotlyOutput("labelDonut"))
@@ -293,11 +279,8 @@ Summary_panel <- function() {
         makeHeaders(
           title = "Sample quality prediction ",
           message=paste0("Representation of sample quality predictions among the",
-                         " selected data. 'POS' indicates a sample which was ",
-                         " predicted by the RLSeq quality model to map R-loops robustly and ",
-                         " 'NEG' indicates a sample which was predicted to map R-loops poorly.",
-                         " 'null' indicates samples for which no peaks were found by macs3.",
-                         " See Documentation for more detail.")
+                         " selected data. See Documentation for more detail."),
+          position = "left"
         ),
         hr(),
         withSpinner(plotlyOutput("predictionDonut"))
@@ -316,10 +299,8 @@ Sample_Sample_panel <- function() {
       hr(),
       makeHeaders(
         title = "Sample Heatmap ",
-        message=paste0("The sample heatmap displays the sample-sample pearson ",
-                       "correlation around gold-standard R-loop sites.",
-                       "The 'group' annotation on the heatmap shows the location of the sample selected in",
-                       " the 'RLBase Samples Table'. See Documentation for more detail.")
+        message=paste0("Heatmap displays the sample-sample pearson ",
+                       "correlation. See Documentation for more detail.")
       ),
       hr(),
       plotOutput('heatmap',  
@@ -334,11 +315,8 @@ Sample_Sample_panel <- function() {
           hr(),
           makeHeaders(
             title = "Sample PCA ",
-            message=paste0("The sample PCA plot displays the sample-sample variance ",
-                           "based on the correlation around gold-standard R-loop sites.",
-                           "The 'group' annotation displays the location of the sample selected in",
-                           " the 'RLBase Samples Table'. The 'Shape' control determines whether the",
-                           " point shape represents the 'Label' or the 'Prediction'. See Documentation for more detail.")
+            message=paste0("The sample PCA plot.",
+                           " See Documentation for more detail.")
           ),
           hr()
         )
@@ -379,10 +357,8 @@ RLoops_Panel <- function() {
             hr(),
             makeHeaders(
               title = "Overlap of sample peaks and RL Regions ",
-              message = paste0("R-loop regions (RL Regions) were overlapped",
-                               " with peaks from the selected sample. The ",
-                               "plot shows the degree of overlap and significance (Fisher's exact test).",
-                               " See Documentation for more detail.")
+              message = paste0("R-loop regions overlap",
+                               " with peaks from selected sample.")
             ),
             hr()
           )
@@ -404,13 +380,6 @@ RLoops_Panel <- function() {
             makeHeaders(
               title = "R-loop regions in selected sample ",
               message = paste0("The R-loop regions (RL Regions) overlapping with the selected sample.",
-                               " Clicking the links in the 'Location' column will open the RLBase genome",
-                               " browser session at the selected RL Region.",
-                               " Controls are provided for filtering this table: ",
-                               "'All genes' controls whether to show psuedogenes, RNA genes, etc.",
-                               "'Repetitive' controls whether to show RL Regions in repetitive elements.",
-                               "'Correlated with Expression' controls whether to only show RL Regions significantly",
-                               " correlated with gene expression.",
                                " See Documentation for more detail.")
             ),
             hr()
@@ -471,11 +440,7 @@ RLoopsPageContents <- function() {
             width = 8,
             makeHeaders(
               title = "Table Controls ",
-              message = paste0("Controls for filtering the 'RL Regions table': ",
-                               "'All genes' controls whether to show psuedogenes, RNA genes, etc.",
-                               "'Repetitive' controls whether to show RL Regions in repetitive elements.",
-                               "'Correlated with Expression' controls whether to only show RL Regions significantly",
-                               " correlated with gene expression.",
+              message = paste0("Controls for filtering the 'RL Regions table'.",
                                " See Documentation for more detail.")
             ),
             fluidRow(
@@ -505,7 +470,7 @@ RLoopsPageContents <- function() {
             span(span(a(img(src="https://ucscgenomics.soe.ucsc.edu/wp-content/uploads/genome-browse-logo.png", height="50"),
                         href="https://genome.ucsc.edu/s/millerh1%40livemail.uthscsa.edu/RLBase", target="_blank"), 
                       style=paste0("font-size: 1.3em;")), 
-                 helpButton("Click the logo to visit the RLBase genome browser session. See Documentation for more detail."))
+                 helpButton("RLBase genome browser session."))
           )
         ),
         fluidRow(
@@ -513,9 +478,7 @@ RLoopsPageContents <- function() {
             width = 12,
             makeHeaders(
               title = "RL Regions Table ",
-              message = paste0("Interactive table of R-loop regions. Selecting rows in this table will change the output",
-                               " on the right side of the screen. Clicking the links in the 'Location'",
-                               " column will open the RLBase genome browser session at the indicated location See Documentation for more detail.")
+              message = paste0("Interactive table of R-loop regions. See documentation for more detail.")
             ),
             DTOutput('rloops')
           )
@@ -536,8 +499,8 @@ RLoopsPageContents <- function() {
                 makeHeaders(
                   title = "RL Region Summary ",
                   message = paste0("Summary information about the selected RL Region. ",
-                                   "Hover over the help icon on each row to see information about it.",
-                                   " See Documentation for more detail.")
+                                   " See Documentation for more detail."),
+                  position = "left"
                 ),
                 hr()
               )
@@ -558,9 +521,9 @@ RLoopsPageContents <- function() {
                 hr(),
                 makeHeaders(
                   title = "RL Region expression correlation plot ",
-                  message = paste0("Plot showing the relationship between R-loop",
-                                   " abundance and expression with the selected RL-Region. ",
-                                   "See Documentation for more detail.")
+                  message = paste0("R-loop abundance vs expression plot. ",
+                                   "See Documentation for more detail."),
+                  position = "left"
                 ),
                 hr()
               )
@@ -600,7 +563,7 @@ AnalyzePageContents <- function(rlsamples) {
         br(),
         makeHeaders(
           title = "Enter sample info ", fs = 1.4,
-          message = paste0("Enter the information describing your sample and upload your peaks. ",
+          message = paste0("Enter the information describing your sample. ",
                            "See Documentation for more detail.")
         ),
         fluidRow(

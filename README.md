@@ -45,8 +45,8 @@ aws configure
 4. Retrieve non-conda dependencies 
 
 ```shell
-R -e "install.packages(c('ggprism', 'shinyvalidate', 'tippy', 'valr', 'caretEnsemble'), repos='http://cran.us.r-project.org')"
-R -e "BiocManager::install(version='devel')"
+R -e "install.packages(c('ggprism', 'shinyvalidate', 'prompter', 'valr', 'caretEnsemble'), repos='http://cran.us.r-project.org')"
+R -e "BiocManager::install(version='devel', ask=FALSE)"
 R -e "remotes::install_github('Bishop-Laboratory/RLHub', dependencies = TRUE, force=TRUE)"
 R -e "remotes::install_github('Bishop-Laboratory/RLSeq', dependencies = FALSE, force=TRUE)"
 ```
