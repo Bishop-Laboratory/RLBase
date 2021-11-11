@@ -227,7 +227,7 @@ runrlseq <- function(inputs, awstry_put, awstry_saverds) {
   current_step <- "Knitting Report [3/3]"
   a_ <- knitr::knit(input = "www/rlseq_html/rlseq_inprogress.Rhtml", output = inputs$tmpHTML1, quiet = TRUE)
   aws.s3::put_object(file = inputs$tmpHTML1, object = file.path(inputs$runID, "res_index.html"), bucket = inputs$USERDATA_S3, acl = "public-read")
-  RLSeq:::report(rlr, reportPath = inputs$report)
+  RLSeq:::report(rlr, reportPath = inputs$report, intermediates_dir=dirname(inputs$report))
   message("[[4]] Uploading to AWS")
   Sys.sleep(3)
   a_ <- knitr::knit(input = "www/rlseq_html/rlseq_upload.Rhtml", output = inputs$tmpHTML1, quiet = TRUE)
