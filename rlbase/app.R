@@ -59,9 +59,16 @@ rltabShow <- rlregions %>%
 # Define UI for application that draws a histogram
 ui <- function(request) {
   tagList(
-    tags$head(tags$style(HTML(headerHTML())),
-              tags$link(rel="shortcut icon", href="https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_icon.png"),
-              tags$script(src="https://kit.fontawesome.com/5071e31d65.js", crossorigin="anonymous")),
+    tags$head(
+      tags$style(HTML(headerHTML())),
+      tags$link(rel="shortcut icon", href="https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_icon.png"),
+      tags$script(src="https://kit.fontawesome.com/5071e31d65.js", crossorigin="anonymous"),
+      tags$link(rel="stylesheet", type="text/css", href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css")
+    ),
+    tags$body(
+      tags$script(src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js", `data-cfasync`="false"),
+      tags$script(src="cookie_consent.js")
+    ),
     use_prompt(),
     navbarPage(
       title = "RLBase",
