@@ -1,6 +1,6 @@
 ---
 title: "<em>RLBase</em> Documentation"
-subtitle: "v0.9.0"
+subtitle: "v1.0.1"
 date: "`r Sys.Date()`"
 output: 
   html_document:
@@ -20,6 +20,12 @@ bibliography: references.bib
 library(tidyverse)
 library(shiny)
 source("../utils.R")
+```
+
+```{css, echo=FALSE}
+div.main-container {
+    max-width: 1250px;
+}
 ```
 
 ![RLBase](RLBase_logo.png){align="right" style="border: none; float: right;" width="256"}

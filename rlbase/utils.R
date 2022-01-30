@@ -222,7 +222,15 @@ runrlseq <- function(inputs, awstry_put, awstry_saverds) {
   current_step <- "Running RLSeq [2/3]"
   a_ <- knitr::knit(input = "www/rlseq_html/rlseq_inprogress.Rhtml", output = inputs$tmpHTML1, quiet = TRUE)
   aws.s3::put_object(file = inputs$tmpHTML1, object = file.path(inputs$runID, "res_index.html"), bucket = inputs$USERDATA_S3, acl = "public-read")
-  rlr <- RLSeq::RLSeq(rlr, quiet = FALSE)
+  mask_avail <- GenomeInfoDb::genome(rlr)[1] %in% gsub(names(RLSeq:::genomeMasks), pattern = "\\.masked", replacement = "")
+  if (! mask_avail) {
+    message(
+      "No genome mask available for ", GenomeInfoDb::genome(rlr)[1], 
+      " -- proceeding without one. This may reduce the accuracy of permutation",
+      " testing results and quality prediction."
+    )
+  }
+  rlr <- RLSeq::RLSeq(rlr, useMask=mask_avail, quiet = FALSE)
   message("[[3]] Building Report")
   current_step <- "Knitting Report [3/3]"
   a_ <- knitr::knit(input = "www/rlseq_html/rlseq_inprogress.Rhtml", output = inputs$tmpHTML1, quiet = TRUE)

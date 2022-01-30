@@ -88,7 +88,8 @@ ui <- function(request) {
       tabPanel(title = "Download", id = "download-tab", icon = icon('download'),
                DownloadPageContents(bucket_sizes, rlsamples)),
       tabPanel(title = "Documentation", id = "docs-tab", icon = icon('file-alt'),
-               tags$iframe(src = './documentation.html', width = '100%', height = '800px',
+               tags$iframe(src = './documentation.html', 
+                           style = "display:block; width:100%; height:86vh;",
                            frameborder = 0, scrolling = 'auto'))
     ), 
     tags$footer(HTML(footerHTML()))

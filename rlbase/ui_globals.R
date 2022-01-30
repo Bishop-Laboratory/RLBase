@@ -485,7 +485,7 @@ RLoopsPageContents <- function() {
           ),
           column(
             width = 5,
-            span(span(a(img(src="https://ucscgenomics.soe.ucsc.edu/wp-content/uploads/genome-browse-logo.png", height="50"),
+            span(span(a(img(src="https://rlbase-data.s3.amazonaws.com/misc/assets/genome_browser_logo.png", height="50"),
                         href="https://genome.ucsc.edu/s/millerh1%40livemail.uthscsa.edu/RLBase", target="_blank"), 
                       style=paste0("font-size: 1.3em;")), 
                  helpButton("RLBase genome browser session."))
