@@ -186,7 +186,7 @@ server <- function(input, output, session) {
       dataNow <- datList[[dat]]
       plot_ly(type = "pie") %>%
         add_pie(data=dataNow, labels = dataNow[,dat,drop=T], values = ~n, textinfo='label+value',
-                marker = list(colors = heatData$cat_cols[[tolower(dat)]][dataNow[,dat,drop=T]]), 
+                marker = list(colors = heatData$cat_cols[[dat]][dataNow[,dat,drop=T]]), 
                 insidetextorientation='horizontal', hole=.6, rotation=250) %>%
         layout(showlegend = FALSE, title=list(text = dat, x=0.15), margin = list(l = 50, r = 50),
                xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
