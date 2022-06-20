@@ -1,6 +1,6 @@
 ---
 title: "<em>RLBase</em> Documentation"
-subtitle: "v1.0.1"
+subtitle: "v1.0.2"
 date: "`r Sys.Date()`"
 output: 
   html_document:
@@ -49,17 +49,17 @@ R-loops are three-stranded nucleic acid structures formed from the hybridization
 
 ![R-loops and the factors which may promote them (Hegazy et al., 2020; PMID: [31843970](https://pubmed.ncbi.nlm.nih.gov/31843970/){target="_blank"})](https://upload.wikimedia.org/wikipedia/commons/d/d3/R-loop_promoting_factors.jpg){align="right" style="border: none; float: none;" width="560"}
 
-With the advent of DNA-RNA immunoprecipitation sequencing (DRIP-Seq) in 2012, it became possible to map R-loop locations throughout the genome [@Ginno2012]. In the years since, dozens of studies have implemented R-loop mapping approaches and submitted their data to public repositories like the Sequence Read Archive (SRA). In 2021, there are over 43 studies with public data in SRA.
+With the advent of DNA-RNA immunoprecipitation sequencing (DRIP-Seq) in 2012, it became possible to map R-loop locations throughout the genome [@Ginno2012]. In the years since, dozens of studies have implemented R-loop mapping approaches and submitted their data to public repositories like the Sequence Read Archive (SRA). As of June 2022, there are now 74 studies with public R-loop data in SRA.
 
 ## The RLBase project
 
-We began the *RLBase* project in 2019 with the aim of standardizing public R-loop mapping samples and making the resulting data accessible for R-loop biologists to explore and analyze. Our first publication from this project used over 100 DRIP-Seq data-sets to reveal an unexpected role for physiological R-loops in chromatin architecture [@Pan2020]. Building on this pilot study, we began in 2020 to manually catalog **all** public R-loop mapping samples, finding \> 40 studies and \> 600 data sets. We developed and implemented a light-weight CLI pipeline, [RLPipes](https://github.com/Bishop-Laboratory/RLPipes){target="_blank"}, to automate and standardize the re-processing of these data from raw reads.
+We began the *RLBase* project in 2019 with the aim of standardizing public R-loop mapping samples and making the resulting data accessible for R-loop biologists to explore and analyze. Our first publication from this project used over 100 DRIP-Seq data-sets to reveal an unexpected role for physiological R-loops in chromatin architecture [@Pan2020]. Building on this pilot study, we began in 2020 to manually catalog **all** public R-loop mapping samples, finding 74 studies containing 810 data sets. We developed and implemented a light-weight CLI pipeline, [RLPipes](https://github.com/Bishop-Laboratory/RLPipes){target="_blank"}, to automate and standardize the re-processing of these data from raw reads.
 
-Unexpectedly, **we found drastic inconsistency between samples, posing a major hurdle to meta-analysis and exploration of these data**. These findings were recently echoed by *Chedin et al., 2021* in their EMBO commentary [@Chédin2021].
+Unexpectedly, we found inconsistency between samples in terms of data quality, posing a major hurdle to meta-analysis and exploration of these data. These findings were recently echoed by *Chedin et al., 2021* in their EMBO commentary [@Chédin2021].
 
 To overcome this limitation, we developed new methods for assessing sample quality (implemented in the [RLSeq](https://bishop-laboratory.github.io/RLSeq/){target="_blank"} R package). We then used these methods to find high-confidence R-loop samples and used them for meta-analysis of R-loop locations (termed "RL regions" here). The processed data generated from these analyses can be accessed via the [RLHub](https://bishop-laboratory.github.io/RLHub/){target="_blank"} R package.
 
-Finally, we built the RLBase web server to facilitate access to these data along with the unique analysis approaches we have developed. In the following section on "RLBase Usage and Interface", we discuss these capabilities further.
+Finally, we built the RLBase database to facilitate access to these data along with the unique analysis approaches we have developed. In the following section on "RLBase Usage and Interface", we discuss these capabilities further.
 
 # RLBase Usage and Interface
 
@@ -127,7 +127,7 @@ R-loop regions (RL regions) are sites of consensus R-loop formation as determine
 
 The analysis methods developed in [RLSeq](https://bishop-laboratory.github.io/RLSeq/index.html){target="_blank"} allow for the analysis of R-loop mapping samples within the context of the publicly-available data stored in RLBase. However, an R-package implementation may not be suitable for all users. To help increase access to these methods, RLBase provides an in-browser option for running RLSeq in the "Analyze" tab (**Figure 9**). In this interface, users can enter details about their sample and upload their peaks. After starting the analysis, they will be given the results link which they can open to see the analysis progress and, once complete, their analysis report (**Figure 10**). An example of a complete analysis can be found [here](https://rlbase-userdata.s3.amazonaws.com/efe676b1-2a6f-4535-826f-acf2c1f4a210/res_index.html){target="_blank"}.
 
-![**Figure 9**. The "Analyze" page allows users to analyze an R-loop mapping sample in the browser. (**A**) Inputs describing the R-loop mapping sample. It is recommended to lift-over your data to "hg38" or "mm10" if possible, as RLSeq is most compatible with these genomes. For an explanation of the "Mode" and "Label", please see the [terminology section](#terminology). (**B**) An upload input for the peaks to analyze (should be in [broadPeak format](https://genome.ucsc.edu/FAQ/FAQformat.html#format13){target="_blank"} if possible (narrowPeak and BED can also be used, but may produce unexpected results). (**C**) The user must also acknowledge the privacy statement, which specifies that uploaded data will be made publicly available in the analysis results link.](https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_interface/analyze_page.png){align="right" style="border: none; float: none;"}
+![**Figure 9**. The "Analyze" page allows users to analyze an R-loop mapping sample in the browser. (**A**) Inputs describing the R-loop mapping sample. It is recommended to lift-over your data to "hg38" or "mm10" if possible, as RLSeq is most compatible with these genomes. For an explanation of the "Mode" and "Label", please see the [terminology section](#terminology). (**B**) An upload input for the peaks to analyze (should be in [broadPeak format](https://genome.ucsc.edu/FAQ/FAQformat.html#format13){target="_blank"} if possible (narrowPeak and BED can also be used). (**C**) The user must also acknowledge the privacy statement, which specifies that uploaded data will be made publicly available in the analysis results link.](https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_interface/analyze_page.png){align="right" style="border: none; float: none;"}
 
 ![**Figure 10**. The "RLSeq Results" page displays the analysis description and results (it also displays progress during the analysis). (**A**) A verbose description of the analysis. See the [RLSeq vignette](https://bishop-laboratory.github.io/RLSeq/articles/analyzing-rloop-data-with-rlseq.html){target="_blank"} for additional detail. (**B**) The progress indicators that display the current stage of the analysis. (**C**) Metadata about the uploaded sample and links to the RLSeq report, `RLRanges` R data object for the sample, and the log files.](https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_interface/analyze_page__done.png){align="right" style="border: none; float: none;"}
 
@@ -207,6 +207,6 @@ RLBase is still early in the development cycle, which means bugs may occasionall
 
 RLBase is licensed under an MIT license and we ask that you please cite RLBase in any published work like so:
 
-> Miller et al., RLBase, (2021), GitHub repository, <https://github.com/Bishop-Laboratory/RLBase>
+> Miller et al., RLBase, (2022), GitHub repository, <https://github.com/Bishop-Laboratory/RLBase>
 
 # References

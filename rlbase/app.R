@@ -33,8 +33,8 @@ if (! "rlregions" %in% ls()) {
 }
 rlMemMat <- as.matrix(rlMembershipMatrix)  # Decompress
 rlsamples <- rlsamples %>%
-  mutate(rlsampleLink = map_chr(rlsample, makeSRALinks),
-         study = map_chr(study, makeSRALinks),
+  mutate(rlsampleLink = map_chr(rlsample, makeSRAExperimentLinks),
+         study = map_chr(study, makeSRAStudyLinks),
          PMID= map_chr(PMID, makePubMedLinks))
 source("const.R")
 source("ui_globals.R")
@@ -279,9 +279,9 @@ server <- function(input, output, session) {
     toshow <- rmapSampsRV()[which(rmapSampsRV() %in% rownames(heatData$corrRes))]
     corrRes <- heatData$corrRes[toshow, toshow]
     annoCorr <- heatData$annoCorr[toshow,]
-    annoCorr$group <- ifelse(rownames(annoCorr) == current_samp(), current_samp(), "Unselected")
-    names(heatData$cat_cols$group)[1] <- current_samp()
-    names(heatData$cat_cols$group)[2] <- "Unselected"
+    annoCorr$Selected <- ifelse(rownames(annoCorr) == current_samp(), current_samp(), "Unselected")
+    names(heatData$cat_cols$Selected)[1] <- current_samp()
+    names(heatData$cat_cols$Selected)[2] <- "Unselected"
     pheatmap(corrRes, color = heatData$pheatmap_color, main = current_samp(), breaks = heatData$pheatmap_breaks,
              annotation_col = annoCorr[,c(4, 3, 2, 1)], annotation_colors = heatData$cat_cols,
              show_colnames = FALSE, show_rownames = FALSE, silent = FALSE, fontsize = 14)
@@ -303,7 +303,7 @@ server <- function(input, output, session) {
       right_join(rownames_to_column(annoCorr, var = "rlsample"), by = "rlsample")
     ggplot(
       toPlt,
-      aes_string(x = "PC1", y = "PC2", color = "mode",
+      aes_string(x = "PC1", y = "PC2", color = "Mode",
                  alpha = "group",
                  shape = input$PCA_shapeBy, size = "group")
     ) +

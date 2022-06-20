@@ -26,11 +26,11 @@ RMapSamplesTable_panel <- function(rlsamples) {
         width = 12,
         h3("RLBase Samples"),
         hr(),
-        span("The purpose of the 'RLBase Samples' page is the enable exploration of the 693 reprocessed and standardized",
-          " R-loop mapping datasets profiled in our 2021 recent data mining study (see ", 
+        span("The purpose of the 'RLBase Samples' page is the enable exploration of the 810 reprocessed and standardized",
+          " R-loop mapping datasets profiled in our 2022 data mining study (see ", 
           em(
-            a("Miller et al., 2021", href="https://www.biorxiv.org/content/10.1101/2021.11.01.466823v2", target="_blank")
-          ), "). See 'Documentation' for full usage details."),
+            a("Miller et al., 2022", href="https://www.biorxiv.org/content/10.1101/2021.11.01.466823v2", target="_blank")
+          ), "; forthcoming in Nucleic Acids Research). See 'Documentation' for full usage details."),
         hr()
       )
     ),
@@ -334,8 +334,8 @@ Sample_Sample_panel <- function() {
           width = 6,
           selectInput(
             inputId = "PCA_shapeBy",
-            choices = c("label", "prediction"),
-            selected = "prediction",
+            choices = c("Label", "Prediction"),
+            selected = "Prediction",
             label = "Shape"
           )
         )
@@ -445,9 +445,9 @@ RLoopsPageContents <- function() {
               "R-loop regions (RL regions) are regions of the human genome which display",
               " robust R-loop formation, as described in our recent work (",
               em(
-                a("Miller et al., 2021", href="https://www.biorxiv.org/content/10.1101/2021.11.01.466823v2", target="_blank")
+                a("Miller et al., 2022", href="https://www.biorxiv.org/content/10.1101/2021.11.01.466823v2", target="_blank")
               ),
-              "). The 'R-Loop Regions' page enables exploration of these sites and their association with gene expression.",
+              "; Forthcoming in Nucleic Acids Research). The 'R-Loop Regions' page enables exploration of these sites and their association with gene expression.",
               " See 'Documentation' for full usage details."
             ),
             hr()
@@ -675,7 +675,7 @@ DownloadPageContents <- function(bucket_sizes, rlsamples) {
   as part of the *RLSuite* project. With the exception of raw `.bam` files, these
   data are stored on the publicly-avialable *RLBase-data* AWS bucket (`s3://rlbase-data/`).
   
-  For **bulk access** to *RLBase-data* (**67.8 GB**), please use <a href='https://anaconda.org/conda-forge/awscli' target='_blank'>*AWS CLI*</a>:
+  For **bulk access** to *RLBase-data* (**83.5 GB**), please use <a href='https://anaconda.org/conda-forge/awscli' target='_blank'>*AWS CLI*</a>:
   
   ```shell
   # conda install -c conda-forge awscli
@@ -975,7 +975,7 @@ rawDataDownloads <- function() {
   processing pipeline. Raw reads were aligned to the genome using 
   <a href='https://github.com/bwa-mem2/bwa-mem2' target='_blank'>*bwa-mem2*</a> and uploaded
   to a publicly-accessible 
-  <a href='https://uthscsa.box.com/s/529qtbh94z1zqs8rqtwb3gxabalzaya4' target='_blank'>Box folder</a> (1.4 TB).
+  <a href='https://uthscsa.box.com/s/529qtbh94z1zqs8rqtwb3gxabalzaya4' target='_blank'>Box folder</a> (1.5 TB).
   
   **Note**: You will be unable to download the entire contents in bulk without a paid Box account. If you need to 
   access these `*.bam` files in bulk, please simply follow the protocol outlined in

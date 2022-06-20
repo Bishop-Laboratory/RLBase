@@ -56,7 +56,7 @@ makeRLConsensusGB <- function(x) {
 }
 
 #' Make SRA links
-makeSRALinks <- function(x) {
+makeSRAStudyLinks <- function(x) {
   SRA_BASE <- "https://trace.ncbi.nlm.nih.gov/Traces/sra/?study="
   as.character(a(
     href=paste0(SRA_BASE, x),
@@ -64,6 +64,17 @@ makeSRALinks <- function(x) {
     x
   ))
 }
+
+#' Make SRA Experiment Links
+makeSRAExperimentLinks <- function(x) {
+    SRA_BASE <- "https://www.ncbi.nlm.nih.gov/sra/?term="
+    as.character(a(
+        href=paste0(SRA_BASE, x),
+        target="_blank",
+        x
+    ))
+}
+
 
 #' Make pubmed links
 makePubMedLinks <- function(x) {
@@ -127,9 +138,7 @@ makeGlobalData <- function(APP_DATA) {
   
   # Get the rlregion plot data
   dir.create("misc/rlranges/", showWarnings = FALSE)
-  if (! file.exists("misc/rlranges/ERX2277510_hg38.rds")) {
-    system("aws s3 sync s3://rlbase-data/rlranges/ misc/rlranges/")
-  }
+  system("aws s3 sync s3://rlbase-data/rlranges/ misc/rlranges/")
   hg38samps <- rlsamples$rlsample[rlsamples$genome == "hg38"]
   hg38sampsfls <- setNames(lapply(hg38samps, function(x) {file.path("misc", "rlranges", paste0(x, "_hg38.rds"))}), nm = hg38samps)
   hg38sampsfls <- hg38sampsfls[sapply(hg38sampsfls, file.exists)]
