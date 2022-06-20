@@ -79,6 +79,9 @@ makePubMedLinks <- function(x) {
 #' Makes the global data for the app
 makeGlobalData <- function(APP_DATA) {
   
+  require(tidyverse)
+  require(RLSeq)
+  
   rlsamples <- RLHub::rlbase_samples()
   rlfsres <- RLHub::rlfs_res()
   rlbaseRes <- RLHub::feat_enrich_samples()
@@ -123,7 +126,7 @@ makeGlobalData <- function(APP_DATA) {
   })
   
   # Get the rlregion plot data
-  dir.create("misc/rlranges/")
+  dir.create("misc/rlranges/", showWarnings = FALSE)
   if (! file.exists("misc/rlranges/ERX2277510_hg38.rds")) {
     system("aws s3 sync s3://rlbase-data/rlranges/ misc/rlranges/")
   }
