@@ -422,7 +422,7 @@ server <- function(input, output, session) {
     rloopsNow <- dplyr::filter(rloops(), `RL Region` == current_rl()) %>%
       mutate(Genes = map_chr(Genes, function(x) {paste0(sapply(unique(unlist(strsplit(Genes, split = " "))), makeGeneCards), collapse = "\n")})) %>%
       mutate(Genes = ifelse(Genes == NA_LINK, NA, Genes)) %>%
-      mutate(Samples = map_chr(Genes, function(x) {paste0(sapply(unique(unlist(strsplit(samples, split = ","))), makeSRALinks), collapse = "\n")})) %>%
+      mutate(Samples = map_chr(Genes, function(x) {paste0(sapply(unique(unlist(strsplit(samples, split = ","))), makeSRAExperimentLinks), collapse = "\n")})) %>%
       dplyr::select(-is_repeat, -samples, -contains("corr"))
     rloopsNow %>%
       t() %>%
