@@ -301,7 +301,8 @@ Summary_panel <- function() {
           title = "R-loop mapping modalities ",
           message = paste0(
             "Representation of R-loop mapping modalities in",
-            " selected data."
+            " selected data. Change the values in the Table Controls",
+            " to update this plot. See Documentation for more detail."
           ),
           position = "left"
         ),
@@ -317,7 +318,8 @@ Summary_panel <- function() {
           title = "Sample labels ",
           message = paste0(
             "Representation of sample labels among the",
-            " selected data. See Documentation for more detail."
+            " selected data.  Change the values in the Table Controls to",
+            " update this plot. See Documentation for more detail."
           )
         ),
         hr(),
@@ -330,7 +332,8 @@ Summary_panel <- function() {
           title = "Sample quality prediction ",
           message = paste0(
             "Representation of sample quality predictions among the",
-            " selected data. See Documentation for more detail."
+            " selected data. Change the values in the Table Controls",
+            " to update this plot. See Documentation for more detail."
           ),
           position = "left"
         ),
