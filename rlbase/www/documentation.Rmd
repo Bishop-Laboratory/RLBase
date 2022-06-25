@@ -119,6 +119,25 @@ R-loop regions (RL regions) are genomic regions which show consistent R-loop for
 
 R-loop regions (RL regions) are sites of consensus R-loop formation as determined through a meta-analysis of all high-confidence RLBase samples. For greater detail on how RL Regions were derived and their associated metadata, please see the relevant section of the [RLHub documentation](https://bishop-laboratory.github.io/RLHub/reference/rlregions.html#source){target="_blank"}. The RLBase "RL Regions" page provides a simple interface for exploring these data (**Figure 7**). RL regions have a variety of metadata associated with them, such as the number of samples in which they are found and the genes which they overlap with (**Figure 8**). Finally, the Spearman correlation between RL Region signal (as determined from high-confidence RLBase samples) and expression (as determined by paired-RNA-Seq data) is also shown (**Figure 8**). We also provide links to the [RLBase UCSC genome browser session](https://genome.ucsc.edu/s/millerh1%40livemail.uthscsa.edu/RLBase){target="_blank"} (**Fig. 7C**) which can be used to explore these results and compare them with other data stored in the UCSC database. 
 
+<details>
+<summary>Generation of PCR primers from RL-Regions in the UCSC browser</summary>
+
+<hr>
+
+One utility of the RLBase UCSC browser session is to generate PCR primer sequences from RL Regions. To accomplish this, simply navigate to the 
+[UCSC genome browser session for RLBase](https://genome.ucsc.edu/s/millerh1%40livemail.uthscsa.edu/RLBase){target="_blank"},
+find the RL Region of interest, and then right click on it. This will produce a context menu with the option to "Get DNA for \<rlregion_id\>" (see image below). 
+This will produce a FASTA file which can be used with primer-generating tools such as [Primer-BLAST](https://www.ncbi.nlm.nih.gov/tools/primer-blast/index.cgi).
+
+![](https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_interface/primers_ucsc_guide.png){align="right" style="border: none; float: none;"}
+
+<hr>
+
+</details>
+
+<br>
+<br>
+
 ![**Figure 7**. The "R-loop Regions" page. R-loop regions ("RL Regions"; consensus sites of R-loop formation) are described in greater detail in the [RLHub documentation](https://bishop-laboratory.github.io/RLHub/reference/rlregions.html#source){target="_blank"}. This page provides an interface for exploring these data. (**A**) Controls for altering the data shown in (**B**). "All genes", if selected, forces (**B**) to also show pseudogenes, RNA genes, and predicted genes. If "Repetitive" is selected, RL Regions that overlap with repetitive elements will be displayed. If "Correlated with expression" is selected, only the RL Regions with significant correlation between R-loop signal and expression will be shown. (**B**) The table of RL Regions along with metadata. The RL Regions in this table are controlled by (**A**) and selecting rows will impact the output in (**D**). For a full description of columns, please see the relevant [RLHub documentation](https://bishop-laboratory.github.io/RLHub/reference/rlregions.html#structure){target="_blank"}. (**C**) A link to the [UCSC genome browser session for RLBase](https://genome.ucsc.edu/s/millerh1%40livemail.uthscsa.edu/RLBase){target="_blank"}. This session contains all the coverage files for every human R-loop mapping sample, along with the consensus R-loop regions. (**D**) The output panel impacted by the selection in (**B**). See (**Figure 8**) for a full description.](https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_interface/rlregions_page.png){align="right" style="border: none; float: none;"}
 
 ![**Figure 8**. The "R-loop Regions" page output panels. (**A**) Summary of the RL Region selected in "RL Region Table". See also the relevant [RLHub documentation](https://bishop-laboratory.github.io/RLHub/reference/rlregions.html#structure){target="_blank"} for further detail. (**B**) A scatter plot showing the correlation of R-loop signal and expression (both log2TPM-transformed counts) within the RL Region selected. Points are colored by the R-loop mapping mode which the R-loop signal corresponds to (expression is just RNA-Seq). See also the relevant RLHub documentation for [`rlregions_counts`](https://bishop-laboratory.github.io/RLHub/reference/rlregions.html#source){target="_blank"} and [`gene_exp`](https://bishop-laboratory.github.io/RLHub/reference/gene_exp.html#details){target="_blank"} for further detail on the data sources.](https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_interface/rlregions_page__righthand.png){align="right" style="border: none; float: none;"}
