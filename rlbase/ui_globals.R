@@ -224,6 +224,29 @@ Annotation_panel <- function() {
       )
     ),
     fluidRow(
+        column(
+            span(
+                "The Annotation panel provides the capability to observe the",
+            " enrichment of R-loops within various genomic features. ",
+            "To learn about the genomic features present in this analysis, ",
+            "view the descriptions ",
+            a(
+                href='https://bishop-laboratory.github.io/RLHub/reference/annotations.html#details',
+                target="_blank",
+                "here"
+            ),
+            '. For each sample in RLBase, the called peaks were overlapped with',
+            ' each genomic feature annotation and overlap statistics were ',
+            'calculated using Fisher’s exact test. The plots show the',
+            ' distribution of Fisher’s exact test odds ratios for ',
+            'each sample present in the “RLBase Samples Table”. When a sample ',
+            "is selected in the 'RLBase Samples Table', the enrichment value for ",
+            "that sampel is displayed as a diamond on the plot."),
+            width = 12
+        )
+    ),
+    hr(),
+    fluidRow(
       column(
         width = 6,
         selectInput(
