@@ -93,7 +93,10 @@ makeGlobalData <- function(APP_DATA) {
   require(tidyverse)
   require(RLSeq)
 
-  rlsamples <- RLHub::rlbase_samples()
+  rlsamples <- RLHub::rlbase_samples() %>% 
+      mutate(
+          condition = ifelse(condition == "S96", "S9.6", condition)
+      )
   rlfsres <- RLHub::rlfs_res()
   rlbaseRes <- RLHub::feat_enrich_samples()
   gss <- RLHub::gs_signal()
