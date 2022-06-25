@@ -725,11 +725,17 @@ AnalyzePageContents <- function(rlsamples) {
       in-browser access to the <em>RLSeq</em> analysis workflow. The workflow is described below:
       <br>
       <br>
+      <h5>Format</h5>
       Peaks are uploaded in <a href="https://genome.ucsc.edu/FAQ/FAQformat.html#format13" target="_blank">broadPeak</a> (preferred),
       <a href="https://genome.ucsc.edu/FAQ/FAQformat.html#format12" target="_blank">narrowPeak</a>, or
       <a href="https://genome.ucsc.edu/FAQ/FAQformat.html#format1" target="_blank">BED</a> format; preferrably called with
       <a href="https://github.com/macs3-project/MACS" target="_blank">MACS2/3</a> (see the example data).
       To generate peaks that conform to these standards, please see the <a href="https://github.com/Bishop-Laboratory/RLPipes" target="_blank">RLPipes CLI tool</a>.
+      Ideally, peaks will be generated using MACS2 or MACS3 with default settings, but any other peak caller will also suffice as long as the peaks are in BED format. Of note, 
+      if a peak calling p-value is provided by the peak caller, peaks should be filtered to only contain significant entries 
+      (this is the default behavior in most peak callers). Furthermore, using an input control during peak calling will improve the accuracy of analysis results.
+      <br>
+      <h5>Analysis</h5>
       RLSeq ingests the peaks and converts them to an <code>RLRanges</code> object with
       <a href="https://bishop-laboratory.github.io/RLSeq/reference/RLRanges.html" target="_blank><code>RLSeq::RLRanges()</code></a>.
       Then, the core <em>RLSeq</em> pipeline is executed with
