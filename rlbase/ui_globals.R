@@ -411,7 +411,7 @@ RLoops_Panel <- function() {
         icon = icon("adjust"),
         fluidRow(
           column(
-            width = 8, offset = 2,
+            width = 12,
             hr(),
             makeHeaders(
               title = "Overlap of sample peaks and RL Regions ",
@@ -423,6 +423,22 @@ RLoops_Panel <- function() {
             hr()
           )
         ),
+        fluidRow(
+            column(
+                width = 12,
+                span(
+                    "This panel shows the overlap of consensus R-loop regions (RL regions) and the peaks of the ",
+                    "selected sample.", 
+                    strong(" Of note: "), 
+                    "the Venn diagram overlap section shows the number of ",
+                    em("merged"),
+                    " overlapping peaks. ",
+                    "For example, if 2 RL Regions overlap 1 peak from the selected sample,",
+                    " they will all be counted together as 1 when merged."
+                )
+            )
+        ),
+        hr(),
         fluidRow(
           column(
             width = 8, offset = 2,
