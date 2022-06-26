@@ -19,7 +19,7 @@ bibliography: references.bib
 ```{r setup, echo=FALSE, include=FALSE}
 library(tidyverse)
 library(shiny)
-source("../utils.R")
+source("../src/utils.R")
 ```
 
 ```{css, echo=FALSE}

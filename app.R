@@ -19,11 +19,13 @@ library(pheatmap)
 library(ggprism)
 library(bslib)
 library(RColorBrewer)
+library(kernlab)
+library(randomForest)
 
 # Increase upload size to 300MB
 options(shiny.maxRequestSize = 300 * 1024^2)
 # Get constants
-source("utils.R")
+source("src/utils.R")
 APP_DATA <- "misc/app_data.rda"
 if (!file.exists(APP_DATA)) {
   makeGlobalData(APP_DATA)
@@ -38,9 +40,9 @@ rlsamples <- rlsamples %>%
     study = map_chr(study, makeSRAStudyLinks),
     PMID = map_chr(PMID, makePubMedLinks)
   )
-source("const.R")
-source("ui_globals.R")
-source("plots.R")
+source("src/const.R")
+source("src/ui_globals.R")
+source("src/plots.R")
 BASE_URL1 <- "http://genome.ucsc.edu/s/millerh1%40livemail.uthscsa.edu/RLBase?position="
 rltabShow <- rlregions %>%
   arrange(desc(confidence_score)) %>%
