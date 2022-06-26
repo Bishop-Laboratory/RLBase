@@ -688,7 +688,7 @@ AnalyzePageContents <- function(rlsamples) {
               inputId = "userGenome", label = tags$span(
                 "Genome", tags$br(), tags$em("If not 'hg38' or 'mm10', some anaysis steps will be skipped.")
               ), selected = "hg38",
-              choices = RLSeq:::available_genomes$UCSC_orgID
+              choices = RLSeq:::auxdata$available_genomes
             ),
             selectInput(
               inputId = "userMode", label = "Mode", selected = "DRIP",
