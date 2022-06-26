@@ -146,6 +146,28 @@ This will produce a FASTA file which can be used with primer-generating tools su
 
 The analysis methods developed in [RLSeq](https://bishop-laboratory.github.io/RLSeq/index.html){target="_blank"} allow for the analysis of R-loop mapping samples within the context of the publicly-available data stored in RLBase. However, an R-package implementation may not be suitable for all users. To help increase access to these methods, RLBase provides an in-browser option for running RLSeq in the "Analyze" tab (**Figure 9**). In this interface, users can enter details about their sample and upload their peaks. After starting the analysis, they will be given the results link which they can open to see the analysis progress and, once complete, their analysis report (**Figure 10**). An example of a complete analysis can be found [here](https://rlbase-userdata.s3.amazonaws.com/efe676b1-2a6f-4535-826f-acf2c1f4a210/res_index.html){target="_blank"}.
 
+
+<details>
+<summary>Errors during analysis</summary>
+
+<hr>
+
+From time to time, errors may occur during analysis of user-supplied samples. This may be due to incorrect formatting, or 
+a bug in the analysis code, or temporary errors due to limited server resources. Regardless of the reason, users are encouraged
+to [report the error](https://github.com/Bishop-Laboratory/RLBase/issues/new) so that database documentation and code can be updated according.
+
+When reporting an error, please include the `log.txt` which accompanies the analysis. If an error occurs, an Error page will be displayed 
+at the link for the analysis, and the `log.txt` can be accessed from there.
+
+![](https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_interface/rlbase_error.png){align="right" style="border: none; float: none;"}
+
+<hr>
+
+</details>
+
+<br>
+<br>
+
 ![**Figure 9**. The "Analyze" page allows users to analyze an R-loop mapping sample in the browser. (**A**) Inputs describing the R-loop mapping sample. It is recommended to lift-over your data to "hg38" or "mm10" if possible, as RLSeq is most compatible with these genomes. For an explanation of the "Mode" and "Label", please see the [terminology section](#terminology). (**B**) An upload input for the peaks to analyze (should be in [broadPeak format](https://genome.ucsc.edu/FAQ/FAQformat.html#format13){target="_blank"} if possible (narrowPeak and BED can also be used). (**C**) The user must also acknowledge the privacy statement, which specifies that uploaded data will be made publicly available in the analysis results link.](https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_interface/analyze_page.png){align="right" style="border: none; float: none;"}
 
 ![**Figure 10**. The "RLSeq Results" page displays the analysis description and results (it also displays progress during the analysis). (**A**) A verbose description of the analysis. See the [RLSeq vignette](https://bishop-laboratory.github.io/RLSeq/articles/analyzing-rloop-data-with-rlseq.html){target="_blank"} for additional detail. (**B**) The progress indicators that display the current stage of the analysis. (**C**) Metadata about the uploaded sample and links to the RLSeq report, `RLRanges` R data object for the sample, and the log files.](https://rlbase-data.s3.amazonaws.com/misc/assets/rlbase_interface/analyze_page__done.png){align="right" style="border: none; float: none;"}
