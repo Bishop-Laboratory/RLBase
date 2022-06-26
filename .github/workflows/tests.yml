@@ -23,25 +23,15 @@ jobs:
         uses: actions/checkout@v2
         with:
           lfs: true
-      - name: Checkout LFS objects
-        run: git lfs checkout
-      - uses: conda-incubator/setup-miniconda@v2
-        with:
-          python-version: 3.9
-          mamba-version: "*"
-          channels: conda-forge, bioconda, r
-          channel-priority: true
-          environment-file: rlbase.yml
-          activate-environment: RLBase
+      - name: Set up R
+        - uses: r-lib/actions/setup-r@v2
+        - uses: r-lib/actions/setup-renv@v2
+          with:
+            cache-version: 2
       - name: Other dependencies & run tests
         env:
             GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          conda activate RLBase
-          R -e "install.packages(c('ggprism', 'shinyvalidate', 'prompter', 'valr', 'caretEnsemble'), repos='http://cran.us.r-project.org')"
-          R -e "BiocManager::install(version='3.14', ask=FALSE)"
-          R -e "remotes::install_github('Bishop-Laboratory/RLHub', dependencies = TRUE, force=TRUE)"
-          R -e "remotes::install_github('Bishop-Laboratory/RLSeq', dependencies = FALSE, force=TRUE)"
           echo "Attempting to launch app for 120 seconds..."
           timeout 120 Rscript runApp.R || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
           # echo "Attempted to launch tests at seed 1234"
