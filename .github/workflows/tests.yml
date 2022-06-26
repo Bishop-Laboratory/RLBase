@@ -34,8 +34,6 @@ jobs:
         env:
           RENV_CONFIG_REPOS_OVERRIDE: "https://packagemanager.rstudio.com/all/latest"
       - name: Other dependencies & run tests
-        env:
-            GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Attempting to launch app for 120 seconds..."
           timeout 120 Rscript runApp.R || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
