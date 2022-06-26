@@ -237,7 +237,7 @@ server <- function(input, output, session) {
           showlegend = FALSE, title = list(text = dat, x = 0.15), margin = list(l = 50, r = 50),
           xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
           yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE)
-        )
+        ) 
     })
     names(pltLst) <- names(datList)
     pltLst

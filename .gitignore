@@ -6,3 +6,4 @@ VennDiagram*
 rlbase/misc/rlranges/
 misc/rlranges
 *.broadPeak
+.Renviron
