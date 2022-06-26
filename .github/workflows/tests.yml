@@ -36,7 +36,7 @@ jobs:
       - name: Other dependencies & run tests
         run: |
           echo "Attempting to launch app for 120 seconds..."
-          timeout 120 Rscript runApp.R || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
+          timeout 120 Rscript app.R || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
           # echo "Attempted to launch tests at seed 1234"
           # Rscript -e "shinytest::testApp('.', compareImages = FALSE)"
       - name: Upload test results
