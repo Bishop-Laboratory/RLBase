@@ -32,7 +32,7 @@ jobs:
         with:
           cache-version: 2
         env:
-          RENV_CONFIG_REPOS_OVERRIDE: "https://packagemanager.rstudio.com/all/latest"
+          RENV_CONFIG_REPOS_OVERRIDE: ${{ env.RSPM }}
       - name: Other dependencies & run tests
         run: |
           echo "Attempting to launch app for 120 seconds..."

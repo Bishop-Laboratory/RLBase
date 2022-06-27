@@ -28,12 +28,10 @@ git clone https://github.com/Bishop-Laboratory/RLBase.git
 cd RLBase/
 ```
 
-2. Create the environment (requires conda installed):
+2. Create the environment (requires `renv` R package installed):
 
 ```shell
-conda install -c conda-forge mamba -y
-mamba env create -f rlbase.yml --force
-conda activate rlbase
+R -e "renv::restore()"
 ```
 
 3. Configure awscli (only admin can do this)
