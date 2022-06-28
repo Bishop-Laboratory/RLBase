@@ -154,7 +154,7 @@ makeGlobalData <- function(APP_DATA) {
   hg38sampsfls <- hg38sampsfls[sapply(hg38sampsfls, file.exists)]
   rlregionPltData <- parallel::mclapply(hg38sampsfls, function(fl) {
     rlr <- readRDS(file = fl)
-    RLSeq::plotRLRegionOverlap(rlr, returnData = TRUE, rlregions_table = rlregions)
+    RLSeq::plotRLRegionOverlap(rlr, returnData = TRUE)
   }, mc.cores = 44)
 
   # Get the correlation data
@@ -178,7 +178,9 @@ makeGlobalData <- function(APP_DATA) {
     rlranges = "rlranges",
     RLHub = "RLHub"
   )
-  bucket_sizes <- pblapply(bucks, bucketsize)
+  bucket_sizes <- pbapply::pblapply(bucks, bucketsize)
+  APP_DATA <- "misc/app_data.rda"
+  
   save(rlsamples, rlfsres, rlbaseRes, gss,
     rlregionPltData,
     rlregions, tpm_rl_exp, bucket_sizes,
