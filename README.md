@@ -17,40 +17,52 @@ Please open an issue if you find any errors or unexpected behavior. Please make 
 4. Steps (if any) which you took to resolve the issue and their outcomes.
 
 
-### Deploy RLBase
+### Launch RLBase locally
 
 To launch the RLBase app, the easiest approach will be to do the following:
 
 1. Clone the repository and `cd` into it:
 
 ```shell
-git clone https://github.com/Bishop-Laboratory/RLBase.git
-cd RLBase/
+git clone https://github.com/Bishop-Laboratory/RLBase.git rlbase
+cd rlbase
 ```
 
-2. Create the environment (requires `renv` R package installed):
+2. Install R v4.2.0+ and get the `renv` package
+
+```R
+R -e 'if (!requireNamespace("renv", quietly = TRUE)) install.packages("renv")'
+```
+
+3. Install `getSysReqs`
+
+```shell
+R -e 'if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes")'
+R -e 'remotes::install_github("mdneuzerling/getsysreqs", force=TRUE)'
+```
+
+4. Install system reqs (requires sudo)
+
+```shell
+REQS=$(Rscript -e 'options(warn = -1); cat(getsysreqs::get_sysreqs("renv.lock"))' | sed s/"WARNING: ignoring environment value of R_HOME"//) \
+  && echo $REQS \
+  && sudo apt-get install -y $REQS
+```
+
+5. Create the environment (requires `renv` R package installed):
 
 ```shell
 R -e "renv::restore()"
 ```
 
-3. Configure awscli (only admin can do this)
+6. Configure awscli (required for Analyze feature to work; need admin credentials)
 
 ```shell
 aws configure
 ```
 
-4. Retrieve non-conda dependencies 
-
-```shell
-R -e "install.packages(c('ggprism', 'shinyvalidate', 'prompter', 'valr', 'caretEnsemble'), repos='http://cran.us.r-project.org')"
-R -e "BiocManager::install(version='devel', ask=FALSE)"
-R -e "remotes::install_github('Bishop-Laboratory/RLHub', dependencies = TRUE, force=TRUE)"
-R -e "remotes::install_github('Bishop-Laboratory/RLSeq', dependencies = FALSE, force=TRUE)"
-```
-
-5. Finally, launch the server:
+7. Finally, launch the server:
 
 ```R
-Rscript runApp.R 6868 # port number
+Rscript app.R
 ```
