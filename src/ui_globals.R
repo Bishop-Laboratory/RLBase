@@ -438,7 +438,7 @@ RLoops_Panel <- function() {
                     " overlapping peaks. ",
                     "For example, if 2 RL Regions overlap 1 peak from the selected sample,",
                     " they will all be counted together as 1 when merged. This means that the totals within",
-                    " the sections that include the green oval will be less than the total number of RL Regions (58,340).",
+                    " the sections that include the green oval will be less than the total number of RL Regions (58,340)."
                 )
             )
         ),
